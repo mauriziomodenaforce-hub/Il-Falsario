@@ -1,1 +1,507 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Il Falsario 🎭</title>
+  
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  
+  <style>
+    body { 
+        background-color: #0a0a0a; 
+        color: #f3f4f6; 
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
+        user-select: none; 
+    }
+    
+    .drawer { transition: transform 0.3s ease-in-out; }
+    .hide-scrollbar::-webkit-scrollbar { display: none; }
+    .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    
+    .media-slider { 
+        display: flex;
+        overflow-x: auto;
+        scroll-snap-type: x mandatory; 
+        -webkit-overflow-scrolling: touch;
+    }
+    .media-item { 
+        flex: 0 0 100%;
+        scroll-snap-align: start; 
+        position: relative;
+    }
+    
+    /* Stile Oro/Champagne per le opzioni */
+    .variant-selected { 
+        border-color: #d97706 !important; 
+        background-color: rgba(217, 119, 6, 0.15) !important; 
+        color: #fef3c7 !important; 
+    }
+  </style>
+</head>
+<body class="pb-24">
+
+  <script>
+    // CHIAVI SUPABASE GIA' INIETTATE E PRONTE
+    const SUPABASE_URL = "https://niyhpvtiefisycxbkjie.supabase.co";
+    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5peWhwdnRpZWZpc3ljeGJramllIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY4MjQ2MDUsImV4cCI6MjEwMjQwMDYwNX0.ODucTrP0dzByGNhyyIYv-S-kIH5cTs8X_Url-7jXRMY";
+    
+    let db;
+    try { 
+        db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY); 
+    } catch(e) { console.error("Errore Supabase", e); }
+    
+    const tg = window.Telegram?.WebApp;
+    if (tg) { tg.expand(); }
+  </script>
+
+  <header class="sticky top-0 z-30 bg-[#121212]/95 backdrop-blur-md px-4 py-3 flex justify-between items-center border-b border-gray-800">
+    <div class="flex items-center space-x-3">
+      <div class="w-9 h-9 rounded-full bg-[#1e1e1e] border border-amber-600/50 shadow-[0_0_10px_rgba(217,119,6,0.4)] flex items-center justify-center text-xl pb-0.5">
+        🎭
+      </div>
+      <span class="font-bold text-lg tracking-wide text-amber-50">Il Falsario</span>
+    </div>
+    <div class="flex items-center space-x-2">
+      <button onclick="openCartModal()" class="relative p-2 rounded-lg bg-gray-800 hover:bg-gray-700">
+        <i data-lucide="shopping-cart" class="w-5 h-5 text-amber-500"></i>
+        <span id="cart-badge" class="absolute -top-1 -right-1 bg-amber-500 text-black text-xs font-bold w-4 h-4 rounded-full flex items-center justify-center hidden shadow-md">0</span>
+      </button>
+      <button onclick="toggleDrawer()" class="p-2 rounded-lg bg-gray-800 hover:bg-gray-700">
+        <i data-lucide="menu" class="w-6 h-6 text-gray-200"></i>
+      </button>
+    </div>
+  </header>
+
+  <div id="drawer-overlay" onclick="toggleDrawer()" class="fixed inset-0 bg-black/70 z-40 hidden backdrop-blur-sm"></div>
+  <aside id="drawer" class="fixed top-0 right-0 w-72 h-full bg-[#121212] z-50 transform translate-x-full drawer p-5 flex flex-col justify-between border-l border-amber-900/30">
+    <div>
+      <div class="flex justify-between items-center mb-8">
+        <span class="text-sm font-semibold text-amber-600 uppercase tracking-widest">IL CAVEAU</span>
+        <button onclick="toggleDrawer()" class="p-1 text-gray-500 hover:text-white">
+          <i data-lucide="x" class="w-6 h-6"></i>
+        </button>
+      </div>
+      <nav class="space-y-2">
+        <a href="#" onclick="toggleDrawer();" class="flex items-center space-x-3 px-3 py-3 rounded-xl bg-gradient-to-r from-amber-600/20 to-transparent text-amber-500 font-medium border border-amber-500/20">
+          <i data-lucide="key" class="w-5 h-5"></i><span>Accesso Principale</span>
+        </a>
+        <a href="#" onclick="scrollToProducts(); toggleDrawer();" class="flex items-center space-x-3 px-3 py-3 rounded-xl text-gray-400 hover:bg-gray-800/50 hover:text-gray-200 transition">
+          <i data-lucide="folder-lock" class="w-5 h-5"></i><span>Documenti e File</span>
+        </a>
+        <a href="#" onclick="openCartModal(); toggleDrawer();" class="flex items-center space-x-3 px-3 py-3 rounded-xl text-gray-400 hover:bg-gray-800/50 hover:text-gray-200 transition">
+          <i data-lucide="briefcase" class="w-5 h-5"></i><span>La tua Valigetta</span>
+        </a>
+        <a href="#" onclick="openTrophiesModal(); toggleDrawer();" class="flex items-center space-x-3 px-3 py-3 rounded-xl text-gray-400 hover:bg-gray-800/50 hover:text-gray-200 transition">
+          <i data-lucide="award" class="w-5 h-5"></i><span>Privilegi Clienti</span>
+        </a>
+        <a href="#" onclick="openTrackingModal(); toggleDrawer();" class="flex items-center space-x-3 px-3 py-3 rounded-xl text-gray-400 hover:bg-gray-800/50 hover:text-gray-200 transition">
+          <i data-lucide="map" class="w-5 h-5"></i><span>Stato Lavorazioni</span>
+        </a>
+        <a href="#" onclick="openSupportModal(); toggleDrawer();" class="flex items-center space-x-3 px-3 py-3 rounded-xl text-gray-400 hover:bg-gray-800/50 hover:text-gray-200 transition">
+          <i data-lucide="message-square" class="w-5 h-5"></i><span>Contatto Diretto</span>
+        </a>
+      </nav>
+    </div>
+  </aside>
+
+  <div id="fullscreen-media-modal" class="fixed inset-0 bg-black z-[100] hidden flex-col items-center justify-center backdrop-blur-xl">
+    <button onclick="closeFullscreenMedia()" class="absolute top-6 right-6 bg-gray-900/80 p-3 rounded-full z-[110] text-white border border-gray-700/50 shadow-2xl">
+      <i data-lucide="x" class="w-7 h-7"></i>
+    </button>
+    <div id="fs-media-content" class="w-full h-full flex items-center justify-center"></div>
+  </div>
+
+  <div id="cart-modal" class="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4 hidden backdrop-blur-md">
+    <div class="bg-[#121212] border border-gray-800 rounded-2xl w-full max-w-sm p-5 space-y-4 shadow-2xl">
+      <div class="flex justify-between items-center border-b border-gray-800 pb-3">
+        <h3 class="font-bold text-lg text-white flex items-center">
+            <i data-lucide="briefcase" class="w-5 h-5 text-amber-500 mr-2"></i> La tua Valigetta
+        </h3>
+        <button onclick="closeCartModal()" class="text-gray-500 hover:text-white">
+            <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+      <div id="cart-items-list" class="space-y-2 max-h-40 overflow-y-auto pr-1"></div>
+      <div class="border-t border-gray-800 pt-3 space-y-3">
+        <div class="flex justify-between text-sm font-bold text-white">
+          <span>Totale da saldare:</span>
+          <span id="cart-total-price" class="text-amber-500">€0</span>
+        </div>
+        <div>
+          <label class="text-[10px] font-bold text-gray-500 uppercase tracking-widest block mb-1">Dettagli / Recapito / Note</label>
+          <textarea id="order-address-input" rows="2" placeholder="Inserisci dettagli per il lavoro..." class="w-full bg-[#1a1a1a] border border-gray-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-amber-600"></textarea>
+        </div>
+        <button onclick="submitOrderProcess()" class="w-full bg-gradient-to-r from-amber-600 to-yellow-600 hover:from-amber-500 text-white font-extrabold py-3.5 rounded-xl text-xs uppercase shadow-[0_0_15px_rgba(217,119,6,0.3)] tracking-wider">
+          Conferma Richiesta
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div id="success-panel-modal" class="fixed inset-0 bg-[#0a0a0a] z-50 flex flex-col items-center justify-center p-6 text-center hidden">
+    <div class="w-20 h-20 bg-gradient-to-tr from-amber-500 to-yellow-700 rounded-2xl flex items-center justify-center mb-6 shadow-[0_0_40px_rgba(245,158,11,0.3)]">
+      <i data-lucide="check" class="w-12 h-12 text-white stroke-[3]"></i>
+    </div>
+    <h2 class="text-2xl font-black text-amber-50 mb-2">Richiesta Presa in Carico</h2>
+    <p class="text-gray-400 text-sm max-w-xs mb-8">
+      Il Falsario elaborerà la tua richiesta a breve. Controlla la chat per aggiornamenti.
+    </p>
+    <button onclick="closeSuccessPanel()" class="w-full max-w-xs bg-[#1a1a1a] border border-gray-800 text-white font-extrabold py-3.5 rounded-xl text-sm hover:bg-gray-900 transition">
+      Torna al Caveau
+    </button>
+  </div>
+
+  <div id="trophies-modal" class="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4 hidden backdrop-blur-md">
+    <div class="bg-[#121212] border border-gray-800 rounded-2xl w-full max-w-sm p-5 space-y-4 shadow-2xl">
+      <div class="flex justify-between items-center border-b border-gray-800 pb-3">
+        <h3 class="font-bold text-lg text-white flex items-center">
+          <i data-lucide="award" class="w-5 h-5 text-amber-500 mr-2"></i> Privilegi
+        </h3>
+        <button onclick="closeTrophiesModal()" class="text-gray-500 hover:text-white"><i data-lucide="x" class="w-5 h-5"></i></button>
+      </div>
+      <div class="bg-gradient-to-br from-[#1a1a1a] to-[#0a0a0a] border border-amber-900/30 rounded-xl p-5 text-center relative overflow-hidden">
+        <div class="absolute -right-4 -top-4 text-amber-500/10"><i data-lucide="shield-check" class="w-24 h-24"></i></div>
+        <span class="text-[10px] uppercase text-amber-600 font-bold tracking-widest relative z-10">Livello Affidabilità</span>
+        <div class="text-4xl font-black text-amber-50 mt-1 relative z-10" id="user-points-val">--</div>
+      </div>
+      <div class="space-y-2">
+        <span class="text-[10px] font-bold text-gray-500 uppercase tracking-widest block">Trofei Sbloccati</span>
+        <div id="user-trophies-list" class="space-y-2 max-h-48 overflow-y-auto pr-1"></div>
+      </div>
+      <button onclick="closeTrophiesModal()" class="w-full bg-[#1a1a1a] border border-gray-800 hover:bg-gray-900 text-gray-300 font-bold py-3 rounded-xl text-xs uppercase tracking-wider">Chiudi</button>
+    </div>
+  </div>
+
+  <div id="tracking-modal" class="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4 hidden backdrop-blur-md">
+    <div class="bg-[#121212] border border-gray-800 rounded-2xl w-full max-w-sm p-5 space-y-4 shadow-2xl">
+      <div class="flex justify-between items-center border-b border-gray-800 pb-3">
+        <h3 class="font-bold text-lg text-white flex items-center">
+          <i data-lucide="map" class="w-5 h-5 text-blue-500 mr-2"></i> Stato Lavorazioni
+        </h3>
+        <button onclick="closeTrackingModal()" class="text-gray-500 hover:text-white"><i data-lucide="x" class="w-5 h-5"></i></button>
+      </div>
+      <div class="space-y-3">
+        <label class="text-[10px] font-bold text-gray-500 uppercase tracking-widest block">Codice Pratica</label>
+        <div class="flex space-x-2">
+          <input type="number" id="tracking-order-id" placeholder="Es. 12" class="w-full bg-[#1a1a1a] border border-gray-800 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-blue-500">
+          <button onclick="searchOrderTracking()" class="bg-blue-600 hover:bg-blue-500 text-white font-bold px-4 py-2 rounded-xl text-xs uppercase">Cerca</button>
+        </div>
+      </div>
+      <div id="tracking-result" class="hidden border-t border-gray-800 pt-3 space-y-2"></div>
+      <button onclick="closeTrackingModal()" class="w-full bg-[#1a1a1a] border border-gray-800 hover:bg-gray-900 text-gray-300 font-bold py-3 rounded-xl text-xs uppercase tracking-wider">Chiudi</button>
+    </div>
+  </div>
+
+  <div id="support-modal" class="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4 hidden backdrop-blur-md">
+    <div class="bg-[#121212] border border-gray-800 rounded-2xl w-full max-w-sm p-5 space-y-4 shadow-2xl">
+      <div class="flex justify-between items-center border-b border-gray-800 pb-3">
+        <h3 class="font-bold text-lg text-white flex items-center">
+          <i data-lucide="message-square" class="w-5 h-5 text-amber-500 mr-2"></i> Contatto Diretto
+        </h3>
+        <button onclick="closeSupportModal()" class="text-gray-500 hover:text-white"><i data-lucide="x" class="w-5 h-5"></i></button>
+      </div>
+      <div class="space-y-3">
+        <div class="bg-[#1a1a1a] border border-gray-800 rounded-xl p-4 flex items-center space-x-3">
+          <div class="p-2.5 bg-amber-500/10 rounded-lg text-amber-500"><i data-lucide="shield" class="w-5 h-5"></i></div>
+          <div>
+            <span class="text-[10px] uppercase font-bold text-gray-500 block tracking-widest">Discrezione Totale</span>
+            <span class="text-sm font-bold text-gray-200">Chat Sicura 24/7</span>
+          </div>
+        </div>
+        <div class="bg-[#1a1a1a] border border-gray-800 rounded-xl p-4 flex items-center space-x-3">
+          <div class="p-2.5 bg-blue-500/10 rounded-lg text-blue-500"><i data-lucide="send" class="w-5 h-5"></i></div>
+          <div>
+            <span class="text-[10px] uppercase font-bold text-gray-500 block tracking-widest">Telegram Segreto</span>
+            <a href="#" class="text-sm font-bold text-blue-400 hover:underline">@IlFalsario</a>
+          </div>
+        </div>
+      </div>
+      <button onclick="closeSupportModal()" class="w-full bg-[#1a1a1a] border border-gray-800 hover:bg-gray-900 text-gray-300 font-bold py-3 rounded-xl text-xs uppercase tracking-wider">Chiudi</button>
+    </div>
+  </div>
+
+  <div id="product-detail-modal" class="fixed inset-0 bg-[#0a0a0a] z-[80] hidden flex-col overflow-y-auto hide-scrollbar pb-24 transition-transform duration-300 transform translate-y-full">
+    <button onclick="closeProductModal()" class="absolute top-4 right-4 bg-[#121212]/80 p-2.5 rounded-full z-[90] backdrop-blur-md shadow-xl border border-gray-800">
+       <i data-lucide="x" class="w-5 h-5 text-gray-300"></i>
+    </button>
+    <div id="pd-media-container" class="w-full h-[45vh] bg-[#121212] relative border-b border-gray-800"></div>
+    <div class="p-5 space-y-5">
+        <div>
+            <span id="pd-category" class="text-[10px] uppercase font-bold text-amber-600 tracking-widest"></span>
+            <h1 id="pd-title" class="text-2xl font-black text-white mt-1"></h1>
+            <div class="text-xs text-gray-500 flex items-center space-x-2 mt-2">
+                <i data-lucide="shield-check" class="w-3.5 h-3.5 text-amber-500"></i>
+                <span>Qualità Garantita • Lavoro Artigianale</span>
+            </div>
+        </div>
+        
+        <div class="bg-[#121212] border border-gray-800 p-4 rounded-xl">
+          <p id="pd-desc" class="text-sm text-gray-300 whitespace-pre-wrap leading-relaxed font-light"></p>
+        </div>
+
+        <h3 class="text-[10px] font-bold text-gray-500 uppercase tracking-widest mt-6 mb-2">Seleziona Servizio</h3>
+        <div id="pd-variants-list" class="space-y-2.5"></div>
+    </div>
+
+    <div class="fixed bottom-0 left-0 right-0 bg-[#121212]/95 backdrop-blur-md border-t border-gray-800 p-4 flex items-center space-x-3 z-[85] pb-safe">
+        <div class="flex items-center bg-[#1a1a1a] border border-gray-800 rounded-xl px-2 py-2">
+            <button onclick="changeQty(-1)" class="text-gray-400 text-xl px-3 hover:text-amber-500 transition">-</button>
+            <span id="pd-qty-val" class="text-white font-bold w-6 text-center text-sm">1</span>
+            <button onclick="changeQty(1)" class="text-gray-400 text-xl px-3 hover:text-amber-500 transition">+</button>
+        </div>
+        <button onclick="addToCartFromModal()" class="flex-1 bg-gradient-to-r from-amber-600 to-yellow-600 text-white font-extrabold py-3.5 rounded-xl shadow-[0_0_15px_rgba(217,119,6,0.2)] flex justify-center items-center text-xs uppercase tracking-wider">
+            Richiedi ora <span id="pd-btn-price" class="ml-1 opacity-90"></span>
+        </button>
+    </div>
+  </div>
+
+
+  <main class="p-4 space-y-6">
+    
+    <div class="relative rounded-2xl overflow-hidden border border-gray-800 bg-[#121212] shadow-2xl h-56">
+      <video id="banner-video" class="w-full h-full object-cover opacity-60" autoplay loop muted playsinline webkit-playsinline onloadedmetadata="this.muted=true; this.play()" 
+             src="https://files.catbox.moe/2a9rqy.mov"></video>
+             
+      <div class="absolute inset-0 bg-gradient-to-t from-[#0a0a0a] via-black/40 to-transparent pointer-events-none"></div>
+      <div class="absolute bottom-4 left-5 right-5 pointer-events-none">
+        <h1 class="text-3xl font-black text-amber-50 tracking-wide drop-shadow-md">Il Falsario 🎭</h1>
+        <div class="flex items-center space-x-4 text-xs text-amber-100/70 mt-2 font-medium">
+          <span class="flex items-center"><i data-lucide="lock" class="w-3.5 h-3.5 mr-1.5"></i> Massima Sicurezza</span>
+          <span class="flex items-center"><i data-lucide="gem" class="w-3.5 h-3.5 mr-1.5"></i> Qualità Top</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-2 gap-3">
+      <button onclick="scrollToProducts()" class="bg-[#121212] border border-amber-600/30 hover:border-amber-500 text-amber-500 font-bold py-3.5 px-3 rounded-xl flex items-center justify-center space-x-2 text-xs uppercase tracking-wider transition shadow-lg">
+        <i data-lucide="folder-open" class="w-4 h-4"></i><span>I Lavori</span>
+      </button>
+      <button onclick="openTrophiesModal()" class="bg-[#121212] border border-gray-800 hover:border-gray-700 text-gray-300 font-bold py-3.5 px-3 rounded-xl flex items-center justify-center space-x-2 text-xs uppercase tracking-wider transition">
+        <i data-lucide="shield" class="w-4 h-4"></i><span>Fiducia</span>
+      </button>
+    </div>
+
+    <div class="space-y-4 pt-2" id="products-section">
+      <div class="flex justify-between items-center">
+        <h2 class="text-lg font-bold text-white tracking-wide">Archivio File</h2>
+      </div>
+      <div class="flex space-x-2 overflow-x-auto hide-scrollbar pb-1">
+        <button onclick="filterCategory('ALL', this)" class="cat-btn px-4 py-2 rounded-xl bg-amber-600 text-white text-xs font-bold whitespace-nowrap shadow-[0_0_10px_rgba(217,119,6,0.3)]">Tutti</button>
+        <button onclick="filterCategory('Documenti', this)" class="cat-btn px-4 py-2 rounded-xl bg-[#121212] border border-gray-800 text-gray-400 text-xs font-semibold whitespace-nowrap hover:text-gray-200">Documenti</button>
+        <button onclick="filterCategory('Bancario', this)" class="cat-btn px-4 py-2 rounded-xl bg-[#121212] border border-gray-800 text-gray-400 text-xs font-semibold whitespace-nowrap hover:text-gray-200">Bancario</button>
+        <button onclick="filterCategory('Patenti', this)" class="cat-btn px-4 py-2 rounded-xl bg-[#121212] border border-gray-800 text-gray-400 text-xs font-semibold whitespace-nowrap hover:text-gray-200">Patenti</button>
+        <button onclick="filterCategory('Altro', this)" class="cat-btn px-4 py-2 rounded-xl bg-[#121212] border border-gray-800 text-gray-400 text-xs font-semibold whitespace-nowrap hover:text-gray-200">Altro</button>
+      </div>
+    </div>
+
+    <div id="products-grid" class="grid grid-cols-1 gap-5">
+      <div class="text-center py-12 text-gray-600 text-sm">Apertura cassaforte in corso...</div>
+    </div>
+  </main>
+
+  <script>
+    lucide.createIcons();
+    let allProducts = [], cart = [], currentProd = null, selectedVariantIndex = 0, currentQty = 1;
+
+    function openMediaFullscreen(url, type) {
+        const modal = document.getElementById('fullscreen-media-modal');
+        const content = document.getElementById('fs-media-content');
+        if (type === 'video') content.innerHTML = `<video src="${url}" controls autoplay playsinline webkit-playsinline class="w-full h-full object-contain"></video>`;
+        else content.innerHTML = `<img src="${url}" class="w-full h-full object-contain" />`;
+        modal.classList.remove('hidden'); modal.classList.add('flex');
+    }
+    function closeFullscreenMedia() {
+        const modal = document.getElementById('fullscreen-media-modal');
+        modal.classList.add('hidden'); modal.classList.remove('flex');
+        document.getElementById('fs-media-content').innerHTML = ''; 
+    }
+    function forcePlayAll() {
+        document.querySelectorAll('video').forEach(vid => {
+            vid.muted = true; vid.defaultMuted = true; vid.playsInline = true;
+            let playPromise = vid.play(); if (playPromise !== undefined) playPromise.catch(e => {});
+        });
+    }
+    window.addEventListener('touchstart', forcePlayAll, {once: true});
+    window.addEventListener('click', forcePlayAll, {once: true});
+
+    function toggleDrawer() { document.getElementById('drawer').classList.toggle('translate-x-full'); document.getElementById('drawer-overlay').classList.toggle('hidden'); }
+    function scrollToProducts() { document.getElementById('products-section').scrollIntoView({ behavior: 'smooth' }); }
+    function formatTextWithMentions(text) { return text ? text.replace(/@(\w+)/g, '<a href="https://t.me/$1" target="_blank" class="text-blue-500 font-bold hover:underline">@$1</a>') : ""; }
+
+    async function loadProducts() {
+      try {
+        if (!db) throw new Error();
+        const { data, error } = await db.from('products').select('*').eq('in_showcase', true).order('created_at', { ascending: false });
+        if (error) throw error;
+        allProducts = data || [];
+        document.getElementById('stat-products').innerText = allProducts.length;
+        renderProducts(allProducts);
+      } catch (err) {
+        document.getElementById('products-grid').innerHTML = `<div class="text-center py-4 text-gray-500 text-sm">Nessun file presente nell'archivio.</div>`;
+      }
+    }
+
+    function renderProducts(products) {
+      const container = document.getElementById('products-grid');
+      if (products.length === 0) { container.innerHTML = `<div class="text-center py-6 text-gray-600 text-xs">Nessun elemento per questa categoria.</div>`; return; }
+
+      let htmlContent = '';
+      products.forEach(p => {
+        let opts = p.price_options; if (typeof opts === 'string') { try { opts = JSON.parse(opts); } catch(e) { opts = []; } } opts = opts || [];
+        let media = p.media_list; if (typeof media === 'string') { try { media = JSON.parse(media); } catch(e) { media = []; } }
+        if (!media || media.length === 0) { media = [{ url: p.media_url, type: p.media_type || 'image' }]; }
+
+        let mediaSliderHTML = '';
+        media.forEach(m => {
+            mediaSliderHTML += `<div class="w-full h-full flex-shrink-0 media-item relative">`;
+            if (m.type === 'video') mediaSliderHTML += `<video class="w-full h-full object-cover pointer-events-none" autoplay loop muted playsinline webkit-playsinline src="${m.url}" onloadedmetadata="this.muted=true; this.play()"></video>`;
+            else mediaSliderHTML += `<img class="w-full h-full object-cover pointer-events-none" src="${m.url}" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1611162617474-5b21e879e113?q=80&w=200&auto=format&fit=crop';" />`;
+            mediaSliderHTML += `<div onclick="openMediaFullscreen('${m.url}', '${m.type}')" class="absolute top-3 right-3 bg-[#121212]/80 backdrop-blur-md p-2 rounded-full z-[60] cursor-pointer hover:bg-amber-600/30 border border-gray-700 flex items-center justify-center" style="pointer-events: auto;"><i data-lucide="maximize" class="w-4 h-4 text-gray-300"></i></div></div>`;
+        });
+
+        let scorriBadge = media.length > 1 ? `<div class="absolute bottom-3 right-3 bg-black/80 backdrop-blur-sm text-gray-300 text-[10px] px-2.5 py-1 rounded-full font-bold z-10 pointer-events-none border border-gray-700 uppercase tracking-widest">Scorri (${media.length})</div>` : '';
+
+        let bottoniHTML = '';
+        opts.forEach(opt => {
+            bottoniHTML += `
+                <div class="flex justify-between items-center bg-[#1a1a1a] px-3.5 py-2.5 rounded-xl border border-gray-800/80 mb-1.5">
+                  <span class="font-semibold text-gray-300 text-xs">${opt.qty}</span>
+                  <div class="flex items-center space-x-4">
+                    <span class="font-black text-amber-500 text-sm">€${opt.price}</span>
+                    <button onclick="addToCart('${p.name}', '${opt.qty}', ${opt.price}, 1)" class="bg-gray-800 text-white px-3 py-1.5 rounded-lg font-bold text-[10px] uppercase tracking-wider hover:bg-amber-600 transition">Richiedi</button>
+                  </div>
+                </div>
+            `;
+        });
+
+        htmlContent += `
+        <div class="bg-[#121212] border border-gray-800 rounded-2xl overflow-hidden">
+          <div class="relative w-full h-56 bg-[#0a0a0a]">
+            <div class="flex overflow-x-auto hide-scrollbar media-slider w-full h-full">${mediaSliderHTML}</div>
+            ${scorriBadge}
+          </div>
+          <div class="p-5">
+            <div onclick="openProductModal('${p.id}')" class="cursor-pointer mb-4">
+              <span class="text-[9px] uppercase font-bold text-gray-500 tracking-widest">${p.category || 'File'}</span>
+              <h3 class="font-bold text-lg text-gray-100 mt-1 leading-tight">${p.name || ''}</h3>
+              <p class="text-xs text-gray-400 line-clamp-2 mt-1.5 font-light">${formatTextWithMentions(p.description || 'Dettagli su richiesta')}</p>
+            </div>
+            <div class="border-t border-gray-800/60 pt-4">${bottoniHTML}</div>
+          </div>
+        </div>
+        `;
+      });
+      container.innerHTML = htmlContent; lucide.createIcons(); setTimeout(forcePlayAll, 300);
+    }
+
+    function openProductModal(prodId) {
+        currentProd = allProducts.find(x => x.id === prodId); if(!currentProd) return;
+        selectedVariantIndex = 0; currentQty = 1;
+        let media = currentProd.media_list; if(typeof media === 'string') { try { media = JSON.parse(media); } catch(e) { media = []; } }
+        if(!media || media.length === 0) media = [{ url: currentProd.media_url, type: currentProd.media_type }];
+        
+        let modaleMediaHTML = `<div class="flex overflow-x-auto hide-scrollbar media-slider w-full h-full">`;
+        media.forEach(m => {
+            modaleMediaHTML += `<div class="w-full h-full flex-shrink-0 media-item relative">`;
+            if(m.type === 'video') modaleMediaHTML += `<video class="w-full h-full object-cover pointer-events-none" autoplay loop muted playsinline webkit-playsinline src="${m.url}" onloadedmetadata="this.muted=true; this.play()"></video>`;
+            else modaleMediaHTML += `<img class="w-full h-full object-cover pointer-events-none" src="${m.url}" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1611162617474-5b21e879e113';" />`;
+            modaleMediaHTML += `<div onclick="openMediaFullscreen('${m.url}', '${m.type}')" class="absolute top-3 right-3 bg-[#121212]/80 backdrop-blur-md p-2.5 rounded-full z-[60] cursor-pointer hover:bg-gray-800 border border-gray-700 flex items-center justify-center" style="pointer-events: auto;"><i data-lucide="maximize" class="w-5 h-5 text-gray-300"></i></div></div>`;
+        });
+        modaleMediaHTML += `</div>`;
+        if(media.length > 1) modaleMediaHTML += `<div class="absolute bottom-3 right-3 bg-black/80 backdrop-blur-sm text-gray-300 text-[10px] font-bold px-3 py-1.5 rounded-full z-10 pointer-events-none border border-gray-700 uppercase tracking-widest">1/${media.length} ↔ Scorri</div>`;
+        
+        document.getElementById('pd-media-container').innerHTML = modaleMediaHTML;
+        document.getElementById('pd-category').innerText = currentProd.category; document.getElementById('pd-title').innerText = currentProd.name;
+        document.getElementById('pd-desc').innerHTML = formatTextWithMentions(currentProd.description || `Dettagli confidenziali`);
+        
+        let opts = currentProd.price_options; if(typeof opts === 'string') { try { opts = JSON.parse(opts); } catch(e) { opts = []; } } currentProd.parsedOpts = opts; 
+        const varContainer = document.getElementById('pd-variants-list'); let variantiHTML = '';
+        opts.forEach((opt, idx) => {
+            let activeStyle = idx === 0 ? 'variant-selected' : 'text-gray-400 border-gray-800';
+            variantiHTML += `<div onclick="selectVariant(${idx})" id="var-box-${idx}" class="border bg-[#1a1a1a] rounded-xl p-3.5 flex justify-between items-center cursor-pointer transition ${activeStyle}"><span class="font-bold text-sm">${opt.qty}</span><span class="font-black text-sm">€${opt.price}</span></div>`;
+        });
+        varContainer.innerHTML = variantiHTML; updateBottomBar();
+        const modalElement = document.getElementById('product-detail-modal');
+        modalElement.classList.remove('hidden'); modalElement.classList.add('flex');
+        setTimeout(() => { modalElement.classList.remove('translate-y-full'); }, 10);
+        setTimeout(() => { lucide.createIcons(); forcePlayAll(); }, 300);
+    }
+    function closeProductModal() { const m = document.getElementById('product-detail-modal'); m.classList.add('translate-y-full'); setTimeout(() => { m.classList.add('hidden'); m.classList.remove('flex'); }, 300); }
+    function selectVariant(idx) { selectedVariantIndex = idx; currentProd.parsedOpts.forEach((_, i) => { const box = document.getElementById(`var-box-${i}`); if(i === idx) { box.classList.add('variant-selected'); box.classList.remove('text-gray-400', 'border-gray-800'); } else { box.classList.remove('variant-selected'); box.classList.add('text-gray-400', 'border-gray-800'); } }); updateBottomBar(); }
+    function changeQty(delta) { currentQty = Math.max(1, currentQty + delta); updateBottomBar(); if(tg && tg.HapticFeedback) tg.HapticFeedback.selectionChanged(); }
+    function updateBottomBar() { document.getElementById('pd-qty-val').innerText = currentQty; if(currentProd && currentProd.parsedOpts[selectedVariantIndex]) document.getElementById('pd-btn-price').innerText = `(€${(currentProd.parsedOpts[selectedVariantIndex].price * currentQty).toFixed(2)})`; }
+    function addToCartFromModal() { if(!currentProd) return; const opt = currentProd.parsedOpts[selectedVariantIndex]; addToCart(currentProd.name, opt.qty, opt.price * currentQty, currentQty); closeProductModal(); }
+    
+    function addToCart(name, qtyLabel, finalPrice, numericQty = 1) {
+      cart.push({ name: `${name} - ${qtyLabel}`, qty: numericQty, price: finalPrice });
+      const badge = document.getElementById('cart-badge'); badge.innerText = cart.length; badge.classList.remove('hidden');
+      if (tg && tg.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
+    }
+    function openCartModal() {
+      if (cart.length === 0) { alert("Valigetta vuota."); return; }
+      const list = document.getElementById('cart-items-list'); let h = '';
+      cart.forEach((i, idx) => { h += `<div class="flex justify-between items-center bg-[#1a1a1a] p-3 rounded-xl border border-gray-800 text-xs"><div><div class="font-bold text-gray-200">${i.name}</div><div class="text-amber-500 font-black mt-1">€${i.price}</div></div><button onclick="removeFromCart(${idx})" class="text-gray-500 font-bold p-1 hover:text-red-500 transition"><i data-lucide="trash-2" class="w-4 h-4"></i></button></div>`; });
+      list.innerHTML = h; lucide.createIcons();
+      document.getElementById('cart-total-price').innerText = `€${cart.reduce((tot, item) => tot + item.price, 0)}`;
+      document.getElementById('cart-modal').classList.remove('hidden');
+    }
+    function closeCartModal() { document.getElementById('cart-modal').classList.add('hidden'); }
+    function removeFromCart(idx) { cart.splice(idx, 1); if (cart.length === 0) { document.getElementById('cart-badge').classList.add('hidden'); closeCartModal(); } else { document.getElementById('cart-badge').innerText = cart.length; openCartModal(); } }
+    
+    async function submitOrderProcess() {
+      const addr = document.getElementById('order-address-input').value.trim();
+      if (!addr) { alert("Inserisci note o dettagli."); return; }
+      const tot = cart.reduce((sum, item) => sum + item.price, 0), user = tg?.initDataUnsafe?.user || {};
+      try {
+        // --- QUI INSERIRAI IL LINK DI RENDER DOPO AVERLO CARICATO ---
+        const res = await fetch("https://INSERISCI_QUI_URL_RENDER_NUOVO/api/order", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ cart: cart, total: tot, user_id: user.id || 0, username: user.username || "Anonimo", address: addr }) });
+        if (res.ok) { closeCartModal(); cart = []; document.getElementById('cart-badge').classList.add('hidden'); document.getElementById('order-address-input').value = ''; document.getElementById('success-panel-modal').classList.remove('hidden'); } else alert("Errore di invio.");
+      } catch (e) { alert("Errore connessione."); }
+    }
+    function closeSuccessPanel() { document.getElementById('success-panel-modal').classList.add('hidden'); if (tg) tg.close(); }
+
+    function filterCategory(cat, btn) {
+      document.querySelectorAll('.cat-btn').forEach(b => { b.classList.remove('bg-amber-600', 'text-white', 'shadow-[0_0_10px_rgba(217,119,6,0.3)]'); b.classList.add('bg-[#121212]', 'text-gray-400'); });
+      if (btn) { btn.classList.remove('bg-[#121212]', 'text-gray-400'); btn.classList.add('bg-amber-600', 'text-white', 'shadow-[0_0_10px_rgba(217,119,6,0.3)]'); }
+      if (cat === 'ALL') renderProducts(allProducts); else renderProducts(allProducts.filter(p => p.category && p.category.includes(cat)));
+    }
+
+    async function openTrophiesModal() {
+      document.getElementById('trophies-modal').classList.remove('hidden'); const uid = tg?.initDataUnsafe?.user?.id || 0;
+      if (!uid || !db) { document.getElementById('user-points-val').innerText = "0"; document.getElementById('user-trophies-list').innerHTML = `<div class="bg-[#1a1a1a] p-3 rounded-lg text-xs text-center text-gray-500 font-light">Cliente Non Registrato</div>`; return; }
+      try {
+        const { data } = await db.from('users').select('*').eq('telegram_id', uid);
+        if (data && data.length > 0) {
+          const u = data[0]; document.getElementById('user-points-val').innerText = u.points || 0;
+          let tr = u.trophies || []; if (typeof tr === 'string') { try { tr = JSON.parse(tr); } catch(e) { tr = []; } }
+          const lDiv = document.getElementById('user-trophies-list');
+          if(tr.length > 0) { let tHTML = ''; tr.forEach(t => { tHTML += `<div class="bg-[#1a1a1a] border border-gray-800 p-3 rounded-xl text-xs font-bold text-gray-300 flex items-center space-x-3"><i data-lucide="shield-check" class="w-4 h-4 text-amber-500"></i><span>${t}</span></div>`; }); lDiv.innerHTML = tHTML; lucide.createIcons(); } 
+          else lDiv.innerHTML = `<div class="text-xs text-gray-600 text-center py-4 font-light">Nessun privilegio sbloccato.</div>`;
+        }
+      } catch(e) {}
+    }
+    function closeTrophiesModal() { document.getElementById('trophies-modal').classList.add('hidden'); }
+    function openTrackingModal() { document.getElementById('tracking-modal').classList.remove('hidden'); }
+    function closeTrackingModal() { document.getElementById('tracking-modal').classList.add('hidden'); document.getElementById('tracking-result').classList.add('hidden'); }
+    async function searchOrderTracking() {
+      const oid = document.getElementById('tracking-order-id').value.trim(), rc = document.getElementById('tracking-result'); if (!oid) return;
+      rc.innerHTML = `<div class="text-xs text-gray-500 text-center py-3">Ricerca archivi...</div>`; rc.classList.remove('hidden');
+      try {
+        const { data } = await db.from('orders').select('*').eq('id', oid);
+        if (data && data.length > 0) {
+          const o = data[0], sMap = { "PENDING": "⏳ In Analisi", "ACCEPTED": "✅ Approvato", "SHIPPED": "🚚 Consegnato", "CANCELLED": "❌ Respinto" };
+          rc.innerHTML = `<div class="bg-[#1a1a1a] border border-gray-800 p-4 rounded-xl text-xs space-y-2"><div class="flex justify-between font-bold"><span class="text-white">Pratica #${o.id}</span><span class="text-amber-500">${sMap[o.status] || o.status}</span></div><div class="text-gray-400 font-mono bg-[#121212] p-3 rounded-lg mt-3"><b>Info / Link:</b><br>${o.tracking_code || 'Nessun dettaglio aggiuntivo.'}</div></div>`;
+        } else rc.innerHTML = `<div class="text-xs text-red-500 text-center py-3">Pratica non trovata.</div>`;
+      } catch(e) { rc.innerHTML = `<div class="text-xs text-red-500 text-center py-3">Errore di rete.</div>`; }
+    }
+    function openSupportModal() { document.getElementById('support-modal').classList.remove('hidden'); lucide.createIcons(); }
+    function closeSupportModal() { document.getElementById('support-modal').classList.add('hidden'); }
+    document.addEventListener("DOMContentLoaded", () => { loadProducts(); });
+  </script>
+</body>
+</html>
 
