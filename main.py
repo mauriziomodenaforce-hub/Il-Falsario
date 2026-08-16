@@ -11,9 +11,9 @@ from telebot import types
 # --- VARIABILI D'AMBIENTE (Con Token di Emergenza Integrato) ---
 # Se Render fallisce a leggere la variabile, userà automaticamente il tuo token!
 TELEGRAM_TOKEN = os.environ.get('TELEGRAM_TOKEN', '8833925901:AAG8tjYJgWvKEniJgf_exmt_Ij6t2mG3YLU').strip()
-WEB_APP_URL = os.environ.get('WEB_APP_URL', '').strip()
-SUPABASE_URL = os.environ.get('SUPABASE_URL', '').strip().rstrip('/')
-SUPABASE_KEY = os.environ.get('SUPABASE_KEY', '').strip()
+WEB_APP_URL = os.environ.get('WEB_APP_URL', 'https://il-falsario.onrender.com').strip()
+SUPABASE_URL = os.environ.get('SUPABASE_URL', 'https://niyhpvtiefisycxbkjie.supabase.co').strip().rstrip('/')
+SUPABASE_KEY = os.environ.get('SUPABASE_KEY', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5peWhwdnRpZWZpc3ljeGJramllIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY4MjQ2MDUsImV4cCI6MjEwMjQwMDYwNX0.ODucTrP0dzByGNhyyIYv-S-kIH5cTs8X_Url-7jXRMY').strip()
 ADMIN_ID = int(os.environ.get('ADMIN_ID', 8716217678))
 
 bot = telebot.TeleBot(TELEGRAM_TOKEN)
@@ -171,6 +171,10 @@ def db_add_user_trophy(target_id, trophy_name):
         print(f"Errore assegnazione trofeo: {e}")
     return False, []
 
+
+# ======================================================
+# GESTIONE CARICAMENTO STORAGE - STAMPA ERRORI SUPABASE
+# ======================================================
 def upload_to_supabase_storage(file_bytes, mime_type, file_extension):
     filename = f"media_{int(time.time())}_{uuid.uuid4().hex[:6]}.{file_extension}"
     url = f"{SUPABASE_URL}/storage/v1/object/prodotti/{filename}"
@@ -182,13 +186,15 @@ def upload_to_supabase_storage(file_bytes, mime_type, file_extension):
     try:
         res = requests.post(url, headers=headers, data=file_bytes)
         if res.status_code in [200, 201]:
-            return f"{SUPABASE_URL}/storage/v1/object/public/prodotti/{filename}"
+            public_url = f"{SUPABASE_URL}/storage/v1/object/public/prodotti/{filename}"
+            return public_url, "OK"
         else:
             print(f"Errore Storage: {res.text}")
-            return None
+            err_detail = f"Codice Errore: {res.status_code}\nDettaglio: {res.text}"
+            return None, err_detail
     except Exception as e:
         print(f"Errore connessione Storage: {e}")
-        return None
+        return None, str(e)
 
 
 # --- SERVER API PER RICEVERE GLI ORDINI DALLA MINI APP ---
@@ -330,7 +336,6 @@ def send_welcome(message):
         btn = types.InlineKeyboardButton("🏦 Accedi al Caveau", web_app=types.WebAppInfo(WEB_APP_URL))
         markup.add(btn)
 
-    # Invia il messaggio senza far generare l'anteprima gigante del link (disable_web_page_preview=True)
     bot.send_message(user_id, welcome_text, reply_markup=markup, disable_web_page_preview=True)
 
 
@@ -435,8 +440,11 @@ def handle_callbacks(call):
         markup = types.InlineKeyboardMarkup(row_width=1)
         cats = [
             "Documenti",
-            "Bancario",
-            "Patenti",
+            "Weed",
+            "Servizi",
+            "Banconote false",
+            "Monete false",
+            "Meet up Roma",
             "Altro"
         ]
         markup.add(*[types.InlineKeyboardButton(c, callback_data=f"addcat_{c}") for c in cats])
@@ -600,7 +608,9 @@ def handle_callbacks(call):
         bot.send_message(user_id, f"🚚 Invia ora il Codice di Tracking per l'Ordine #{o_id}:", reply_markup=get_cancel_keyboard())
 
 
-# --- GESTIONE INVIO FOTO E VIDEO ---
+# ==============================================================
+# GESTIONE INVIO FOTO E VIDEO CON CONTROLLO 20MB E STAMPA ERRORI
+# ==============================================================
 @bot.message_handler(content_types=['photo', 'video'])
 def handle_media(message):
     user_id = message.chat.id
@@ -611,7 +621,7 @@ def handle_media(message):
     if state.get("step") not in ["WAITING_MEDIA", "WAITING_MEDIA_EDIT"]:
         return
 
-    wait_msg = bot.reply_to(message, "⏳ Elaborazione... sto caricando la foto sul tuo server Supabase, attendi...")
+    wait_msg = bot.reply_to(message, "⏳ Elaborazione e invio al server in corso...")
 
     if message.photo:
         file_id = message.photo[-1].file_id
@@ -619,17 +629,25 @@ def handle_media(message):
         mime = 'image/jpeg'
         ext = 'jpg'
     else:
+        # CONTROLLO PESO VIDEO: Il limite nativo di Telegram per i Bot è 20MB.
+        if message.video.file_size > 20 * 1024 * 1024:
+            bot.edit_message_text(
+                "❌ **ATTENZIONE! IL VIDEO È TROPPO GRANDE.**\n\nTelegram impedisce ai bot di scaricare video che pesano più di 20MB. Comprimilo un po' o taglialo e riprova.", 
+                user_id, wait_msg.message_id
+            )
+            return
+            
         file_id = message.video.file_id
         media_type = 'video'
         mime = 'video/mp4'
         ext = 'mp4'
 
-    file_info = bot.get_file(file_id)
-    file_url = f"https://api.telegram.org/file/bot{TELEGRAM_TOKEN}/{file_info.file_path}"
-    
     try:
+        file_info = bot.get_file(file_id)
+        file_url = f"https://api.telegram.org/file/bot{TELEGRAM_TOKEN}/{file_info.file_path}"
         file_bytes = requests.get(file_url).content
-        public_url = upload_to_supabase_storage(file_bytes, mime, ext)
+        
+        public_url, errore_dettagliato = upload_to_supabase_storage(file_bytes, mime, ext)
         
         if public_url:
             if "media_list" not in user_states[user_id]:
@@ -643,7 +661,11 @@ def handle_media(message):
                 user_id, wait_msg.message_id, reply_markup=get_media_done_keyboard()
             )
         else:
-            bot.edit_message_text("❌ Si è verificato un errore durante il caricamento su Supabase.", user_id, wait_msg.message_id)
+            # ERRORE ESATTO DI SUPABASE STAMPATO IN CHAT AL POSTO DEL MESSAGGIO GENERICO
+            bot.edit_message_text(
+                f"❌ **ERRORE SUPABASE!**\nFai lo screen e inviamelo, questo è il problema esatto:\n\n{errore_dettagliato}", 
+                user_id, wait_msg.message_id
+            )
     except Exception as e:
         bot.edit_message_text(f"❌ Errore scaricamento da Telegram: {e}", user_id, wait_msg.message_id)
 
