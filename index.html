@@ -182,7 +182,6 @@
     </div>
   </div>
 
-  <!-- SOSTITUITO IL BLU CON IL GRIGIO SCURO -->
   <div id="tracking-modal" class="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4 hidden backdrop-blur-md">
     <div class="bg-[#121212] border border-gray-800 rounded-2xl w-full max-w-sm p-5 space-y-4 shadow-2xl">
       <div class="flex justify-between items-center border-b border-gray-800 pb-3">
@@ -203,7 +202,6 @@
     </div>
   </div>
 
-  <!-- SOSTITUITO IL BLU CON IL GRIGIO SCURO -->
   <div id="support-modal" class="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4 hidden backdrop-blur-md">
     <div class="bg-[#121212] border border-gray-800 rounded-2xl w-full max-w-sm p-5 space-y-4 shadow-2xl">
       <div class="flex justify-between items-center border-b border-gray-800 pb-3">
@@ -270,40 +268,44 @@
 
   <main class="p-4 space-y-5">
     
-    <!-- 1. VIDEO SEPARATO, PIU PICCOLO E CENTRATO -->
-    <div class="rounded-2xl overflow-hidden border border-gray-800 bg-black shadow-xl h-48 flex justify-center items-center">
+    <!-- 1. VIDEO SEPARATO IN ALTO (COMPATTO E CENTRATO) -->
+    <div class="rounded-2xl overflow-hidden border border-gray-800 bg-black shadow-xl h-48 flex justify-center items-center relative">
       <video id="banner-video" class="w-full h-full object-contain" autoplay loop muted playsinline webkit-playsinline onloadedmetadata="this.muted=true; this.play()" src="https://files.catbox.moe/cvaalo.mov"></video>
     </div>
 
-    <!-- 2. SECONDO RIQUADRO: MESSAGGIO E FEED STILE BOSTON -->
-    <div class="bg-[#121212] border border-gray-800 rounded-2xl p-5 shadow-2xl mt-4">
-        <h1 class="text-2xl font-black text-amber-50 tracking-wide mb-2">Il Falsario 🤗</h1>
-        <p class="text-[13px] text-gray-300 leading-relaxed mb-4">Massima serietà, discrezione totale e qualità impeccabile. Sei nel posto giusto per le tue necessità.</p>
+    <!-- 2. RIQUADRO BENVENUTO STILE BOSTON (COME DA SCREENSHOT REALE) -->
+    <div class="bg-[#121212] border border-gray-800 rounded-2xl p-4 shadow-2xl mt-4">
+        <div class="flex items-center gap-2 mb-2">
+            <span class="text-[20px]">🤗</span>
+            <h2 class="text-[17px] font-bold text-white leading-tight">
+                Benvenuto nello shop de Il Falsario!
+            </h2>
+        </div>
         
-        <div class="flex items-center text-[10px] font-bold flex-wrap gap-2">
-          <span class="flex items-center bg-[#1a1a1a] px-2.5 py-1.5 rounded border border-gray-700 shadow-sm text-white">
-            <i data-lucide="star" class="w-3 h-3 mr-1 text-amber-400"></i> +300 Feed
-          </span>
-          <span class="flex items-center bg-[#1a1a1a] px-2.5 py-1.5 rounded border border-gray-700 shadow-sm text-gray-300">
-            <i data-lucide="lock" class="w-3 h-3 mr-1 text-gray-400"></i> Sicurezza
-          </span>
-          <span class="flex items-center bg-[#1a1a1a] px-2.5 py-1.5 rounded border border-gray-700 shadow-sm text-gray-300">
-            <i data-lucide="gem" class="w-3 h-3 mr-1 text-gray-400"></i> Qualità Top
-          </span>
+        <!-- Badge Feed Aggiunto Qui -->
+        <div class="flex items-center mb-3">
+            <span class="text-amber-500 text-[11px] uppercase tracking-widest font-bold flex items-center bg-amber-500/10 px-2 py-1 rounded-md border border-amber-500/20">
+                <i data-lucide="star" class="w-3 h-3 mr-1 fill-amber-500"></i> +300 Feed Positivi
+            </span>
+        </div>
+
+        <p class="text-[13px] text-gray-400 leading-relaxed mb-5">
+            📦 Tutti i prodotti in pronta consegna con spedizioni riservate o ritrovo sul posto.
+        </p>
+
+        <!-- Bottoni Verticali Esatti -->
+        <div class="flex flex-col items-start space-y-3">
+            <button onclick="filterCategory('ALL'); scrollToProducts();" class="bg-[#1a1a1a] hover:bg-gray-800 rounded-xl px-4 py-3 flex items-center text-[#34d399] text-sm font-semibold transition shadow-sm border border-gray-800/50">
+                <span class="mr-2.5 text-base">🚢</span> Spedizioni (Ship)
+            </button>
+            <button onclick="filterCategory('Meet up Roma'); scrollToProducts();" class="bg-[#1a1a1a] hover:bg-gray-800 rounded-xl px-4 py-3 flex items-center text-[#fbbf24] text-sm font-semibold transition shadow-sm border border-gray-800/50">
+                <span class="mr-2.5 text-base">🤝</span> Consegne a Mano (Meet Up)
+            </button>
         </div>
     </div>
 
-    <div class="grid grid-cols-2 gap-3 mt-1">
-      <button onclick="scrollToProducts()" class="bg-[#121212] border border-amber-600/30 hover:border-amber-500 text-amber-500 font-bold py-3.5 px-3 rounded-xl flex items-center justify-center space-x-2 text-xs uppercase tracking-wider transition shadow-lg">
-        <i data-lucide="folder-open" class="w-4 h-4"></i><span>I Lavori</span>
-      </button>
-      <button onclick="openTrophiesModal()" class="bg-[#121212] border border-gray-800 hover:border-gray-700 text-gray-300 font-bold py-3.5 px-3 rounded-xl flex items-center justify-center space-x-2 text-xs uppercase tracking-wider transition">
-        <i data-lucide="shield" class="w-4 h-4"></i><span>Fiducia</span>
-      </button>
-    </div>
-
-    <!-- CATEGORIE NUOVE AGGIORNATE -->
-    <div class="space-y-4 pt-2" id="products-section">
+    <!-- CATEGORIE AGGIORNATE -->
+    <div class="space-y-4 pt-4" id="products-section">
       <div class="flex justify-between items-center">
         <h2 class="text-lg font-bold text-white tracking-wide">Archivio File</h2>
       </div>
@@ -360,7 +362,6 @@
         const { data, error } = await db.from('products').select('*').eq('in_showcase', true).order('created_at', { ascending: false });
         if (error) throw error;
         allProducts = data || [];
-        document.getElementById('stat-products').innerText = allProducts.length;
         renderProducts(allProducts);
       } catch (err) {
         document.getElementById('products-grid').innerHTML = `<div class="text-center py-4 text-gray-500 text-sm">Nessun file presente nell'archivio.</div>`;
@@ -486,8 +487,22 @@
     function closeSuccessPanel() { document.getElementById('success-panel-modal').classList.add('hidden'); if (tg) tg.close(); }
 
     function filterCategory(cat, btn) {
-      document.querySelectorAll('.cat-btn').forEach(b => { b.classList.remove('bg-amber-600', 'text-white', 'shadow-[0_0_10px_rgba(217,119,6,0.3)]'); b.classList.add('bg-[#121212]', 'text-gray-400'); });
-      if (btn) { btn.classList.remove('bg-[#121212]', 'text-gray-400'); btn.classList.add('bg-amber-600', 'text-white', 'shadow-[0_0_10px_rgba(217,119,6,0.3)]'); }
+      document.querySelectorAll('.cat-btn').forEach(b => { 
+        b.classList.remove('bg-amber-600', 'text-white', 'shadow-[0_0_10px_rgba(217,119,6,0.3)]'); 
+        b.classList.add('bg-[#121212]', 'text-gray-400'); 
+      });
+      
+      if (btn) { 
+        btn.classList.remove('bg-[#121212]', 'text-gray-400'); 
+        btn.classList.add('bg-amber-600', 'text-white', 'shadow-[0_0_10px_rgba(217,119,6,0.3)]'); 
+      } else {
+        const targetBtn = Array.from(document.querySelectorAll('.cat-btn')).find(b => b.innerText.trim() === cat);
+        if(targetBtn) {
+           targetBtn.classList.remove('bg-[#121212]', 'text-gray-400'); 
+           targetBtn.classList.add('bg-amber-600', 'text-white', 'shadow-[0_0_10px_rgba(217,119,6,0.3)]'); 
+        }
+      }
+      
       if (cat === 'ALL') renderProducts(allProducts); else renderProducts(allProducts.filter(p => p.category && p.category.includes(cat)));
     }
 
