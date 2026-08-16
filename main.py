@@ -809,3 +809,4 @@ while True:
     except Exception as e:
         print(f"Errore di connessione a Telegram: {e}. Riavvio in corso tra 5 secondi...")
         time.sleep(5)
+
