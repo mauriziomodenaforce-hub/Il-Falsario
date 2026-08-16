@@ -321,9 +321,9 @@ def send_welcome(message):
     username = message.from_user.username
     db_register_user(user_id, username)
 
-    # Messaggio di benvenuto con spaziatura esatta come richiesto
+    # Messaggio di benvenuto aggiornato
     welcome_text = (
-        "Benvenuti dal Falsario 🤗\n\n"
+        "Benvenuto nello shop ufficiale del Falsario 🤗🎭\n\n"
         "💬 Contatto Telegram Ufficiale: @il_falsario_ufficiale_x2\n\n"
         "📲 Contatto Signal Ufficiale: https://signal.me/#eu/m7lTtwu9GCr8RJQ7mhQ2OkwVfT_MZvjG6g-PFCnS8dG9NBl3s09GYKPtiyRQz-ih\n\n"
         "📲 Contatto Session Ufficiale: 05495e45a9c1ced74358dcedaad80c99956e1405fbbccf4f8e85f0ca873946a515\n\n\n"
