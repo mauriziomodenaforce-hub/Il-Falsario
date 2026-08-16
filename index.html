@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Il Falsario 🎭</title>
+  <title>Il Falsario 🤗</title>
   
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -61,7 +61,7 @@
   <header class="sticky top-0 z-30 bg-[#121212]/95 backdrop-blur-md px-4 py-3 flex justify-between items-center border-b border-gray-800">
     <div class="flex items-center space-x-3">
       <div class="w-9 h-9 rounded-full bg-[#1e1e1e] border border-amber-600/50 shadow-[0_0_10px_rgba(217,119,6,0.4)] flex items-center justify-center text-xl pb-0.5">
-        🎭
+        🤗
       </div>
       <span class="font-bold text-lg tracking-wide text-amber-50">Il Falsario</span>
     </div>
@@ -180,15 +180,15 @@
     <div class="bg-[#121212] border border-gray-800 rounded-2xl w-full max-w-sm p-5 space-y-4 shadow-2xl">
       <div class="flex justify-between items-center border-b border-gray-800 pb-3">
         <h3 class="font-bold text-lg text-white flex items-center">
-          <i data-lucide="map" class="w-5 h-5 text-blue-500 mr-2"></i> Stato Lavorazioni
+          <i data-lucide="map" class="w-5 h-5 text-gray-400 mr-2"></i> Stato Lavorazioni
         </h3>
         <button onclick="closeTrackingModal()" class="text-gray-500 hover:text-white"><i data-lucide="x" class="w-5 h-5"></i></button>
       </div>
       <div class="space-y-3">
         <label class="text-[10px] font-bold text-gray-500 uppercase tracking-widest block">Codice Pratica</label>
         <div class="flex space-x-2">
-          <input type="number" id="tracking-order-id" placeholder="Es. 12" class="w-full bg-[#1a1a1a] border border-gray-800 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-blue-500">
-          <button onclick="searchOrderTracking()" class="bg-blue-600 hover:bg-blue-500 text-white font-bold px-4 py-2 rounded-xl text-xs uppercase">Cerca</button>
+          <input type="number" id="tracking-order-id" placeholder="Es. 12" class="w-full bg-[#1a1a1a] border border-gray-800 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-gray-500">
+          <button onclick="searchOrderTracking()" class="bg-gray-700 hover:bg-gray-600 text-white font-bold px-4 py-2 rounded-xl text-xs uppercase">Cerca</button>
         </div>
       </div>
       <div id="tracking-result" class="hidden border-t border-gray-800 pt-3 space-y-2"></div>
@@ -213,10 +213,10 @@
           </div>
         </div>
         <div class="bg-[#1a1a1a] border border-gray-800 rounded-xl p-4 flex items-center space-x-3">
-          <div class="p-2.5 bg-blue-500/10 rounded-lg text-blue-500"><i data-lucide="send" class="w-5 h-5"></i></div>
+          <div class="p-2.5 bg-gray-800 rounded-lg text-gray-400"><i data-lucide="send" class="w-5 h-5"></i></div>
           <div>
             <span class="text-[10px] uppercase font-bold text-gray-500 block tracking-widest">Telegram Segreto</span>
-            <a href="#" class="text-sm font-bold text-blue-400 hover:underline">@IlFalsario</a>
+            <a href="#" class="text-sm font-bold text-gray-300 hover:underline">@IlFalsario</a>
           </div>
         </div>
       </div>
@@ -262,16 +262,26 @@
 
   <main class="p-4 space-y-6">
     
-    <div class="relative rounded-2xl overflow-hidden border border-gray-800 bg-[#121212] shadow-2xl h-56">
-      <video id="banner-video" class="w-full h-full object-cover opacity-60" autoplay loop muted playsinline webkit-playsinline onloadedmetadata="this.muted=true; this.play()" 
-             src="https://files.catbox.moe/cvaalo.mov"></video>
+    <!-- BANNER AGGIORNATO: ALTO 72, SFUMATURA PIU' SCURA E TESTO OTTIMIZZATO -->
+    <div class="relative rounded-2xl overflow-hidden border border-gray-800 bg-[#121212] shadow-2xl h-72">
+      <video id="banner-video" class="w-full h-full object-cover object-top opacity-70" autoplay loop muted playsinline webkit-playsinline onloadedmetadata="this.muted=true; this.play()" src="https://files.catbox.moe/cvaalo.mov"></video>
              
-      <div class="absolute inset-0 bg-gradient-to-t from-[#0a0a0a] via-black/40 to-transparent pointer-events-none"></div>
-      <div class="absolute bottom-4 left-5 right-5 pointer-events-none">
-        <h1 class="text-3xl font-black text-amber-50 tracking-wide drop-shadow-md">Il Falsario 🎭</h1>
-        <div class="flex items-center space-x-4 text-xs text-amber-100/70 mt-2 font-medium">
-          <span class="flex items-center"><i data-lucide="lock" class="w-3.5 h-3.5 mr-1.5"></i> Massima Sicurezza</span>
-          <span class="flex items-center"><i data-lucide="gem" class="w-3.5 h-3.5 mr-1.5"></i> Qualità Top</span>
+      <div class="absolute inset-0 bg-gradient-to-t from-[#0a0a0a] via-[#0a0a0a]/80 to-transparent pointer-events-none"></div>
+      
+      <div class="absolute bottom-4 left-4 right-4 pointer-events-none flex flex-col justify-end">
+        <h1 class="text-3xl font-black text-amber-50 tracking-wide drop-shadow-md mb-1">Il Falsario 🤗</h1>
+        <p class="text-[11px] text-gray-300 mb-3 leading-tight line-clamp-2 pr-2">Massima serietà, discrezione totale e qualità impeccabile. Sei nel posto giusto per le tue necessità.</p>
+        
+        <div class="flex items-center text-[10px] font-bold flex-wrap gap-2">
+          <span class="flex items-center bg-[#1a1a1a]/80 backdrop-blur-md px-2 py-1.5 rounded border border-gray-700 shadow-lg text-white">
+            <i data-lucide="star" class="w-3 h-3 mr-1 text-amber-400"></i> +300 Feed
+          </span>
+          <span class="flex items-center bg-[#1a1a1a]/80 backdrop-blur-md px-2 py-1.5 rounded border border-gray-700 shadow-lg text-gray-300">
+            <i data-lucide="lock" class="w-3 h-3 mr-1 text-gray-400"></i> Sicurezza
+          </span>
+          <span class="flex items-center bg-[#1a1a1a]/80 backdrop-blur-md px-2 py-1.5 rounded border border-gray-700 shadow-lg text-gray-300">
+            <i data-lucide="gem" class="w-3 h-3 mr-1 text-gray-400"></i> Qualità Top
+          </span>
         </div>
       </div>
     </div>
@@ -285,6 +295,7 @@
       </button>
     </div>
 
+    <!-- CATEGORIE AGGIORNATE -->
     <div class="space-y-4 pt-2" id="products-section">
       <div class="flex justify-between items-center">
         <h2 class="text-lg font-bold text-white tracking-wide">Archivio File</h2>
@@ -292,8 +303,11 @@
       <div class="flex space-x-2 overflow-x-auto hide-scrollbar pb-1">
         <button onclick="filterCategory('ALL', this)" class="cat-btn px-4 py-2 rounded-xl bg-amber-600 text-white text-xs font-bold whitespace-nowrap shadow-[0_0_10px_rgba(217,119,6,0.3)]">Tutti</button>
         <button onclick="filterCategory('Documenti', this)" class="cat-btn px-4 py-2 rounded-xl bg-[#121212] border border-gray-800 text-gray-400 text-xs font-semibold whitespace-nowrap hover:text-gray-200">Documenti</button>
-        <button onclick="filterCategory('Bancario', this)" class="cat-btn px-4 py-2 rounded-xl bg-[#121212] border border-gray-800 text-gray-400 text-xs font-semibold whitespace-nowrap hover:text-gray-200">Bancario</button>
-        <button onclick="filterCategory('Patenti', this)" class="cat-btn px-4 py-2 rounded-xl bg-[#121212] border border-gray-800 text-gray-400 text-xs font-semibold whitespace-nowrap hover:text-gray-200">Patenti</button>
+        <button onclick="filterCategory('Weed', this)" class="cat-btn px-4 py-2 rounded-xl bg-[#121212] border border-gray-800 text-gray-400 text-xs font-semibold whitespace-nowrap hover:text-gray-200">Weed</button>
+        <button onclick="filterCategory('Servizi', this)" class="cat-btn px-4 py-2 rounded-xl bg-[#121212] border border-gray-800 text-gray-400 text-xs font-semibold whitespace-nowrap hover:text-gray-200">Servizi</button>
+        <button onclick="filterCategory('Banconote false', this)" class="cat-btn px-4 py-2 rounded-xl bg-[#121212] border border-gray-800 text-gray-400 text-xs font-semibold whitespace-nowrap hover:text-gray-200">Banconote false</button>
+        <button onclick="filterCategory('Monete false', this)" class="cat-btn px-4 py-2 rounded-xl bg-[#121212] border border-gray-800 text-gray-400 text-xs font-semibold whitespace-nowrap hover:text-gray-200">Monete false</button>
+        <button onclick="filterCategory('Meet up Roma', this)" class="cat-btn px-4 py-2 rounded-xl bg-[#121212] border border-gray-800 text-gray-400 text-xs font-semibold whitespace-nowrap hover:text-gray-200">Meet up Roma</button>
         <button onclick="filterCategory('Altro', this)" class="cat-btn px-4 py-2 rounded-xl bg-[#121212] border border-gray-800 text-gray-400 text-xs font-semibold whitespace-nowrap hover:text-gray-200">Altro</button>
       </div>
     </div>
@@ -330,7 +344,9 @@
 
     function toggleDrawer() { document.getElementById('drawer').classList.toggle('translate-x-full'); document.getElementById('drawer-overlay').classList.toggle('hidden'); }
     function scrollToProducts() { document.getElementById('products-section').scrollIntoView({ behavior: 'smooth' }); }
-    function formatTextWithMentions(text) { return text ? text.replace(/@(\w+)/g, '<a href="https://t.me/$1" target="_blank" class="text-blue-500 font-bold hover:underline">@$1</a>') : ""; }
+    
+    // Testo aggiornato con colore grigio chiaro al posto del blu
+    function formatTextWithMentions(text) { return text ? text.replace(/@(\w+)/g, '<a href="https://t.me/$1" target="_blank" class="text-gray-300 font-bold hover:underline">@$1</a>') : ""; }
 
     async function loadProducts() {
       try {
