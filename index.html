@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Il Falsario - Repliche Premium</title>
+  <title>Il Falsario 🎭</title>
   
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -11,30 +11,19 @@
   <script src="https://unpkg.com/lucide@latest"></script>
   
   <style>
-    /* Antiswipe: blocca l'effetto rimbalzo/pull-to-refresh */
-    html, body {
-        overscroll-behavior-y: none; 
-    }
-    
-    body { 
-        background-color: #0a0a0a; /* Nero più profondo per il Falsario */
+    /* BLOCCO SWIPE TELEGRAM E RIMBALZO iOS */
+    html, body { 
+        background-color: #0a0a0a; 
         color: #f3f4f6; 
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
         user-select: none; 
+        overscroll-behavior-y: none;
+        touch-action: pan-y;
     }
     
-    .drawer { 
-        transition: transform 0.3s ease-in-out; 
-    }
-    
-    .hide-scrollbar::-webkit-scrollbar { 
-        display: none; 
-    }
-    
-    .hide-scrollbar { 
-        -ms-overflow-style: none; 
-        scrollbar-width: none; 
-    }
+    .drawer { transition: transform 0.3s ease-in-out; }
+    .hide-scrollbar::-webkit-scrollbar { display: none; }
+    .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     
     .media-slider { 
         display: flex;
@@ -42,69 +31,50 @@
         scroll-snap-type: x mandatory; 
         -webkit-overflow-scrolling: touch;
     }
-    
     .media-item { 
         flex: 0 0 100%;
         scroll-snap-align: start; 
         position: relative;
     }
     
-    /* Colore variante selezionata: Oro/Ambra */
+    /* Stile Oro/Champagne per le opzioni */
     .variant-selected { 
-        border-color: #f59e0b !important; 
-        background-color: rgba(245, 158, 11, 0.1) !important; 
-        color: white !important; 
+        border-color: #d97706 !important; 
+        background-color: rgba(217, 119, 6, 0.15) !important; 
+        color: #fef3c7 !important; 
     }
   </style>
 </head>
 <body class="pb-24">
 
   <script>
-    // ----------------------------------------------------
-    // CONFIGURAZIONE DATABASE (Invariato)
-    // ----------------------------------------------------
-    const SUPABASE_URL = "https://hvjzhgixdgozpjqjeipf.supabase.co";
-    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh2anpoZ2l4ZGdvenBqcWplaXBmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODYwOTg0ODcsImV4cCI6MjEwMTY3NDQ4N30.WsXI7PtlLM4xqffPyWcjZqxrC0nHGmjurIT0cSVNy6U";
+    // CHIAVI SUPABASE GIA' INIETTATE E PRONTE
+    const SUPABASE_URL = "https://niyhpvtiefisycxbkjie.supabase.co";
+    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5peWhwdnRpZWZpc3ljeGJramllIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY4MjQ2MDUsImV4cCI6MjEwMjQwMDYwNX0.ODucTrP0dzByGNhyyIYv-S-kIH5cTs8X_Url-7jXRMY";
     
     let db;
     try { 
         db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY); 
-    } catch(e) {
-        console.error("Errore inizializzazione Supabase", e);
-    }
+    } catch(e) { console.error("Errore Supabase", e); }
     
     const tg = window.Telegram?.WebApp;
-    if (tg) {
-        tg.expand();
-        
-        // ANTISWIPE
-        try {
-            if (tg.disableVerticalSwipes) {
-                tg.disableVerticalSwipes();
-            }
-            if (tg.isVerticalSwipesEnabled !== undefined) {
-                tg.isVerticalSwipesEnabled = false;
-            }
-        } catch(err) {
-            console.error("Antiswipe non supportato su questa versione:", err);
-        }
+    if (tg) { 
+        tg.expand(); 
+        if (tg.disableVerticalSwipes) { tg.disableVerticalSwipes(); }
     }
   </script>
 
-  <!-- ---------------------------------------------------- -->
-  <!-- NAVBAR / INTESTAZIONE                                -->
-  <!-- ---------------------------------------------------- -->
   <header class="sticky top-0 z-30 bg-[#121212]/95 backdrop-blur-md px-4 py-3 flex justify-between items-center border-b border-gray-800">
     <div class="flex items-center space-x-3">
-      <!-- Icona/Logo profilo con bordo dorato -->
-      <div class="w-9 h-9 rounded-full bg-cover bg-center border-2 border-amber-500 shadow-[0_0_10px_rgba(245,158,11,0.3)]" style="background-image: url('https://files.catbox.moe/smngwm.png');"></div>
-      <span class="font-bold text-lg tracking-wide uppercase text-gray-100">Il Falsario</span>
+      <div class="w-9 h-9 rounded-full bg-[#1e1e1e] border border-amber-600/50 shadow-[0_0_10px_rgba(217,119,6,0.4)] flex items-center justify-center text-xl pb-0.5">
+        🎭
+      </div>
+      <span class="font-bold text-lg tracking-wide text-amber-50">Il Falsario</span>
     </div>
     <div class="flex items-center space-x-2">
       <button onclick="openCartModal()" class="relative p-2 rounded-lg bg-gray-800 hover:bg-gray-700">
-        <i data-lucide="shopping-cart" class="w-5 h-5 text-gray-200"></i>
-        <!-- Badge carrello dorato -->
-        <span id="cart-badge" class="absolute -top-1 -right-1 bg-amber-500 text-black text-[10px] font-black w-4 h-4 rounded-full flex items-center justify-center hidden">0</span>
+        <i data-lucide="shopping-cart" class="w-5 h-5 text-amber-500"></i>
+        <span id="cart-badge" class="absolute -top-1 -right-1 bg-amber-500 text-black text-xs font-bold w-4 h-4 rounded-full flex items-center justify-center hidden shadow-md">0</span>
       </button>
       <button onclick="toggleDrawer()" class="p-2 rounded-lg bg-gray-800 hover:bg-gray-700">
         <i data-lucide="menu" class="w-6 h-6 text-gray-200"></i>
@@ -112,796 +82,446 @@
     </div>
   </header>
 
-  <!-- ---------------------------------------------------- -->
-  <!-- MENU LATERALE A SCOMPARSA (DRAWER)                   -->
-  <!-- ---------------------------------------------------- -->
   <div id="drawer-overlay" onclick="toggleDrawer()" class="fixed inset-0 bg-black/70 z-40 hidden backdrop-blur-sm"></div>
-  <aside id="drawer" class="fixed top-0 right-0 w-72 h-full bg-[#121212] z-50 transform translate-x-full drawer p-5 flex flex-col justify-between border-l border-gray-800">
+  <aside id="drawer" class="fixed top-0 right-0 w-72 h-full bg-[#121212] z-50 transform translate-x-full drawer p-5 flex flex-col justify-between border-l border-amber-900/30">
     <div>
-      <div class="flex justify-between items-center mb-6">
-        <span class="text-sm font-semibold text-gray-400 uppercase tracking-wider">Archivio Centrale</span>
-        <button onclick="toggleDrawer()" class="p-1 text-gray-400 hover:text-white">
+      <div class="flex justify-between items-center mb-8">
+        <span class="text-sm font-semibold text-amber-600 uppercase tracking-widest">IL CAVEAU</span>
+        <button onclick="toggleDrawer()" class="p-1 text-gray-500 hover:text-white">
           <i data-lucide="x" class="w-6 h-6"></i>
         </button>
       </div>
-      <nav class="space-y-1">
-        <a href="#" onclick="toggleDrawer();" class="flex items-center space-x-3 px-3 py-2.5 rounded-xl bg-amber-500/10 text-amber-500 font-medium border border-amber-500/20">
-          <i data-lucide="home" class="w-5 h-5"></i><span>Home</span>
+      <nav class="space-y-2">
+        <a href="#" onclick="toggleDrawer();" class="flex items-center space-x-3 px-3 py-3 rounded-xl bg-gradient-to-r from-amber-600/20 to-transparent text-amber-500 font-medium border border-amber-500/20">
+          <i data-lucide="key" class="w-5 h-5"></i><span>Accesso Principale</span>
         </a>
-        <a href="#" onclick="scrollToProducts(); toggleDrawer();" class="flex items-center space-x-3 px-3 py-2.5 rounded-xl text-gray-300 hover:bg-gray-800 transition">
-          <i data-lucide="file-badge" class="w-5 h-5"></i><span>Catalogo Falsi</span>
+        <a href="#" onclick="scrollToProducts(); toggleDrawer();" class="flex items-center space-x-3 px-3 py-3 rounded-xl text-gray-400 hover:bg-gray-800/50 hover:text-gray-200 transition">
+          <i data-lucide="folder-lock" class="w-5 h-5"></i><span>Documenti e File</span>
         </a>
-        <a href="#" onclick="openCartModal(); toggleDrawer();" class="flex items-center space-x-3 px-3 py-2.5 rounded-xl text-gray-300 hover:bg-gray-800 transition">
-          <i data-lucide="shopping-bag" class="w-5 h-5"></i><span>Carrello</span>
+        <a href="#" onclick="openCartModal(); toggleDrawer();" class="flex items-center space-x-3 px-3 py-3 rounded-xl text-gray-400 hover:bg-gray-800/50 hover:text-gray-200 transition">
+          <i data-lucide="briefcase" class="w-5 h-5"></i><span>La tua Valigetta</span>
         </a>
-        <a href="#" onclick="openTrophiesModal(); toggleDrawer();" class="flex items-center space-x-3 px-3 py-2.5 rounded-xl text-gray-300 hover:bg-gray-800 transition">
-          <i data-lucide="shield-check" class="w-5 h-5 text-amber-400"></i><span>Reputazione & VIP</span>
+        <a href="#" onclick="openTrophiesModal(); toggleDrawer();" class="flex items-center space-x-3 px-3 py-3 rounded-xl text-gray-400 hover:bg-gray-800/50 hover:text-gray-200 transition">
+          <i data-lucide="award" class="w-5 h-5"></i><span>Privilegi Clienti</span>
         </a>
-        <a href="#" onclick="openTrackingModal(); toggleDrawer();" class="flex items-center space-x-3 px-3 py-2.5 rounded-xl text-gray-300 hover:bg-gray-800 transition">
-          <i data-lucide="globe" class="w-5 h-5 text-blue-400"></i><span>Tracciamento Spedizioni</span>
+        <a href="#" onclick="openTrackingModal(); toggleDrawer();" class="flex items-center space-x-3 px-3 py-3 rounded-xl text-gray-400 hover:bg-gray-800/50 hover:text-gray-200 transition">
+          <i data-lucide="map" class="w-5 h-5"></i><span>Stato Lavorazioni</span>
         </a>
-        <a href="#" onclick="openSupportModal(); toggleDrawer();" class="flex items-center space-x-3 px-3 py-2.5 rounded-xl text-gray-300 hover:bg-gray-800 transition">
-          <i data-lucide="headset" class="w-5 h-5 text-gray-400"></i><span>Supporto Sicuro</span>
+        <a href="#" onclick="openSupportModal(); toggleDrawer();" class="flex items-center space-x-3 px-3 py-3 rounded-xl text-gray-400 hover:bg-gray-800/50 hover:text-gray-200 transition">
+          <i data-lucide="message-square" class="w-5 h-5"></i><span>Contatto Diretto</span>
         </a>
       </nav>
     </div>
   </aside>
 
-  <!-- ---------------------------------------------------- -->
-  <!-- MODALI PRINCIPALI DEL SITO                           -->
-  <!-- ---------------------------------------------------- -->
-  
-  <!-- Modale Media Schermo Intero -->
-  <div id="fullscreen-media-modal" class="fixed inset-0 bg-black z-[100] hidden flex-col items-center justify-center backdrop-blur-xl transition-opacity duration-300">
-    <button onclick="closeFullscreenMedia()" class="absolute top-6 right-6 bg-gray-900/80 p-3 rounded-full z-[110] text-white border border-gray-700 shadow-2xl">
+  <div id="fullscreen-media-modal" class="fixed inset-0 bg-black z-[100] hidden flex-col items-center justify-center backdrop-blur-xl">
+    <button onclick="closeFullscreenMedia()" class="absolute top-6 right-6 bg-gray-900/80 p-3 rounded-full z-[110] text-white border border-gray-700/50 shadow-2xl">
       <i data-lucide="x" class="w-7 h-7"></i>
     </button>
     <div id="fs-media-content" class="w-full h-full flex items-center justify-center"></div>
   </div>
 
-  <!-- Modale Carrello -->
   <div id="cart-modal" class="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4 hidden backdrop-blur-md">
-    <div class="bg-[#151515] border border-gray-800 rounded-2xl w-full max-w-sm p-5 space-y-4 shadow-2xl">
+    <div class="bg-[#121212] border border-gray-800 rounded-2xl w-full max-w-sm p-5 space-y-4 shadow-2xl">
       <div class="flex justify-between items-center border-b border-gray-800 pb-3">
         <h3 class="font-bold text-lg text-white flex items-center">
-            <i data-lucide="shopping-bag" class="w-5 h-5 text-amber-500 mr-2"></i> Riepilogo Ordine
+            <i data-lucide="briefcase" class="w-5 h-5 text-amber-500 mr-2"></i> La tua Valigetta
         </h3>
-        <button onclick="closeCartModal()" class="text-gray-400 hover:text-white">
+        <button onclick="closeCartModal()" class="text-gray-500 hover:text-white">
             <i data-lucide="x" class="w-5 h-5"></i>
         </button>
       </div>
-      
       <div id="cart-items-list" class="space-y-2 max-h-40 overflow-y-auto pr-1"></div>
-      
       <div class="border-t border-gray-800 pt-3 space-y-3">
         <div class="flex justify-between text-sm font-bold text-white">
-          <span>Totale da pagare:</span>
-          <span id="cart-total-price" class="text-amber-400">€0</span>
+          <span>Totale da saldare:</span>
+          <span id="cart-total-price" class="text-amber-500">€0</span>
         </div>
         <div>
-          <label class="text-[10px] font-bold text-gray-500 uppercase tracking-widest block mb-1">Dati Spedizione / Dead Drop</label>
-          <textarea id="order-address-input" rows="2" placeholder="Inserisci i dati per la consegna sicura..." class="w-full bg-gray-900 border border-gray-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-amber-500"></textarea>
+          <label class="text-[10px] font-bold text-gray-500 uppercase tracking-widest block mb-1">Dettagli / Recapito / Note</label>
+          <textarea id="order-address-input" rows="2" placeholder="Inserisci dettagli per il lavoro..." class="w-full bg-[#1a1a1a] border border-gray-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-amber-600"></textarea>
         </div>
-        <button onclick="submitOrderProcess()" class="w-full bg-amber-500 hover:bg-amber-400 text-black font-black py-3 rounded-xl text-xs uppercase shadow-lg shadow-amber-500/20">
-          Conferma & Invia
+        <button onclick="submitOrderProcess()" class="w-full bg-gradient-to-r from-amber-600 to-yellow-600 hover:from-amber-500 text-white font-extrabold py-3.5 rounded-xl text-xs uppercase shadow-[0_0_15px_rgba(217,119,6,0.3)] tracking-wider">
+          Conferma Richiesta
         </button>
       </div>
     </div>
   </div>
 
-  <!-- Modale Conferma Ordine Inviato -->
-  <div id="success-panel-modal" class="fixed inset-0 bg-[#121212] z-50 flex flex-col items-center justify-center p-6 text-center hidden">
-    <div class="w-20 h-20 bg-amber-500/20 border-2 border-amber-500 rounded-2xl flex items-center justify-center mb-6 shadow-[0_0_30px_rgba(245,158,11,0.2)]">
-      <i data-lucide="shield-check" class="w-10 h-10 text-amber-500 stroke-[2.5]"></i>
+  <div id="success-panel-modal" class="fixed inset-0 bg-[#0a0a0a] z-50 flex flex-col items-center justify-center p-6 text-center hidden">
+    <div class="w-20 h-20 bg-gradient-to-tr from-amber-500 to-yellow-700 rounded-2xl flex items-center justify-center mb-6 shadow-[0_0_40px_rgba(245,158,11,0.3)]">
+      <i data-lucide="check" class="w-12 h-12 text-white stroke-[3]"></i>
     </div>
-    <h2 class="text-2xl font-black text-white mb-2">Richiesta Ricevuta</h2>
+    <h2 class="text-2xl font-black text-amber-50 mb-2">Richiesta Presa in Carico</h2>
     <p class="text-gray-400 text-sm max-w-xs mb-8">
-      La tua richiesta è stata presa in carico. Riceverai i dati per il pagamento sicuro e le istruzioni nella chat.
+      Il Falsario elaborerà la tua richiesta a breve. Controlla la chat per aggiornamenti.
     </p>
-    <button onclick="closeSuccessPanel()" class="w-full max-w-xs bg-gray-800 hover:bg-gray-700 text-white font-bold py-3.5 rounded-xl text-sm border border-gray-700">
-      Chiudi finestra
+    <button onclick="closeSuccessPanel()" class="w-full max-w-xs bg-[#1a1a1a] border border-gray-800 text-white font-extrabold py-3.5 rounded-xl text-sm hover:bg-gray-900 transition">
+      Torna al Caveau
     </button>
   </div>
 
-  <!-- Modale Reputazione / Trofei -->
   <div id="trophies-modal" class="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4 hidden backdrop-blur-md">
-    <div class="bg-[#151515] border border-gray-800 rounded-2xl w-full max-w-sm p-5 space-y-4 shadow-2xl">
+    <div class="bg-[#121212] border border-gray-800 rounded-2xl w-full max-w-sm p-5 space-y-4 shadow-2xl">
       <div class="flex justify-between items-center border-b border-gray-800 pb-3">
         <h3 class="font-bold text-lg text-white flex items-center">
-          <i data-lucide="shield-alert" class="w-5 h-5 text-amber-400 mr-2"></i> Livello Trust & VIP
+          <i data-lucide="award" class="w-5 h-5 text-amber-500 mr-2"></i> Privilegi
         </h3>
-        <button onclick="closeTrophiesModal()" class="text-gray-400 hover:text-white">
-            <i data-lucide="x" class="w-5 h-5"></i>
-        </button>
+        <button onclick="closeTrophiesModal()" class="text-gray-500 hover:text-white"><i data-lucide="x" class="w-5 h-5"></i></button>
       </div>
-      
-      <div class="bg-gradient-to-br from-amber-500/10 to-orange-600/10 border border-amber-500/30 rounded-xl p-4 text-center relative overflow-hidden">
-        <div class="absolute -right-4 -top-4 opacity-10"><i data-lucide="award" class="w-24 h-24 text-amber-500"></i></div>
-        <span class="text-xs uppercase text-amber-500 font-bold tracking-widest relative z-10">Punti Reputazione</span>
-        <div class="text-4xl font-black text-amber-400 mt-1 relative z-10" id="user-points-val">--</div>
+      <div class="bg-gradient-to-br from-[#1a1a1a] to-[#0a0a0a] border border-amber-900/30 rounded-xl p-5 text-center relative overflow-hidden">
+        <div class="absolute -right-4 -top-4 text-amber-500/10"><i data-lucide="shield-check" class="w-24 h-24"></i></div>
+        <span class="text-[10px] uppercase text-amber-600 font-bold tracking-widest relative z-10">Livello Affidabilità</span>
+        <div class="text-4xl font-black text-amber-50 mt-1 relative z-10" id="user-points-val">--</div>
       </div>
-
       <div class="space-y-2">
-        <span class="text-[10px] font-bold text-gray-500 uppercase tracking-widest block">Badge Sbloccati</span>
+        <span class="text-[10px] font-bold text-gray-500 uppercase tracking-widest block">Trofei Sbloccati</span>
         <div id="user-trophies-list" class="space-y-2 max-h-48 overflow-y-auto pr-1"></div>
       </div>
-
-      <button onclick="closeTrophiesModal()" class="w-full bg-gray-800 hover:bg-gray-700 text-gray-200 font-bold py-2.5 rounded-xl text-xs">Chiudi</button>
+      <button onclick="closeTrophiesModal()" class="w-full bg-[#1a1a1a] border border-gray-800 hover:bg-gray-900 text-gray-300 font-bold py-3 rounded-xl text-xs uppercase tracking-wider">Chiudi</button>
     </div>
   </div>
 
-  <!-- Modale Tracking -->
+  <!-- SOSTITUITO IL BLU CON IL GRIGIO SCURO -->
   <div id="tracking-modal" class="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4 hidden backdrop-blur-md">
-    <div class="bg-[#151515] border border-gray-800 rounded-2xl w-full max-w-sm p-5 space-y-4 shadow-2xl">
+    <div class="bg-[#121212] border border-gray-800 rounded-2xl w-full max-w-sm p-5 space-y-4 shadow-2xl">
       <div class="flex justify-between items-center border-b border-gray-800 pb-3">
         <h3 class="font-bold text-lg text-white flex items-center">
-          <i data-lucide="globe-lock" class="w-5 h-5 text-gray-300 mr-2"></i> Stato Spedizione
+          <i data-lucide="map" class="w-5 h-5 text-gray-400 mr-2"></i> Stato Lavorazioni
         </h3>
-        <button onclick="closeTrackingModal()" class="text-gray-400 hover:text-white">
-            <i data-lucide="x" class="w-5 h-5"></i>
-        </button>
+        <button onclick="closeTrackingModal()" class="text-gray-500 hover:text-white"><i data-lucide="x" class="w-5 h-5"></i></button>
       </div>
-      
       <div class="space-y-3">
-        <label class="text-[10px] font-bold text-gray-500 uppercase tracking-widest block">ID Tracciamento</label>
+        <label class="text-[10px] font-bold text-gray-500 uppercase tracking-widest block">Codice Pratica</label>
         <div class="flex space-x-2">
-          <input type="number" id="tracking-order-id" placeholder="Es. 1" class="w-full bg-gray-900 border border-gray-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-500 placeholder-gray-600">
-          <button onclick="searchOrderTracking()" class="bg-gray-700 hover:bg-gray-600 border border-gray-600 text-white font-bold px-4 py-2 rounded-xl text-xs">Verifica</button>
+          <input type="number" id="tracking-order-id" placeholder="Es. 12" class="w-full bg-[#1a1a1a] border border-gray-800 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-gray-500">
+          <button onclick="searchOrderTracking()" class="bg-gray-700 hover:bg-gray-600 text-white font-bold px-4 py-2 rounded-xl text-xs uppercase">Cerca</button>
         </div>
       </div>
-
       <div id="tracking-result" class="hidden border-t border-gray-800 pt-3 space-y-2"></div>
-
-      <button onclick="closeTrackingModal()" class="w-full bg-gray-900 border border-gray-800 hover:bg-gray-800 text-gray-400 font-bold py-2.5 rounded-xl text-xs">Chiudi</button>
+      <button onclick="closeTrackingModal()" class="w-full bg-[#1a1a1a] border border-gray-800 hover:bg-gray-900 text-gray-300 font-bold py-3 rounded-xl text-xs uppercase tracking-wider">Chiudi</button>
     </div>
   </div>
 
-  <!-- Modale Assistenza / Supporto -->
+  <!-- SOSTITUITO IL BLU CON IL GRIGIO SCURO -->
   <div id="support-modal" class="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4 hidden backdrop-blur-md">
-    <div class="bg-[#151515] border border-gray-800 rounded-2xl w-full max-w-sm p-5 space-y-4 shadow-2xl">
+    <div class="bg-[#121212] border border-gray-800 rounded-2xl w-full max-w-sm p-5 space-y-4 shadow-2xl">
       <div class="flex justify-between items-center border-b border-gray-800 pb-3">
         <h3 class="font-bold text-lg text-white flex items-center">
-          <i data-lucide="user-cog" class="w-5 h-5 text-gray-300 mr-2"></i> Contatto Sicuro
+          <i data-lucide="message-square" class="w-5 h-5 text-amber-500 mr-2"></i> Contatto Diretto
         </h3>
-        <button onclick="closeSupportModal()" class="text-gray-400 hover:text-white">
-            <i data-lucide="x" class="w-5 h-5"></i>
-        </button>
+        <button onclick="closeSupportModal()" class="text-gray-500 hover:text-white"><i data-lucide="x" class="w-5 h-5"></i></button>
       </div>
-
       <div class="space-y-3">
-        <div class="bg-gray-900 border border-gray-800 rounded-xl p-3.5 flex items-center space-x-3">
-          <div class="p-2.5 bg-gray-800 rounded-lg text-gray-400 border border-gray-700">
-            <i data-lucide="clock-4" class="w-5 h-5"></i>
-          </div>
+        <div class="bg-[#1a1a1a] border border-gray-800 rounded-xl p-4 flex items-center space-x-3">
+          <div class="p-2.5 bg-amber-500/10 rounded-lg text-amber-500"><i data-lucide="shield" class="w-5 h-5"></i></div>
           <div>
-            <span class="text-[10px] uppercase font-bold text-gray-500 block tracking-widest">Orari di Risposta</span>
-            <span class="text-sm font-bold text-white">Dal Lunedì al Venerdì, orari variabili.</span>
+            <span class="text-[10px] uppercase font-bold text-gray-500 block tracking-widest">Discrezione Totale</span>
+            <span class="text-sm font-bold text-gray-200">Chat Sicura 24/7</span>
           </div>
         </div>
-
-        <div class="bg-gray-900 border border-gray-800 rounded-xl p-3.5 flex items-center space-x-3">
-          <div class="p-2.5 bg-amber-500/10 rounded-lg text-amber-500 border border-amber-500/20">
-            <i data-lucide="send" class="w-5 h-5"></i>
-          </div>
+        <div class="bg-[#1a1a1a] border border-gray-800 rounded-xl p-4 flex items-center space-x-3">
+          <div class="p-2.5 bg-gray-800 rounded-lg text-gray-400"><i data-lucide="send" class="w-5 h-5"></i></div>
           <div>
-            <span class="text-[10px] uppercase font-bold text-gray-500 block tracking-widest">Operatore Telegram</span>
-            <a href="https://t.me/ilfalsario_admin" target="_blank" class="text-sm font-bold text-amber-400 hover:underline">@ilfalsario_admin</a>
+            <span class="text-[10px] uppercase font-bold text-gray-500 block tracking-widest">Telegram Segreto</span>
+            <a href="#" class="text-sm font-bold text-gray-300 hover:underline">@IlFalsario</a>
           </div>
         </div>
       </div>
-
-      <button onclick="closeSupportModal()" class="w-full bg-gray-800 hover:bg-gray-700 text-gray-200 font-bold py-2.5 rounded-xl text-xs">Chiudi</button>
+      <button onclick="closeSupportModal()" class="w-full bg-[#1a1a1a] border border-gray-800 hover:bg-gray-900 text-gray-300 font-bold py-3 rounded-xl text-xs uppercase tracking-wider">Chiudi</button>
     </div>
   </div>
 
-
-  <!-- ---------------------------------------------------- -->
-  <!-- MODALE DETTAGLIO PRODOTTO SCHERMO INTERO             -->
-  <!-- ---------------------------------------------------- -->
   <div id="product-detail-modal" class="fixed inset-0 bg-[#0a0a0a] z-[80] hidden flex-col overflow-y-auto hide-scrollbar pb-24 transition-transform duration-300 transform translate-y-full">
-    
-    <button onclick="closeProductModal()" class="absolute top-4 right-4 bg-black/70 p-2 rounded-full z-[90] backdrop-blur-md shadow-xl border border-gray-700">
-       <i data-lucide="x" class="w-6 h-6 text-white"></i>
+    <button onclick="closeProductModal()" class="absolute top-4 right-4 bg-[#121212]/80 p-2.5 rounded-full z-[90] backdrop-blur-md shadow-xl border border-gray-800">
+       <i data-lucide="x" class="w-5 h-5 text-gray-300"></i>
     </button>
-
-    <div id="pd-media-container" class="w-full h-[40vh] bg-black relative border-b border-gray-800"></div>
-
-    <div class="p-4 space-y-4">
+    <div id="pd-media-container" class="w-full h-[45vh] bg-[#121212] relative border-b border-gray-800"></div>
+    <div class="p-5 space-y-5">
         <div>
-            <span id="pd-category" class="text-[10px] uppercase font-bold text-amber-500 tracking-widest"></span>
-            <h1 id="pd-title" class="text-2xl font-black text-white mt-1 leading-tight"></h1>
+            <span id="pd-category" class="text-[10px] uppercase font-bold text-amber-600 tracking-widest"></span>
+            <h1 id="pd-title" class="text-2xl font-black text-white mt-1"></h1>
             <div class="text-xs text-gray-500 flex items-center space-x-2 mt-2">
                 <i data-lucide="shield-check" class="w-3.5 h-3.5 text-amber-500"></i>
-                <span>Qualità Verificata (AAA+)</span>
+                <span>Qualità Garantita • Lavoro Artigianale</span>
             </div>
         </div>
         
-        <div class="bg-gray-900/80 border border-gray-800 p-3.5 rounded-xl">
-          <p id="pd-desc" class="text-sm text-gray-300 whitespace-pre-wrap leading-relaxed font-mono text-[13px]"></p>
+        <div class="bg-[#121212] border border-gray-800 p-4 rounded-xl">
+          <p id="pd-desc" class="text-sm text-gray-300 whitespace-pre-wrap leading-relaxed font-light"></p>
         </div>
 
-        <h3 class="text-[10px] font-bold text-gray-500 uppercase tracking-widest mt-6 mb-2">Seleziona Opzione / Quantità</h3>
-        <div id="pd-variants-list" class="space-y-2"></div>
-        
-        <h3 class="text-[10px] font-bold text-gray-500 uppercase tracking-widest mt-8 mb-2">Potrebbe interessarti</h3>
-        <div id="pd-related" class="grid grid-cols-2 gap-3 mb-8"></div>
+        <h3 class="text-[10px] font-bold text-gray-500 uppercase tracking-widest mt-6 mb-2">Seleziona Servizio</h3>
+        <div id="pd-variants-list" class="space-y-2.5"></div>
     </div>
 
-    <!-- Barra Acquisto Fissa -->
-    <div class="fixed bottom-0 left-0 right-0 bg-[#121212] border-t border-gray-800 p-4 flex items-center space-x-3 z-[85] pb-safe">
-        <div class="flex items-center bg-gray-900 border border-gray-700 rounded-xl px-2 py-2">
-            <button onclick="changeQty(-1)" class="text-gray-400 text-xl px-3 hover:text-amber-400 transition">-</button>
+    <div class="fixed bottom-0 left-0 right-0 bg-[#121212]/95 backdrop-blur-md border-t border-gray-800 p-4 flex items-center space-x-3 z-[85] pb-safe">
+        <div class="flex items-center bg-[#1a1a1a] border border-gray-800 rounded-xl px-2 py-2">
+            <button onclick="changeQty(-1)" class="text-gray-400 text-xl px-3 hover:text-amber-500 transition">-</button>
             <span id="pd-qty-val" class="text-white font-bold w-6 text-center text-sm">1</span>
-            <button onclick="changeQty(1)" class="text-gray-400 text-xl px-3 hover:text-amber-400 transition">+</button>
+            <button onclick="changeQty(1)" class="text-gray-400 text-xl px-3 hover:text-amber-500 transition">+</button>
         </div>
-        <button onclick="addToCartFromModal()" class="flex-1 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-black font-black py-3.5 rounded-xl shadow-lg shadow-amber-500/20 flex justify-center items-center text-sm transition-all">
-            <i data-lucide="shopping-cart" class="w-4 h-4 mr-2"></i> Aggiungi <span id="pd-btn-price" class="ml-1"></span>
+        <button onclick="addToCartFromModal()" class="flex-1 bg-gradient-to-r from-amber-600 to-yellow-600 text-white font-extrabold py-3.5 rounded-xl shadow-[0_0_15px_rgba(217,119,6,0.2)] flex justify-center items-center text-xs uppercase tracking-wider">
+            Richiedi ora <span id="pd-btn-price" class="ml-1 opacity-90"></span>
         </button>
     </div>
   </div>
 
 
-  <!-- ---------------------------------------------------- -->
-  <!-- CONTENUTO PRINCIPALE DELLA VETRINA (HOME)            -->
-  <!-- ---------------------------------------------------- -->
   <main class="p-4 space-y-5">
     
-    <!-- Banner Video Principale -->
-    <div class="relative rounded-2xl overflow-hidden border border-gray-800 bg-gray-900 shadow-2xl">
-      <!-- Manteniamo il tuo video come segnaposto -->
-      <video id="banner-video" class="w-full h-48 object-cover opacity-80" autoplay loop muted playsinline webkit-playsinline onloadedmetadata="this.muted=true; this.play()" src="https://files.catbox.moe/2a9rqy.mov"></video>
-      <div class="absolute inset-0 bg-gradient-to-t from-[#0a0a0a] via-black/50 to-transparent pointer-events-none"></div>
+    <!-- 1. VIDEO SEPARATO, PIU PICCOLO E CENTRATO -->
+    <div class="rounded-2xl overflow-hidden border border-gray-800 bg-black shadow-xl h-48 flex justify-center items-center">
+      <video id="banner-video" class="w-full h-full object-contain" autoplay loop muted playsinline webkit-playsinline onloadedmetadata="this.muted=true; this.play()" src="https://files.catbox.moe/cvaalo.mov"></video>
+    </div>
 
-      <div class="absolute bottom-3 left-4 right-4 pointer-events-none">
-        <h1 class="text-2xl font-black text-white tracking-wide uppercase">Il Falsario</h1>
-        <p class="text-amber-500 text-[10px] font-bold uppercase tracking-widest mt-0.5 mb-1.5">Documenti 1:1 & Valuta</p>
-        <div class="flex items-center space-x-3 text-[11px] text-gray-300">
-          <span class="flex items-center font-mono"><i data-lucide="database" class="w-3.5 h-3.5 mr-1 text-gray-400"></i> <span id="stat-products">--</span> Files</span>
-          <span class="flex items-center font-mono"><i data-lucide="shield-check" class="w-3.5 h-3.5 mr-1 text-amber-400"></i> Discrezione 100%</span>
+    <!-- 2. SECONDO RIQUADRO: MESSAGGIO E FEED STILE BOSTON -->
+    <div class="bg-[#121212] border border-gray-800 rounded-2xl p-5 shadow-2xl mt-4">
+        <h1 class="text-2xl font-black text-amber-50 tracking-wide mb-2">Il Falsario 🤗</h1>
+        <p class="text-[13px] text-gray-300 leading-relaxed mb-4">Massima serietà, discrezione totale e qualità impeccabile. Sei nel posto giusto per le tue necessità.</p>
+        
+        <div class="flex items-center text-[10px] font-bold flex-wrap gap-2">
+          <span class="flex items-center bg-[#1a1a1a] px-2.5 py-1.5 rounded border border-gray-700 shadow-sm text-white">
+            <i data-lucide="star" class="w-3 h-3 mr-1 text-amber-400"></i> +300 Feed
+          </span>
+          <span class="flex items-center bg-[#1a1a1a] px-2.5 py-1.5 rounded border border-gray-700 shadow-sm text-gray-300">
+            <i data-lucide="lock" class="w-3 h-3 mr-1 text-gray-400"></i> Sicurezza
+          </span>
+          <span class="flex items-center bg-[#1a1a1a] px-2.5 py-1.5 rounded border border-gray-700 shadow-sm text-gray-300">
+            <i data-lucide="gem" class="w-3 h-3 mr-1 text-gray-400"></i> Qualità Top
+          </span>
         </div>
-      </div>
     </div>
 
-    <!-- Scheda Informativa -->
-    <div class="bg-gray-900 border border-gray-800 rounded-2xl p-4 space-y-2 text-sm text-gray-300 shadow-md">
-      <p class="font-bold text-white">Benvenuto nel network de Il Falsario.</p>
-      <p class="text-xs text-gray-400 leading-relaxed">Produciamo e forniamo repliche di altissima qualità. Massima sicurezza dei dati, spedizioni anonime o invio digitale criptato.</p>
-      <div class="flex flex-wrap gap-2 pt-2 text-[10px] uppercase font-bold tracking-widest">
-        <span class="bg-gray-800 border border-gray-700 px-2.5 py-1 rounded-md text-amber-500">🛂 ID & Pass</span>
-        <span class="bg-gray-800 border border-gray-700 px-2.5 py-1 rounded-md text-green-400">💵 Banconote</span>
-        <span class="bg-gray-800 border border-gray-700 px-2.5 py-1 rounded-md text-blue-400">💻 Servizi</span>
-      </div>
-    </div>
-
-    <!-- Bottoni di Azione -->
-    <div class="grid grid-cols-2 gap-3">
-      <button onclick="scrollToProducts()" class="bg-gradient-to-r from-amber-500 to-orange-600 text-black font-black py-3.5 px-3 rounded-xl flex items-center justify-center space-x-1.5 shadow-lg shadow-amber-500/20 text-xs uppercase tracking-wide">
-        <i data-lucide="search" class="w-4 h-4"></i>
-        <span>Sfoglia Archivi</span>
+    <div class="grid grid-cols-2 gap-3 mt-1">
+      <button onclick="scrollToProducts()" class="bg-[#121212] border border-amber-600/30 hover:border-amber-500 text-amber-500 font-bold py-3.5 px-3 rounded-xl flex items-center justify-center space-x-2 text-xs uppercase tracking-wider transition shadow-lg">
+        <i data-lucide="folder-open" class="w-4 h-4"></i><span>I Lavori</span>
       </button>
-      <button onclick="openTrophiesModal()" class="bg-gray-900 border border-amber-500/30 text-amber-500 hover:bg-gray-800 font-bold py-3.5 px-3 rounded-xl flex items-center justify-center space-x-1.5 text-xs uppercase tracking-wide">
-        <i data-lucide="award" class="w-4 h-4"></i>
-        <span>Il mio Trust</span>
+      <button onclick="openTrophiesModal()" class="bg-[#121212] border border-gray-800 hover:border-gray-700 text-gray-300 font-bold py-3.5 px-3 rounded-xl flex items-center justify-center space-x-2 text-xs uppercase tracking-wider transition">
+        <i data-lucide="shield" class="w-4 h-4"></i><span>Fiducia</span>
       </button>
     </div>
 
-    <!-- Filtri delle Categorie -->
-    <div class="space-y-3 pt-3" id="products-section">
+    <!-- CATEGORIE NUOVE AGGIORNATE -->
+    <div class="space-y-4 pt-2" id="products-section">
       <div class="flex justify-between items-center">
-        <h2 class="text-lg font-bold text-white tracking-wide uppercase">Archivio Disponibile</h2>
+        <h2 class="text-lg font-bold text-white tracking-wide">Archivio File</h2>
       </div>
-      
       <div class="flex space-x-2 overflow-x-auto hide-scrollbar pb-1">
-        <!-- Modificato il colore di default a amber -->
-        <button onclick="filterCategory('ALL', this)" class="cat-btn px-4 py-2.5 rounded-xl bg-amber-500 text-black text-xs font-bold whitespace-nowrap">Tutto</button>
-        <button onclick="filterCategory('🛂 Documenti ID', this)" class="cat-btn px-4 py-2.5 rounded-xl bg-gray-900 text-gray-300 border border-gray-800 text-xs font-medium whitespace-nowrap hover:border-gray-600 transition">🛂 Documenti ID</button>
-        <button onclick="filterCategory('💵 Banconote (EUR/USD)', this)" class="cat-btn px-4 py-2.5 rounded-xl bg-gray-900 text-gray-300 border border-gray-800 text-xs font-medium whitespace-nowrap hover:border-gray-600 transition">💵 Banconote (EUR/USD)</button>
-        <button onclick="filterCategory('🎓 Certificati & Diplomi', this)" class="cat-btn px-4 py-2.5 rounded-xl bg-gray-900 text-gray-300 border border-gray-800 text-xs font-medium whitespace-nowrap hover:border-gray-600 transition">🎓 Certificati & Diplomi</button>
-        <button onclick="filterCategory('💻 Servizi Digitali', this)" class="cat-btn px-4 py-2.5 rounded-xl bg-gray-900 text-gray-300 border border-gray-800 text-xs font-medium whitespace-nowrap hover:border-gray-600 transition">💻 Servizi Digitali</button>
-        <button onclick="filterCategory('💊 Altro', this)" class="cat-btn px-4 py-2.5 rounded-xl bg-gray-900 text-gray-300 border border-gray-800 text-xs font-medium whitespace-nowrap hover:border-gray-600 transition">Altro</button>
+        <button onclick="filterCategory('ALL', this)" class="cat-btn px-4 py-2 rounded-xl bg-amber-600 text-white text-xs font-bold whitespace-nowrap shadow-[0_0_10px_rgba(217,119,6,0.3)]">Tutti</button>
+        <button onclick="filterCategory('Documenti', this)" class="cat-btn px-4 py-2 rounded-xl bg-[#121212] border border-gray-800 text-gray-400 text-xs font-semibold whitespace-nowrap hover:text-gray-200">Documenti</button>
+        <button onclick="filterCategory('Weed', this)" class="cat-btn px-4 py-2 rounded-xl bg-[#121212] border border-gray-800 text-gray-400 text-xs font-semibold whitespace-nowrap hover:text-gray-200">Weed</button>
+        <button onclick="filterCategory('Servizi', this)" class="cat-btn px-4 py-2 rounded-xl bg-[#121212] border border-gray-800 text-gray-400 text-xs font-semibold whitespace-nowrap hover:text-gray-200">Servizi</button>
+        <button onclick="filterCategory('Banconote false', this)" class="cat-btn px-4 py-2 rounded-xl bg-[#121212] border border-gray-800 text-gray-400 text-xs font-semibold whitespace-nowrap hover:text-gray-200">Banconote false</button>
+        <button onclick="filterCategory('Monete false', this)" class="cat-btn px-4 py-2 rounded-xl bg-[#121212] border border-gray-800 text-gray-400 text-xs font-semibold whitespace-nowrap hover:text-gray-200">Monete false</button>
+        <button onclick="filterCategory('Meet up Roma', this)" class="cat-btn px-4 py-2 rounded-xl bg-[#121212] border border-gray-800 text-gray-400 text-xs font-semibold whitespace-nowrap hover:text-gray-200">Meet up Roma</button>
+        <button onclick="filterCategory('Altro', this)" class="cat-btn px-4 py-2 rounded-xl bg-[#121212] border border-gray-800 text-gray-400 text-xs font-semibold whitespace-nowrap hover:text-gray-200">Altro</button>
       </div>
     </div>
 
-    <!-- Griglia dei Prodotti -->
-    <div id="products-grid" class="grid grid-cols-1 gap-4">
-      <div class="text-center py-8 text-gray-600 text-sm font-mono">Connessione al database crittografato...</div>
+    <div id="products-grid" class="grid grid-cols-1 gap-5">
+      <div class="text-center py-12 text-gray-600 text-sm">Apertura cassaforte in corso...</div>
     </div>
   </main>
 
-  <!-- ---------------------------------------------------- -->
-  <!-- MOTORE DEL SITO E SCRIPT JAVASCRIPT                  -->
-  <!-- ---------------------------------------------------- -->
   <script>
-    
     lucide.createIcons();
-    
-    let allProducts = [];
-    let cart = [];
-    
-    let currentProd = null;
-    let selectedVariantIndex = 0;
-    let currentQty = 1;
+    let allProducts = [], cart = [], currentProd = null, selectedVariantIndex = 0, currentQty = 1;
 
     function openMediaFullscreen(url, type) {
         const modal = document.getElementById('fullscreen-media-modal');
         const content = document.getElementById('fs-media-content');
-        
-        if (type === 'video') {
-            content.innerHTML = `<video src="${url}" controls autoplay playsinline webkit-playsinline class="w-full h-full object-contain"></video>`;
-        } else {
-            content.innerHTML = `<img src="${url}" class="w-full h-full object-contain" />`;
-        }
-        
-        modal.classList.remove('hidden');
-        modal.classList.add('flex');
+        if (type === 'video') content.innerHTML = `<video src="${url}" controls autoplay playsinline webkit-playsinline class="w-full h-full object-contain"></video>`;
+        else content.innerHTML = `<img src="${url}" class="w-full h-full object-contain" />`;
+        modal.classList.remove('hidden'); modal.classList.add('flex');
     }
-
     function closeFullscreenMedia() {
         const modal = document.getElementById('fullscreen-media-modal');
-        const content = document.getElementById('fs-media-content');
-        
-        modal.classList.add('hidden');
-        modal.classList.remove('flex');
-        content.innerHTML = ''; 
+        modal.classList.add('hidden'); modal.classList.remove('flex');
+        document.getElementById('fs-media-content').innerHTML = ''; 
     }
-
     function forcePlayAll() {
-        const videos = document.querySelectorAll('video');
-        videos.forEach(vid => {
-            vid.muted = true;
-            vid.defaultMuted = true;
-            vid.playsInline = true;
-            let playPromise = vid.play();
-            if (playPromise !== undefined) {
-                playPromise.catch(error => {
-                    console.log("Video in attesa di interazione");
-                });
-            }
+        document.querySelectorAll('video').forEach(vid => {
+            vid.muted = true; vid.defaultMuted = true; vid.playsInline = true;
+            let playPromise = vid.play(); if (playPromise !== undefined) playPromise.catch(e => {});
         });
     }
-    
     window.addEventListener('touchstart', forcePlayAll, {once: true});
     window.addEventListener('click', forcePlayAll, {once: true});
 
-    function toggleDrawer() {
-      const drawer = document.getElementById('drawer');
-      const overlay = document.getElementById('drawer-overlay');
-      drawer.classList.toggle('translate-x-full');
-      overlay.classList.toggle('hidden');
-    }
-
-    function scrollToProducts() {
-      const section = document.getElementById('products-section');
-      section.scrollIntoView({ behavior: 'smooth' });
-    }
-
-    function formatTextWithMentions(text) {
-        if(!text) return "";
-        return text.replace(/@(\w+)/g, '<a href="https://t.me/$1" target="_blank" class="text-amber-400 font-bold hover:underline">@$1</a>');
-    }
+    function toggleDrawer() { document.getElementById('drawer').classList.toggle('translate-x-full'); document.getElementById('drawer-overlay').classList.toggle('hidden'); }
+    function scrollToProducts() { document.getElementById('products-section').scrollIntoView({ behavior: 'smooth' }); }
+    
+    function formatTextWithMentions(text) { return text ? text.replace(/@(\w+)/g, '<a href="https://t.me/$1" target="_blank" class="text-gray-300 font-bold hover:underline">@$1</a>') : ""; }
 
     async function loadProducts() {
       try {
-        if (!db) throw new Error("Supabase non inizializzato");
-        
+        if (!db) throw new Error();
         const { data, error } = await db.from('products').select('*').eq('in_showcase', true).order('created_at', { ascending: false });
-        
         if (error) throw error;
-        
         allProducts = data || [];
         document.getElementById('stat-products').innerText = allProducts.length;
         renderProducts(allProducts);
-        
       } catch (err) {
-        const container = document.getElementById('products-grid');
-        container.innerHTML = `<div class="text-center py-4 text-red-500 font-mono text-xs uppercase tracking-widest">Errore di decrittazione database.</div>`;
+        document.getElementById('products-grid').innerHTML = `<div class="text-center py-4 text-gray-500 text-sm">Nessun file presente nell'archivio.</div>`;
       }
     }
 
     function renderProducts(products) {
       const container = document.getElementById('products-grid');
-      
-      if (products.length === 0) {
-        container.innerHTML = `<div class="text-center py-8 text-gray-600 font-mono text-xs uppercase tracking-widest">Nessun file trovato.</div>`;
-        return;
-      }
+      if (products.length === 0) { container.innerHTML = `<div class="text-center py-6 text-gray-600 text-xs">Nessun elemento per questa categoria.</div>`; return; }
 
       let htmlContent = '';
-
       products.forEach(p => {
-        let opts = p.price_options;
-        if (typeof opts === 'string') {
-            try { opts = JSON.parse(opts); } catch(e) { opts = []; }
-        }
-        opts = opts || [];
-
-        let media = p.media_list;
-        if (typeof media === 'string') {
-            try { media = JSON.parse(media); } catch(e) { media = []; }
-        }
-        if (!media || media.length === 0) {
-            media = [{ url: p.media_url, type: p.media_type || 'image' }];
-        }
+        let opts = p.price_options; if (typeof opts === 'string') { try { opts = JSON.parse(opts); } catch(e) { opts = []; } } opts = opts || [];
+        let media = p.media_list; if (typeof media === 'string') { try { media = JSON.parse(media); } catch(e) { media = []; } }
+        if (!media || media.length === 0) { media = [{ url: p.media_url, type: p.media_type || 'image' }]; }
 
         let mediaSliderHTML = '';
         media.forEach(m => {
             mediaSliderHTML += `<div class="w-full h-full flex-shrink-0 media-item relative">`;
-            
-            if (m.type === 'video') {
-                mediaSliderHTML += `<video class="w-full h-full object-cover pointer-events-none" autoplay loop muted playsinline webkit-playsinline src="${m.url}" onloadedmetadata="this.muted=true; this.play()"></video>`;
-            } else {
-                let imageUrl = m.url || 'https://images.unsplash.com/photo-1527661591475-527312dd65f5';
-                mediaSliderHTML += `<img class="w-full h-full object-cover pointer-events-none" src="${imageUrl}" />`;
-            }
-            
-            mediaSliderHTML += `
-            <div onclick="openMediaFullscreen('${m.url}', '${m.type}')" class="absolute top-2 right-2 bg-black/70 backdrop-blur-md p-2 rounded-lg z-[60] cursor-pointer hover:bg-black shadow-xl border border-gray-600/50 flex items-center justify-center" style="pointer-events: auto;">
-                <i data-lucide="maximize" class="w-4 h-4 text-white"></i>
-            </div>
-            `;
-            mediaSliderHTML += `</div>`;
+            if (m.type === 'video') mediaSliderHTML += `<video class="w-full h-full object-cover pointer-events-none" autoplay loop muted playsinline webkit-playsinline src="${m.url}" onloadedmetadata="this.muted=true; this.play()"></video>`;
+            else mediaSliderHTML += `<img class="w-full h-full object-cover pointer-events-none" src="${m.url}" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1611162617474-5b21e879e113?q=80&w=200&auto=format&fit=crop';" />`;
+            mediaSliderHTML += `<div onclick="openMediaFullscreen('${m.url}', '${m.type}')" class="absolute top-3 right-3 bg-[#121212]/80 backdrop-blur-md p-2 rounded-full z-[60] cursor-pointer hover:bg-amber-600/30 border border-gray-700 flex items-center justify-center" style="pointer-events: auto;"><i data-lucide="maximize" class="w-4 h-4 text-gray-300"></i></div></div>`;
         });
 
-        let scorriBadge = '';
-        if (media.length > 1) {
-            scorriBadge = `<div class="absolute bottom-2 right-2 bg-black/80 backdrop-blur-sm text-gray-300 border border-gray-700 text-[9px] uppercase tracking-widest px-2 py-1 rounded font-bold z-10 pointer-events-none shadow-md">↔ Foto (${media.length})</div>`;
-        }
+        let scorriBadge = media.length > 1 ? `<div class="absolute bottom-3 right-3 bg-black/80 backdrop-blur-sm text-gray-300 text-[10px] px-2.5 py-1 rounded-full font-bold z-10 pointer-events-none border border-gray-700 uppercase tracking-widest">Scorri (${media.length})</div>` : '';
 
         let bottoniHTML = '';
         opts.forEach(opt => {
             bottoniHTML += `
-                <div class="flex justify-between items-center bg-gray-800/60 px-3 py-2.5 rounded-lg text-xs border border-gray-700/50">
-                  <span class="font-medium text-gray-300">${opt.qty}</span>
-                  <div class="flex items-center space-x-3">
-                    <span class="font-bold text-amber-500 font-mono">€${opt.price}</span>
-                    <button onclick="addToCart('${p.name}', '${opt.qty}', ${opt.price}, 1)" class="bg-gray-200 text-black px-3 py-1.5 rounded text-[10px] font-black uppercase hover:bg-amber-500 shadow-sm transition-colors">
-                      Acquista
-                    </button>
+                <div class="flex justify-between items-center bg-[#1a1a1a] px-3.5 py-2.5 rounded-xl border border-gray-800/80 mb-1.5">
+                  <span class="font-semibold text-gray-300 text-xs">${opt.qty}</span>
+                  <div class="flex items-center space-x-4">
+                    <span class="font-black text-amber-500 text-sm">€${opt.price}</span>
+                    <button onclick="addToCart('${p.name}', '${opt.qty}', ${opt.price}, 1)" class="bg-gray-800 text-white px-3 py-1.5 rounded-lg font-bold text-[10px] uppercase tracking-wider hover:bg-amber-600 transition">Richiedi</button>
                   </div>
                 </div>
             `;
         });
 
-        let catLabel = p.category || '';
-        let prodName = p.name || '';
-        let prodDesc = p.description || 'Prodotto in pronta consegna';
-
         htmlContent += `
-        <div class="bg-[#121212] border border-gray-800 rounded-2xl overflow-hidden shadow-2xl">
-          <div class="relative w-full h-52 bg-gray-900 border-b border-gray-800">
-            <div class="flex overflow-x-auto hide-scrollbar media-slider w-full h-full">
-              ${mediaSliderHTML}
-            </div>
+        <div class="bg-[#121212] border border-gray-800 rounded-2xl overflow-hidden">
+          <div class="relative w-full h-56 bg-[#0a0a0a]">
+            <div class="flex overflow-x-auto hide-scrollbar media-slider w-full h-full">${mediaSliderHTML}</div>
             ${scorriBadge}
           </div>
-          
-          <div class="p-4 space-y-3">
-            <div onclick="openProductModal('${p.id}')" class="cursor-pointer group">
-              <span class="text-[9px] uppercase font-bold text-amber-600 tracking-widest">${catLabel}</span>
-              <h3 class="font-black text-base text-gray-100 mt-0.5 group-hover:text-amber-500 transition-colors">${prodName}</h3>
-              <p class="text-[11px] text-gray-500 line-clamp-2 mt-1 leading-relaxed">${formatTextWithMentions(prodDesc)}</p>
+          <div class="p-5">
+            <div onclick="openProductModal('${p.id}')" class="cursor-pointer mb-4">
+              <span class="text-[9px] uppercase font-bold text-gray-500 tracking-widest">${p.category || 'File'}</span>
+              <h3 class="font-bold text-lg text-gray-100 mt-1 leading-tight">${p.name || ''}</h3>
+              <p class="text-xs text-gray-400 line-clamp-2 mt-1.5 font-light">${formatTextWithMentions(p.description || 'Dettagli su richiesta')}</p>
             </div>
-            
-            <div class="space-y-1.5 border-t border-gray-800/80 pt-3">
-              ${bottoniHTML}
-            </div>
+            <div class="border-t border-gray-800/60 pt-4">${bottoniHTML}</div>
           </div>
         </div>
         `;
       });
-      
-      container.innerHTML = htmlContent;
-      lucide.createIcons();
-      setTimeout(forcePlayAll, 300);
+      container.innerHTML = htmlContent; lucide.createIcons(); setTimeout(forcePlayAll, 300);
     }
 
     function openProductModal(prodId) {
-        currentProd = allProducts.find(x => x.id === prodId);
-        if(!currentProd) return;
-        
-        selectedVariantIndex = 0;
-        currentQty = 1;
-
-        let media = currentProd.media_list;
-        if(typeof media === 'string') {
-            try { media = JSON.parse(media); } catch(e) { media = []; }
-        }
-        if(!media || media.length === 0) {
-            media = [{ url: currentProd.media_url, type: currentProd.media_type }];
-        }
+        currentProd = allProducts.find(x => x.id === prodId); if(!currentProd) return;
+        selectedVariantIndex = 0; currentQty = 1;
+        let media = currentProd.media_list; if(typeof media === 'string') { try { media = JSON.parse(media); } catch(e) { media = []; } }
+        if(!media || media.length === 0) media = [{ url: currentProd.media_url, type: currentProd.media_type }];
         
         let modaleMediaHTML = `<div class="flex overflow-x-auto hide-scrollbar media-slider w-full h-full">`;
         media.forEach(m => {
             modaleMediaHTML += `<div class="w-full h-full flex-shrink-0 media-item relative">`;
-            if(m.type === 'video') {
-                modaleMediaHTML += `<video class="w-full h-full object-cover pointer-events-none" autoplay loop muted playsinline webkit-playsinline src="${m.url}" onloadedmetadata="this.muted=true; this.play()"></video>`;
-            } else {
-                modaleMediaHTML += `<img class="w-full h-full object-cover pointer-events-none" src="${m.url}" />`;
-            }
-            modaleMediaHTML += `
-            <div onclick="openMediaFullscreen('${m.url}', '${m.type}')" class="absolute top-3 right-3 bg-black/70 backdrop-blur-md p-2 rounded-lg z-[60] cursor-pointer hover:bg-black shadow-xl border border-gray-600/50 flex items-center justify-center" style="pointer-events: auto;">
-                <i data-lucide="maximize" class="w-5 h-5 text-white"></i>
-            </div>
-            `;
-            modaleMediaHTML += `</div>`;
+            if(m.type === 'video') modaleMediaHTML += `<video class="w-full h-full object-cover pointer-events-none" autoplay loop muted playsinline webkit-playsinline src="${m.url}" onloadedmetadata="this.muted=true; this.play()"></video>`;
+            else modaleMediaHTML += `<img class="w-full h-full object-cover pointer-events-none" src="${m.url}" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1611162617474-5b21e879e113';" />`;
+            modaleMediaHTML += `<div onclick="openMediaFullscreen('${m.url}', '${m.type}')" class="absolute top-3 right-3 bg-[#121212]/80 backdrop-blur-md p-2.5 rounded-full z-[60] cursor-pointer hover:bg-gray-800 border border-gray-700 flex items-center justify-center" style="pointer-events: auto;"><i data-lucide="maximize" class="w-5 h-5 text-gray-300"></i></div></div>`;
         });
         modaleMediaHTML += `</div>`;
-        
-        if(media.length > 1) {
-            modaleMediaHTML += `<div class="absolute bottom-3 right-3 bg-black/80 border border-gray-700 backdrop-blur-sm text-white text-[10px] font-bold tracking-widest px-2.5 py-1 rounded shadow-lg z-10 pointer-events-none">1/${media.length} ↔ Scorri</div>`;
-        }
+        if(media.length > 1) modaleMediaHTML += `<div class="absolute bottom-3 right-3 bg-black/80 backdrop-blur-sm text-gray-300 text-[10px] font-bold px-3 py-1.5 rounded-full z-10 pointer-events-none border border-gray-700 uppercase tracking-widest">1/${media.length} ↔ Scorri</div>`;
         
         document.getElementById('pd-media-container').innerHTML = modaleMediaHTML;
-        document.getElementById('pd-category').innerText = currentProd.category;
-        document.getElementById('pd-title').innerText = currentProd.name;
+        document.getElementById('pd-category').innerText = currentProd.category; document.getElementById('pd-title').innerText = currentProd.name;
+        document.getElementById('pd-desc').innerHTML = formatTextWithMentions(currentProd.description || `Dettagli confidenziali`);
         
-        let descToUse = currentProd.description || `Dettagli riservati.`;
-        document.getElementById('pd-desc').innerHTML = formatTextWithMentions(descToUse);
-
-        let opts = currentProd.price_options;
-        if(typeof opts === 'string') {
-            try { opts = JSON.parse(opts); } catch(e) { opts = []; }
-        }
-        currentProd.parsedOpts = opts; 
-        
-        const varContainer = document.getElementById('pd-variants-list');
-        let variantiHTML = '';
+        let opts = currentProd.price_options; if(typeof opts === 'string') { try { opts = JSON.parse(opts); } catch(e) { opts = []; } } currentProd.parsedOpts = opts; 
+        const varContainer = document.getElementById('pd-variants-list'); let variantiHTML = '';
         opts.forEach((opt, idx) => {
             let activeStyle = idx === 0 ? 'variant-selected' : 'text-gray-400 border-gray-800';
-            variantiHTML += `
-            <div onclick="selectVariant(${idx})" id="var-box-${idx}" class="border bg-[#151515] rounded-xl p-3 flex justify-between items-center cursor-pointer transition-all ${activeStyle}">
-                <span class="font-bold text-sm">${opt.qty}</span>
-                <span class="font-black text-sm font-mono">€${opt.price}</span>
-            </div>
-            `;
+            variantiHTML += `<div onclick="selectVariant(${idx})" id="var-box-${idx}" class="border bg-[#1a1a1a] rounded-xl p-3.5 flex justify-between items-center cursor-pointer transition ${activeStyle}"><span class="font-bold text-sm">${opt.qty}</span><span class="font-black text-sm">€${opt.price}</span></div>`;
         });
-        varContainer.innerHTML = variantiHTML;
-
-        const related = allProducts.filter(p => p.id !== prodId).sort(() => 0.5 - Math.random()).slice(0, 4);
-        let correlatiHTML = '';
-        related.forEach(p => {
-             let rm = p.media_list; 
-             if(typeof rm === 'string') { try { rm = JSON.parse(rm); } catch(e) { rm = []; } }
-             const firstRm = (rm && rm.length > 0) ? rm[0] : { url: p.media_url, type: p.media_type };
-             
-             correlatiHTML += `<div onclick="closeProductModal(); setTimeout(()=>openProductModal('${p.id}'), 300)" class="bg-gray-900 border border-gray-800 rounded-xl overflow-hidden cursor-pointer shadow-md group">`;
-             if(firstRm.type === 'video') {
-                 correlatiHTML += `<video class="w-full h-20 object-cover pointer-events-none opacity-80 group-hover:opacity-100 transition" autoplay loop muted playsinline webkit-playsinline src="${firstRm.url}" onloadedmetadata="this.muted=true; this.play()"></video>`;
-             } else {
-                 correlatiHTML += `<img class="w-full h-20 object-cover pointer-events-none opacity-80 group-hover:opacity-100 transition" src="${firstRm.url}" />`;
-             }
-             correlatiHTML += `<div class="p-2 text-[10px] font-bold text-gray-300 truncate group-hover:text-amber-500">${p.name}</div></div>`;
-        });
-        document.getElementById('pd-related').innerHTML = correlatiHTML;
-
-        updateBottomBar();
-        
+        varContainer.innerHTML = variantiHTML; updateBottomBar();
         const modalElement = document.getElementById('product-detail-modal');
-        modalElement.classList.remove('hidden');
-        modalElement.classList.add('flex');
+        modalElement.classList.remove('hidden'); modalElement.classList.add('flex');
         setTimeout(() => { modalElement.classList.remove('translate-y-full'); }, 10);
+        setTimeout(() => { lucide.createIcons(); forcePlayAll(); }, 300);
     }
-
-    function closeProductModal() {
-        const modalElement = document.getElementById('product-detail-modal');
-        modalElement.classList.add('translate-y-full');
-        setTimeout(() => {
-            modalElement.classList.add('hidden');
-            modalElement.classList.remove('flex');
-        }, 300);
-    }
-
-    function selectVariant(idx) {
-        selectedVariantIndex = idx;
-        const opts = currentProd.parsedOpts;
-        opts.forEach((_, i) => {
-            const box = document.getElementById(`var-box-${i}`);
-            if(i === idx) { 
-                box.classList.add('variant-selected'); 
-                box.classList.remove('text-gray-400', 'border-gray-800'); 
-            } else { 
-                box.classList.remove('variant-selected'); 
-                box.classList.add('text-gray-400', 'border-gray-800'); 
-            }
-        });
-        updateBottomBar();
-    }
-
-    function changeQty(delta) { 
-        currentQty = Math.max(1, currentQty + delta); 
-        updateBottomBar(); 
-        if(tg && tg.HapticFeedback) tg.HapticFeedback.selectionChanged();
-    }
+    function closeProductModal() { const m = document.getElementById('product-detail-modal'); m.classList.add('translate-y-full'); setTimeout(() => { m.classList.add('hidden'); m.classList.remove('flex'); }, 300); }
+    function selectVariant(idx) { selectedVariantIndex = idx; currentProd.parsedOpts.forEach((_, i) => { const box = document.getElementById(`var-box-${i}`); if(i === idx) { box.classList.add('variant-selected'); box.classList.remove('text-gray-400', 'border-gray-800'); } else { box.classList.remove('variant-selected'); box.classList.add('text-gray-400', 'border-gray-800'); } }); updateBottomBar(); }
+    function changeQty(delta) { currentQty = Math.max(1, currentQty + delta); updateBottomBar(); if(tg && tg.HapticFeedback) tg.HapticFeedback.selectionChanged(); }
+    function updateBottomBar() { document.getElementById('pd-qty-val').innerText = currentQty; if(currentProd && currentProd.parsedOpts[selectedVariantIndex]) document.getElementById('pd-btn-price').innerText = `(€${(currentProd.parsedOpts[selectedVariantIndex].price * currentQty).toFixed(2)})`; }
+    function addToCartFromModal() { if(!currentProd) return; const opt = currentProd.parsedOpts[selectedVariantIndex]; addToCart(currentProd.name, opt.qty, opt.price * currentQty, currentQty); closeProductModal(); }
     
-    function updateBottomBar() {
-        document.getElementById('pd-qty-val').innerText = currentQty;
-        if(currentProd && currentProd.parsedOpts && currentProd.parsedOpts[selectedVariantIndex]) {
-            const price = currentProd.parsedOpts[selectedVariantIndex].price;
-            const total = (price * currentQty).toFixed(2);
-            document.getElementById('pd-btn-price').innerText = `(€${total})`;
-        }
-    }
-
-    function addToCartFromModal() {
-        if(!currentProd || !currentProd.parsedOpts || currentProd.parsedOpts.length === 0) return;
-        const opt = currentProd.parsedOpts[selectedVariantIndex];
-        addToCart(currentProd.name, opt.qty, opt.price * currentQty, currentQty);
-        closeProductModal();
-    }
-
     function addToCart(name, qtyLabel, finalPrice, numericQty = 1) {
       cart.push({ name: `${name} - ${qtyLabel}`, qty: numericQty, price: finalPrice });
-      const badge = document.getElementById('cart-badge');
-      badge.innerText = cart.length; 
-      badge.classList.remove('hidden');
+      const badge = document.getElementById('cart-badge'); badge.innerText = cart.length; badge.classList.remove('hidden');
       if (tg && tg.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
     }
-
     function openCartModal() {
-      if (cart.length === 0) { alert("Il carrello è vuoto."); return; }
-      const list = document.getElementById('cart-items-list');
-      let righeCarrello = '';
-      cart.forEach((i, index) => {
-          righeCarrello += `
-            <div class="flex justify-between items-center bg-gray-900/50 p-3 rounded-xl border border-gray-800 text-xs">
-              <div>
-                <div class="font-bold text-gray-200">${i.name}</div>
-                <div class="text-amber-500 font-mono mt-0.5">€${i.price}</div>
-              </div>
-              <button onclick="removeFromCart(${index})" class="text-red-500/70 hover:text-red-500 font-bold p-2"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
-            </div>
-          `;
-      });
-      list.innerHTML = righeCarrello;
-      lucide.createIcons();
-      
-      const sum = cart.reduce((tot, item) => tot + item.price, 0);
-      document.getElementById('cart-total-price').innerText = `€${sum}`;
+      if (cart.length === 0) { alert("Valigetta vuota."); return; }
+      const list = document.getElementById('cart-items-list'); let h = '';
+      cart.forEach((i, idx) => { h += `<div class="flex justify-between items-center bg-[#1a1a1a] p-3 rounded-xl border border-gray-800 text-xs"><div><div class="font-bold text-gray-200">${i.name}</div><div class="text-amber-500 font-black mt-1">€${i.price}</div></div><button onclick="removeFromCart(${idx})" class="text-gray-500 font-bold p-1 hover:text-red-500 transition"><i data-lucide="trash-2" class="w-4 h-4"></i></button></div>`; });
+      list.innerHTML = h; lucide.createIcons();
+      document.getElementById('cart-total-price').innerText = `€${cart.reduce((tot, item) => tot + item.price, 0)}`;
       document.getElementById('cart-modal').classList.remove('hidden');
     }
-
     function closeCartModal() { document.getElementById('cart-modal').classList.add('hidden'); }
+    function removeFromCart(idx) { cart.splice(idx, 1); if (cart.length === 0) { document.getElementById('cart-badge').classList.add('hidden'); closeCartModal(); } else { document.getElementById('cart-badge').innerText = cart.length; openCartModal(); } }
     
-    function removeFromCart(index) {
-      cart.splice(index, 1);
-      if (cart.length === 0) { 
-          document.getElementById('cart-badge').classList.add('hidden'); 
-          closeCartModal(); 
-      } else { 
-          document.getElementById('cart-badge').innerText = cart.length; 
-          openCartModal(); 
-      }
-    }
-
     async function submitOrderProcess() {
-      const addressInput = document.getElementById('order-address-input');
-      const address = addressInput.value.trim();
-      
-      if (!address) { alert("Inserisci i dati per la spedizione."); return; }
-      
-      const total = cart.reduce((sum, item) => sum + item.price, 0);
-      const user = tg?.initDataUnsafe?.user || {};
-      const payload = { cart: cart, total: total, user_id: user.id || 0, username: user.username || "Anonimo", address: address };
-      
+      const addr = document.getElementById('order-address-input').value.trim();
+      if (!addr) { alert("Inserisci note o dettagli."); return; }
+      const tot = cart.reduce((sum, item) => sum + item.price, 0), user = tg?.initDataUnsafe?.user || {};
       try {
-        const res = await fetch("https://telegram-shop-9swy.onrender.com/api/order", {
-          method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload)
-        });
-        
-        if (res.ok) {
-          closeCartModal(); 
-          cart = []; 
-          document.getElementById('cart-badge').classList.add('hidden'); 
-          addressInput.value = '';
-          document.getElementById('success-panel-modal').classList.remove('hidden');
-        } else { alert("Errore di connessione sicura. Riprova."); }
-      } catch (e) { alert("Errore di rete. Riprova più tardi."); }
+        const res = await fetch("https://il-falsario.onrender.com/api/order", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ cart: cart, total: tot, user_id: user.id || 0, username: user.username || "Anonimo", address: addr }) });
+        if (res.ok) { closeCartModal(); cart = []; document.getElementById('cart-badge').classList.add('hidden'); document.getElementById('order-address-input').value = ''; document.getElementById('success-panel-modal').classList.remove('hidden'); } else alert("Errore di invio.");
+      } catch (e) { alert("Errore connessione."); }
     }
-
-    function closeSuccessPanel() { 
-        document.getElementById('success-panel-modal').classList.add('hidden'); 
-        if (tg) tg.close();
-    }
+    function closeSuccessPanel() { document.getElementById('success-panel-modal').classList.add('hidden'); if (tg) tg.close(); }
 
     function filterCategory(cat, btn) {
-      const allButtons = document.querySelectorAll('.cat-btn');
-      allButtons.forEach(b => { 
-          b.classList.remove('bg-amber-500', 'text-black', 'border-transparent'); 
-          b.classList.add('bg-gray-900', 'text-gray-300', 'border-gray-800'); 
-      });
-      if (btn) { 
-          btn.classList.remove('bg-gray-900', 'text-gray-300', 'border-gray-800'); 
-          btn.classList.add('bg-amber-500', 'text-black', 'border-transparent'); 
-      }
-      
-      if (cat === 'ALL') { renderProducts(allProducts); } 
-      else { 
-          const filtered = allProducts.filter(p => p.category && p.category.includes(cat));
-          renderProducts(filtered);
-      }
+      document.querySelectorAll('.cat-btn').forEach(b => { b.classList.remove('bg-amber-600', 'text-white', 'shadow-[0_0_10px_rgba(217,119,6,0.3)]'); b.classList.add('bg-[#121212]', 'text-gray-400'); });
+      if (btn) { btn.classList.remove('bg-[#121212]', 'text-gray-400'); btn.classList.add('bg-amber-600', 'text-white', 'shadow-[0_0_10px_rgba(217,119,6,0.3)]'); }
+      if (cat === 'ALL') renderProducts(allProducts); else renderProducts(allProducts.filter(p => p.category && p.category.includes(cat)));
     }
 
     async function openTrophiesModal() {
-      document.getElementById('trophies-modal').classList.remove('hidden');
-      const userId = tg?.initDataUnsafe?.user?.id || 0;
-      
-      if (!userId || !db) { 
-          document.getElementById('user-points-val').innerText = "100"; 
-          document.getElementById('user-trophies-list').innerHTML = `<div class="bg-gray-900 border border-gray-800 p-3 rounded-xl text-[11px] text-gray-400 font-mono">🎖 Profilo Base (Anonimo)</div>`; 
-          return; 
-      }
-      
+      document.getElementById('trophies-modal').classList.remove('hidden'); const uid = tg?.initDataUnsafe?.user?.id || 0;
+      if (!uid || !db) { document.getElementById('user-points-val').innerText = "0"; document.getElementById('user-trophies-list').innerHTML = `<div class="bg-[#1a1a1a] p-3 rounded-lg text-xs text-center text-gray-500 font-light">Cliente Non Registrato</div>`; return; }
       try {
-        const { data } = await db.from('users').select('*').eq('telegram_id', userId);
+        const { data } = await db.from('users').select('*').eq('telegram_id', uid);
         if (data && data.length > 0) {
-          const user = data[0]; 
-          document.getElementById('user-points-val').innerText = user.points || 0;
-          let trophies = user.trophies || [];
-          if (typeof trophies === 'string') { try { trophies = JSON.parse(trophies); } catch(e) { trophies = []; } }
-          
-          const listDiv = document.getElementById('user-trophies-list');
-          if(trophies.length > 0) {
-              let tHTML = '';
-              trophies.forEach(t => {
-                  tHTML += `<div class="bg-gray-900 border border-amber-500/20 p-3 rounded-xl text-xs font-bold text-amber-500 flex items-center space-x-3"><i data-lucide="shield-check" class="w-4 h-4 text-amber-500"></i><span>${t}</span></div>`;
-              });
-              listDiv.innerHTML = tHTML;
-              lucide.createIcons();
-          } else { listDiv.innerHTML = `<div class="text-[10px] uppercase text-gray-600 text-center py-4 font-bold tracking-widest">Nessun badge presente</div>`; }
+          const u = data[0]; document.getElementById('user-points-val').innerText = u.points || 0;
+          let tr = u.trophies || []; if (typeof tr === 'string') { try { tr = JSON.parse(tr); } catch(e) { tr = []; } }
+          const lDiv = document.getElementById('user-trophies-list');
+          if(tr.length > 0) { let tHTML = ''; tr.forEach(t => { tHTML += `<div class="bg-[#1a1a1a] border border-gray-800 p-3 rounded-xl text-xs font-bold text-gray-300 flex items-center space-x-3"><i data-lucide="shield-check" class="w-4 h-4 text-amber-500"></i><span>${t}</span></div>`; }); lDiv.innerHTML = tHTML; lucide.createIcons(); } 
+          else lDiv.innerHTML = `<div class="text-xs text-gray-600 text-center py-4 font-light">Nessun privilegio sbloccato.</div>`;
         }
-      } catch(e) { console.error(e); }
+      } catch(e) {}
     }
-
     function closeTrophiesModal() { document.getElementById('trophies-modal').classList.add('hidden'); }
-    
     function openTrackingModal() { document.getElementById('tracking-modal').classList.remove('hidden'); }
-    function closeTrackingModal() { 
-        document.getElementById('tracking-modal').classList.add('hidden'); 
-        document.getElementById('tracking-result').classList.add('hidden'); 
-    }
-    
+    function closeTrackingModal() { document.getElementById('tracking-modal').classList.add('hidden'); document.getElementById('tracking-result').classList.add('hidden'); }
     async function searchOrderTracking() {
-      const input = document.getElementById('tracking-order-id');
-      const orderId = input.value.trim();
-      const resContainer = document.getElementById('tracking-result');
-      
-      if (!orderId) { alert("Inserisci ID Tracking"); return; }
-      
-      resContainer.innerHTML = `<div class="text-xs text-gray-500 font-mono text-center py-2">Decrittazione stato...</div>`; 
-      resContainer.classList.remove('hidden');
-      
+      const oid = document.getElementById('tracking-order-id').value.trim(), rc = document.getElementById('tracking-result'); if (!oid) return;
+      rc.innerHTML = `<div class="text-xs text-gray-500 text-center py-3">Ricerca archivi...</div>`; rc.classList.remove('hidden');
       try {
-        const { data } = await db.from('orders').select('*').eq('id', orderId);
+        const { data } = await db.from('orders').select('*').eq('id', oid);
         if (data && data.length > 0) {
-          const o = data[0]; 
-          const statusMap = { "PENDING": "⏳ Elaborazione", "ACCEPTED": "✅ In Preparazione", "SHIPPED": "✈️ Spedito", "CANCELLED": "❌ Stornato" };
-          const orderStatus = statusMap[o.status] || o.status;
-          const trackingInfo = o.tracking_code || 'In attesa del codice Drop';
-          
-          resContainer.innerHTML = `
-            <div class="bg-gray-900/50 border border-gray-700 p-3.5 rounded-xl text-xs space-y-2">
-                <div class="flex justify-between font-bold">
-                    <span class="text-gray-300">ID #${o.id}</span>
-                    <span class="text-amber-400">${orderStatus}</span>
-                </div>
-                <div class="text-gray-400 font-mono bg-black p-2.5 rounded border border-gray-800 mt-2 text-[10px]">
-                    <span class="text-gray-600 block mb-1 uppercase tracking-widest">Dati Vettore:</span>
-                    ${trackingInfo}
-                </div>
-            </div>
-          `;
-        } else { resContainer.innerHTML = `<div class="text-[11px] text-red-500 uppercase tracking-widest text-center py-3 font-bold">Nessun pacco trovato</div>`; }
-      } catch(e) { resContainer.innerHTML = `<div class="text-[11px] text-red-500 text-center py-2">Errore di rete sicura.</div>`; }
+          const o = data[0], sMap = { "PENDING": "⏳ In Analisi", "ACCEPTED": "✅ Approvato", "SHIPPED": "🚚 Consegnato", "CANCELLED": "❌ Respinto" };
+          rc.innerHTML = `<div class="bg-[#1a1a1a] border border-gray-800 p-4 rounded-xl text-xs space-y-2"><div class="flex justify-between font-bold"><span class="text-white">Pratica #${o.id}</span><span class="text-amber-500">${sMap[o.status] || o.status}</span></div><div class="text-gray-400 font-mono bg-[#121212] p-3 rounded-lg mt-3"><b>Info / Link:</b><br>${o.tracking_code || 'Nessun dettaglio aggiuntivo.'}</div></div>`;
+        } else rc.innerHTML = `<div class="text-xs text-red-500 text-center py-3">Pratica non trovata.</div>`;
+      } catch(e) { rc.innerHTML = `<div class="text-xs text-red-500 text-center py-3">Errore di rete.</div>`; }
     }
-
-    function openSupportModal() { 
-        document.getElementById('support-modal').classList.remove('hidden'); 
-        lucide.createIcons(); 
-    }
+    function openSupportModal() { document.getElementById('support-modal').classList.remove('hidden'); lucide.createIcons(); }
     function closeSupportModal() { document.getElementById('support-modal').classList.add('hidden'); }
-
     document.addEventListener("DOMContentLoaded", () => { loadProducts(); });
-
   </script>
 </body>
 </html>
