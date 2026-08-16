@@ -161,41 +161,41 @@
     </button>
   </div>
 
-  <!-- MODALE PRIVILEGI E GAMIFICATION DI MARKETING -->
+  <!-- MODALE PRIVILEGI E GAMIFICATION DI MARKETING BRUTALE -->
   <div id="trophies-modal" class="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4 hidden backdrop-blur-md">
     <div class="bg-[#121212] border border-amber-600/30 rounded-2xl w-full max-w-sm p-5 space-y-4 shadow-2xl">
       <div class="flex justify-between items-center border-b border-gray-800 pb-3">
         <h3 class="font-bold text-lg text-white flex items-center">
-          <i data-lucide="award" class="w-5 h-5 text-amber-500 mr-2"></i> Club Esclusivo & Privilegi
+          <i data-lucide="award" class="w-5 h-5 text-amber-500 mr-2"></i> Club Esclusivo & Sconti
         </h3>
         <button onclick="closeTrophiesModal()" class="text-gray-500 hover:text-white"><i data-lucide="x" class="w-5 h-5"></i></button>
       </div>
 
-      <!-- Card Livello Affidabilità -->
+      <!-- Card Livello Affidabilità & Risparmio -->
       <div class="bg-gradient-to-br from-[#1a1a1a] to-[#0a0a0a] border border-amber-600/40 rounded-xl p-4 text-center relative overflow-hidden shadow-lg">
-        <div class="absolute -right-3 -top-3 text-amber-500/10"><i data-lucide="shield-check" class="w-20 h-20"></i></div>
+        <div class="absolute -right-3 -top-3 text-amber-500/10"><i data-lucide="percent" class="w-20 h-20"></i></div>
         <div class="flex justify-between items-center mb-1">
-          <span class="text-[9px] uppercase text-amber-500 font-extrabold tracking-widest">Rango Cliente</span>
-          <span id="user-rank-title" class="text-[9px] bg-amber-500/20 text-amber-400 font-bold px-2 py-0.5 rounded-full border border-amber-500/30">In Verifica</span>
+          <span class="text-[9px] uppercase text-amber-500 font-extrabold tracking-widest">Il tuo Status</span>
+          <span id="user-rank-title" class="text-[9px] bg-amber-500/20 text-amber-400 font-bold px-2 py-0.5 rounded-full border border-amber-500/30">Base</span>
         </div>
         <div class="text-3xl font-black text-amber-50 mt-1 flex items-center justify-center space-x-2">
           <span id="user-points-val">--</span>
-          <span class="text-xs text-amber-500 font-normal">punti reputazione</span>
+          <span class="text-xs text-amber-500 font-normal">punti spesa</span>
         </div>
         <div class="mt-3 w-full bg-gray-800 rounded-full h-1.5 overflow-hidden">
-          <div id="rank-progress-bar" class="bg-gradient-to-r from-amber-600 to-yellow-400 h-1.5 rounded-full" style="width: 30%;"></div>
+          <div id="rank-progress-bar" class="bg-gradient-to-r from-amber-600 to-yellow-400 h-1.5 rounded-full" style="width: 20%;"></div>
         </div>
-        <p class="text-[10px] text-gray-400 mt-2 font-light" id="rank-next-target">Ogni ordine aumenta il tuo indice di affidabilità.</p>
+        <p class="text-[10px] text-gray-400 mt-2 font-light" id="rank-next-target">Compra per sbloccare sconti crescenti e omaggi!</p>
       </div>
 
-      <!-- Sezione Trofei & Sblocchi -->
+      <!-- Sezione Trofei & Premi Reali -->
       <div class="space-y-2">
         <div class="flex justify-between items-center">
-          <span class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Status & Vantaggi Attivi</span>
-          <span class="text-[9px] text-amber-500/80">Sblocca per salire di grado</span>
+          <span class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Premi & Sconti Sbloccabili</span>
+          <span class="text-[9px] text-amber-500/80">Più acquisti, più risparmi</span>
         </div>
         <div id="user-trophies-list" class="space-y-2 max-h-52 overflow-y-auto pr-1">
-          <!-- Popolato dinamicamente con logica di marketing -->
+          <!-- Popolato via JS con marketing persuasivo -->
         </div>
       </div>
 
@@ -351,18 +351,19 @@
         <button onclick="scrollToProducts()" class="bg-[#121212] border border-amber-600/30 hover:border-amber-500 text-amber-500 font-bold py-3.5 px-3 rounded-xl flex items-center justify-center space-x-2 text-xs uppercase tracking-wider transition shadow-lg">
           <i data-lucide="folder-open" class="w-4 h-4"></i><span>I Lavori</span>
         </button>
-        <button onclick="openTrophiesModal()" class="bg-[#121212] border border-gray-800 hover:border-gray-700 text-gray-300 font-bold py-3.5 px-3 rounded-xl flex items-center justify-center space-x-2 text-xs uppercase tracking-wider transition">
-          <i data-lucide="shield" class="w-4 h-4"></i><span>Fiducia</span>
+        <!-- Tasto Fiducia acceso a grigio platino / metallico lucido -->
+        <button onclick="openTrophiesModal()" class="bg-[#121212] border border-slate-300/40 hover:border-slate-200 text-slate-100 font-bold py-3.5 px-3 rounded-xl flex items-center justify-center space-x-2 text-xs uppercase tracking-wider transition shadow-[0_0_12px_rgba(203,213,225,0.15)]">
+          <i data-lucide="shield" class="w-4 h-4 text-slate-200"></i><span>Fiducia</span>
         </button>
       </div>
 
-      <!-- Tasto per aprire la finestra info (Uniformato a stile Platino / Colore Qualità Top) -->
-      <button onclick="toggleInfoPanel()" class="w-full mt-3 bg-[#121212] border border-gray-800 hover:border-gray-700 text-gray-200 font-bold py-3.5 px-4 rounded-xl flex items-center justify-between text-xs uppercase tracking-wider transition shadow-lg">
+      <!-- Tasto per aprire la finestra info (Uniformato al brand) -->
+      <button onclick="toggleInfoPanel()" class="w-full mt-3 bg-[#121212] border border-amber-600/30 hover:border-amber-500 text-amber-500 font-bold py-3.5 px-4 rounded-xl flex items-center justify-between text-xs uppercase tracking-wider transition shadow-lg">
         <div class="flex items-center space-x-2">
-          <i data-lucide="info" class="w-4 h-4 text-cyan-300 drop-shadow-[0_0_5px_rgba(103,232,249,0.5)]"></i>
+          <i data-lucide="info" class="w-4 h-4 text-amber-500"></i>
           <span>Maggiori informazioni</span>
         </div>
-        <i data-lucide="chevron-down" id="info-chevron" class="w-4 h-4 text-gray-400 transition-transform duration-300"></i>
+        <i data-lucide="chevron-down" id="info-chevron" class="w-4 h-4 text-amber-500 transition-transform duration-300"></i>
       </button>
 
       <!-- Finestra a scorrimento automatico -->
@@ -612,58 +613,58 @@
       if (cat === 'ALL') renderProducts(allProducts); else renderProducts(allProducts.filter(p => p.category && p.category.includes(cat)));
     }
 
-    // GAMIFICATION DI MARKETING DINAMICA PER I PRIVILEGI
+    // STRATEGIA DI MARKETING AGGRESSIVA: SCONTI A SCALARE & OMAGGI
     async function openTrophiesModal() {
       document.getElementById('trophies-modal').classList.remove('hidden'); 
       const uid = tg?.initDataUnsafe?.user?.id || 0;
       
-      let points = 50; // Default di base
-      let dbTrofs = [];
+      let points = 50; 
 
       if (uid && db) {
         try {
           const { data } = await db.from('users').select('*').eq('telegram_id', uid);
           if (data && data.length > 0) {
             points = data[0].points || 50;
-            dbTrofs = data[0].trophies || [];
-            if (typeof dbTrofs === 'string') { try { dbTrofs = JSON.parse(dbTrofs); } catch(e) { dbTrofs = []; } }
           }
         } catch(e) {}
       }
 
       document.getElementById('user-points-val').innerText = points;
 
-      // Logica dei ranghi e marketing strategico basata sui punti
-      let rankTitle = "Iniziato (Livello 1)";
-      let progressPercent = Math.min(100, (points / 200) * 100);
-      let nextTargetText = "Raggiungi 200 punti per sbloccare lo Status 'Cliente Riservato'.";
+      let rankTitle = "Cliente Standard 🥉";
+      let progressPercent = Math.min(100, (points / 150) * 100);
+      let nextTargetText = "Effettua ordini per sbloccare sconti crescenti e omaggi!";
 
       if (points >= 500) {
-        rankTitle = "VIP Black Diamond 💎";
+        rankTitle = "VIP Black Diamond 💎 (Sconto 15% Fisso)";
         progressPercent = 100;
-        nextTargetText = "Hai raggiunto il rango massimo di affidabilità!";
-      } else if (points >= 200) {
-        rankTitle = "Cliente Riservato 🛡️";
+        nextTargetText = "Livello massimo! Hai accesso a tutti i vantaggi e omaggi segreti.";
+      } else if (points >= 300) {
+        rankTitle = "Cliente Gold 🥇 (Sconto 10% Fisso)";
         progressPercent = (points / 500) * 100;
-        nextTargetText = `Mancano ${500 - points} punti per il rango VIP Black Diamond.`;
+        nextTargetText = `Mancano ${500 - points} punti per sbloccare lo sconto del 15% e i prodotti omaggio VIP.`;
+      } else if (points >= 150) {
+        rankTitle = "Cliente Silver 🥈 (Sconto 5% Fisso)";
+        progressPercent = (points / 300) * 100;
+        nextTargetText = `Mancano ${300 - points} punti per salire a Gold (10% di sconto su tutto).`;
       }
       
       document.getElementById('user-rank-title').innerText = rankTitle;
       document.getElementById('rank-progress-bar').style.width = `${progressPercent}%`;
       document.getElementById('rank-next-target').innerText = nextTargetText;
 
-      // Lista strategica dei trofei con effetto FOMO per spingere all'acquisto
-      const allPossibleTrophies = [
-        { name: "🔑 Primo Contatto", desc: "Sbloccato all'accesso nel Caveau.", unlocked: true },
-        { name: "📦 Operazione Conclusa", desc: "Sbloccato al primo ordine completato.", unlocked: points >= 100 },
-        { name: "🛡️ Scudo della Privacy", desc: "Garantisce priorità assoluta nelle spedizioni.", unlocked: points >= 200 },
-        { name: "💎 Club Esclusivo Black", desc: "Accesso ai canali privati e listini segreti.", unlocked: points >= 500 }
+      // Trofei e premi basati su marketing aggressivo per indurre l'acquisto compulsivo
+      const marketTrophies = [
+        { name: "🎁 Bonus Benvenuto", desc: "50 punti accumulati all'ingresso nel Caveau.", unlocked: true, reward: "ATTIVO" },
+        { name: "🏷️ Sconto 5% Silver", desc: "Attivo superati i 150 punti spesa.", unlocked: points >= 150, reward: points >= 150 ? "ATTIVO" : "SBLOCCA" },
+        { name: "🔥 Sconto 10% Gold", desc: "Attivo superati i 300 punti spesa.", unlocked: points >= 300, reward: points >= 300 ? "ATTIVO" : "SBLOCCA" },
+        { name: "💎 Sconto 15% + Omaggi VIP", desc: "Attivo superati i 500 punti spesa.", unlocked: points >= 500, reward: points >= 500 ? "ATTIVO" : "SBLOCCA" }
       ];
 
       const lDiv = document.getElementById('user-trophies-list');
       let tHTML = '';
       
-      allPossibleTrophies.forEach(t => {
+      marketTrophies.forEach(t => {
         if (t.unlocked) {
           tHTML += `
             <div class="bg-[#1a1a1a] border border-amber-600/30 p-3 rounded-xl text-xs text-gray-200 flex items-center justify-between shadow-sm">
@@ -674,20 +675,20 @@
                   <div class="text-[10px] text-gray-400 font-light mt-0.5">${t.desc}</div>
                 </div>
               </div>
-              <span class="text-[9px] bg-amber-500/10 text-amber-400 px-2 py-0.5 rounded font-bold uppercase tracking-wider">Attivo</span>
+              <span class="text-[9px] bg-amber-500/20 text-amber-400 px-2.5 py-1 rounded font-extrabold uppercase tracking-wider">${t.reward}</span>
             </div>
           `;
         } else {
           tHTML += `
-            <div class="bg-[#121212] border border-gray-800/80 p-3 rounded-xl text-xs text-gray-500 flex items-center justify-between opacity-75">
+            <div class="bg-[#121212] border border-gray-800/80 p-3 rounded-xl text-xs text-gray-500 flex items-center justify-between opacity-80">
               <div class="flex items-center space-x-2.5">
-                <i data-lucide="lock" class="w-4 h-4 text-gray-600 flex-shrink-0"></i>
+                <i data-lucide="lock" class="w-4 h-4 text-gray-500 flex-shrink-0"></i>
                 <div>
-                  <div class="font-bold text-gray-400">${t.name}</div>
-                  <div class="text-[10px] text-gray-600 font-light mt-0.5">${t.desc}</div>
+                  <div class="font-bold text-gray-300">${t.name}</div>
+                  <div class="text-[10px] text-gray-500 font-light mt-0.5">${t.desc}</div>
                 </div>
               </div>
-              <span class="text-[9px] bg-gray-800 text-gray-400 px-2 py-0.5 rounded font-bold uppercase tracking-wider">Bloccato</span>
+              <span class="text-[9px] bg-amber-600/20 text-amber-400 border border-amber-500/30 px-2.5 py-1 rounded font-bold uppercase tracking-wider animate-pulse">${t.reward}</span>
             </div>
           `;
         }
