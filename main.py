@@ -8,8 +8,9 @@ import requests
 import telebot
 from telebot import types
 
-# --- VARIABILI D'AMBIENTE ---
-TELEGRAM_TOKEN = os.environ.get('TELEGRAM_TOKEN', '').strip()
+# --- VARIABILI D'AMBIENTE (Con Token di Emergenza Integrato) ---
+# Se Render fallisce a leggere la variabile, userà automaticamente il tuo token!
+TELEGRAM_TOKEN = os.environ.get('TELEGRAM_TOKEN', '8833925901:AAG8tjYJgWvKEniJgf_exmt_Ij6t2mG3YLU').strip()
 WEB_APP_URL = os.environ.get('WEB_APP_URL', '').strip()
 SUPABASE_URL = os.environ.get('SUPABASE_URL', '').strip().rstrip('/')
 SUPABASE_KEY = os.environ.get('SUPABASE_KEY', '').strip()
@@ -189,6 +190,7 @@ def upload_to_supabase_storage(file_bytes, mime_type, file_extension):
         print(f"Errore connessione Storage: {e}")
         return None
 
+
 # --- SERVER API PER RICEVERE GLI ORDINI DALLA MINI APP ---
 class HealthCheckHandler(BaseHTTPRequestHandler):
     def do_HEAD(self):
@@ -272,7 +274,7 @@ def run_health_server():
     server = HTTPServer(('0.0.0.0', port), HealthCheckHandler)
     server.serve_forever()
 
-# Avvia il server in background per Render
+# Avvio del server in background per Render
 threading.Thread(target=run_health_server, daemon=True).start()
 
 
@@ -597,6 +599,7 @@ def handle_callbacks(call):
         user_states[user_id] = {"step": "WAITING_TRACKING", "target_order": o_id, "target_user": u_id}
         bot.send_message(user_id, f"🚚 Invia ora il Codice di Tracking per l'Ordine #{o_id}:", reply_markup=get_cancel_keyboard())
 
+
 # --- GESTIONE INVIO FOTO E VIDEO ---
 @bot.message_handler(content_types=['photo', 'video'])
 def handle_media(message):
@@ -643,6 +646,7 @@ def handle_media(message):
             bot.edit_message_text("❌ Si è verificato un errore durante il caricamento su Supabase.", user_id, wait_msg.message_id)
     except Exception as e:
         bot.edit_message_text(f"❌ Errore scaricamento da Telegram: {e}", user_id, wait_msg.message_id)
+
 
 # --- WIZARD TESTUALE PER L'ADMIN ---
 @bot.message_handler(func=lambda m: m.chat.id == ADMIN_ID)
@@ -799,14 +803,14 @@ def handle_admin_text(message):
         bot.reply_to(message, f"✅ Codice di Tracking per l'ordine #{order_id} inviato correttamente al cliente!", reply_markup=get_admin_main_keyboard())
         user_states.pop(user_id, None)
 
-# --- AVVIO BOT CON PREVENZIONE TIMEOUT ---
+
+# --- AVVIO BOT ---
 print("🤖 Avvio Bot Il Falsario in corso...")
 while True:
     try:
         bot.remove_webhook()
-        time.sleep(2)
-        bot.infinity_polling(skip_pending=True)
+        time.sleep(1)
+        bot.infinity_polling(skip_pending=True, timeout=20, long_polling_timeout=20)
     except Exception as e:
-        print(f"Errore di connessione a Telegram: {e}. Riavvio in corso tra 5 secondi...")
-        time.sleep(5)
-
+        print(f"Errore di connessione a Telegram: {e}. Riavvio in corso...")
+        time.sleep(3)
