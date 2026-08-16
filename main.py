@@ -9,7 +9,6 @@ import telebot
 from telebot import types
 
 # --- VARIABILI D'AMBIENTE (Con Token di Emergenza Integrato) ---
-# Se Render fallisce a leggere la variabile, userà automaticamente il tuo token!
 TELEGRAM_TOKEN = os.environ.get('TELEGRAM_TOKEN', '8833925901:AAG8tjYJgWvKEniJgf_exmt_Ij6t2mG3YLU').strip()
 WEB_APP_URL = os.environ.get('WEB_APP_URL', 'https://il-falsario.onrender.com').strip()
 SUPABASE_URL = os.environ.get('SUPABASE_URL', 'https://niyhpvtiefisycxbkjie.supabase.co').strip().rstrip('/')
@@ -508,7 +507,7 @@ def handle_callbacks(call):
     elif data.startswith("edprc_"):
         p_id = data.split("_")[1]
         user_states[user_id] = {"step": "EDIT_PRICES", "target_product": p_id}
-        bot.send_message(user_id, "💰 Scrivi le NUOVE VARIANTI DI PREZZO.\nEsempio: 10g - 50, 25g - 100", reply_markup=get_cancel_keyboard())
+        bot.send_message(user_id, "💰 Scrivi le NUOVE VARIANTI DI PREZZO (Separate da virgola).\nEsempio: 10pz 140, 20pz 250", reply_markup=get_cancel_keyboard())
 
     elif data.startswith("edmedia_"):
         p_id = data.split("_")[1]
@@ -629,7 +628,6 @@ def handle_media(message):
         mime = 'image/jpeg'
         ext = 'jpg'
     else:
-        # CONTROLLO PESO VIDEO: Il limite nativo di Telegram per i Bot è 20MB.
         if message.video.file_size > 20 * 1024 * 1024:
             bot.edit_message_text(
                 "❌ **ATTENZIONE! IL VIDEO È TROPPO GRANDE.**\n\nTelegram impedisce ai bot di scaricare video che pesano più di 20MB. Comprimilo un po' o taglialo e riprova.", 
@@ -661,7 +659,6 @@ def handle_media(message):
                 user_id, wait_msg.message_id, reply_markup=get_media_done_keyboard()
             )
         else:
-            # ERRORE ESATTO DI SUPABASE STAMPATO IN CHAT AL POSTO DEL MESSAGGIO GENERICO
             bot.edit_message_text(
                 f"❌ **ERRORE SUPABASE!**\nFai lo screen e inviamelo, questo è il problema esatto:\n\n{errore_dettagliato}", 
                 user_id, wait_msg.message_id
@@ -717,23 +714,46 @@ def handle_admin_text(message):
         bot.reply_to(message, "✅ Descrizione aggiornata con successo!", reply_markup=get_admin_main_keyboard())
         user_states.pop(user_id, None)
 
+    # --- NUOVO SISTEMA INTELLIGENTE PER I PREZZI IN MODIFICA ---
     elif step == "EDIT_PRICES":
         try:
             clean_text = message.text.replace("–", "-").replace("—", "-").replace("):", "").replace(")", "").strip()
             raw_variants = clean_text.split(",")
             prices = []
+            
             for r in raw_variants:
+                r = r.strip()
+                if not r: continue
+                
+                # Se c'è il trattino usalo
                 if "-" in r:
-                    qty = r.split("-")[0].strip()
-                    price_str = r.split("-")[1].replace("€", "").strip()
-                    prices.append({"qty": qty, "price": float(price_str)})
+                    parts = r.split("-")
+                    qty = "-".join(parts[:-1]).strip()
+                    price_str = parts[-1].replace("€", "").strip()
+                # Se NON c'è il trattino, taglia con l'ultimo spazio (es: "10pz 140")
+                else:
+                    parts = r.split()
+                    if len(parts) >= 2:
+                        qty = " ".join(parts[:-1]).strip()
+                        price_str = parts[-1].replace("€", "").strip()
+                    else:
+                        continue
+                        
+                prices.append({"qty": qty, "price": float(price_str)})
+                
             if not prices:
-                raise ValueError("Nessun formato valido.")
+                raise ValueError("Nessun formato di prezzo valido individuato.")
+                
             db_update_product(state["target_product"], {"price_options": prices})
             bot.reply_to(message, "✅ Prezzi aggiornati con successo!", reply_markup=get_admin_main_keyboard())
             user_states.pop(user_id, None)
-        except Exception:
-            bot.reply_to(message, "❌ Formato errato. Esempio corretto: 10g - 50, 25g - 100", reply_markup=get_cancel_keyboard())
+            
+        except Exception as e:
+            bot.reply_to(
+                message, 
+                "❌ Formato non riconosciuto.\nEsempi corretti: 10pz 140, oppure 10g - 50", 
+                reply_markup=get_cancel_keyboard()
+            )
             return
 
     elif step == "WAITING_NAME":
@@ -750,10 +770,11 @@ def handle_admin_text(message):
         state["step"] = "WAITING_PRICES"
         bot.reply_to(
             message, 
-            "💰 Ultimo step. Invia i PREZZI e le VARIANTI (Esempio: 10g - 50, 25g - 100):", 
+            "💰 Ultimo step. Invia i PREZZI e le VARIANTI separate da virgola.\nPuoi scriverli come ti pare (Es: 10pz 140, 20pz 250, oppure 10g - 50):", 
             reply_markup=get_cancel_keyboard()
         )
 
+    # --- NUOVO SISTEMA INTELLIGENTE PER I PREZZI IN CREAZIONE ---
     elif step == "WAITING_PRICES":
         try:
             clean_text = message.text.replace("–", "-").replace("—", "-").replace("):", "").replace(")", "").strip()
@@ -761,10 +782,24 @@ def handle_admin_text(message):
             prices = []
             
             for r in raw_variants:
+                r = r.strip()
+                if not r: continue
+                
+                # Se c'è il trattino usalo
                 if "-" in r:
-                    qty = r.split("-")[0].strip()
-                    price_str = r.split("-")[1].replace("€", "").strip()
-                    prices.append({"qty": qty, "price": float(price_str)})
+                    parts = r.split("-")
+                    qty = "-".join(parts[:-1]).strip()
+                    price_str = parts[-1].replace("€", "").strip()
+                # Se NON c'è il trattino, taglia con l'ultimo spazio (es: "10pz 140")
+                else:
+                    parts = r.split()
+                    if len(parts) >= 2:
+                        qty = " ".join(parts[:-1]).strip()
+                        price_str = parts[-1].replace("€", "").strip()
+                    else:
+                        continue
+                        
+                prices.append({"qty": qty, "price": float(price_str)})
                     
             if not prices:
                 raise ValueError("Nessun formato di prezzo valido individuato.")
@@ -772,7 +807,7 @@ def handle_admin_text(message):
         except Exception as e:
             bot.reply_to(
                 message, 
-                "❌ Formato non riconosciuto.\nEsempio corretto: 10g - 50, 25g - 100", 
+                "❌ Formato non riconosciuto.\nEsempi corretti: 10pz 140, oppure 10g - 50", 
                 reply_markup=get_cancel_keyboard()
             )
             return
