@@ -8,7 +8,7 @@ import requests
 import telebot
 from telebot import types
 
-# --- VARIABILI D'AMBIENTE ---
+# --- VARIABILI D'AMBIENTE CONFIGURATE ---
 TELEGRAM_TOKEN = os.environ.get('TELEGRAM_TOKEN', '').strip()
 WEB_APP_URL = os.environ.get('WEB_APP_URL', '').strip()
 SUPABASE_URL = os.environ.get('SUPABASE_URL', '').strip().rstrip('/')
@@ -137,7 +137,6 @@ def upload_to_supabase_storage(file_bytes, mime_type, file_extension):
     except: pass
     return None
 
-# --- SERVER HTTP PER RENDER E VERCEL ---
 class HealthCheckHandler(BaseHTTPRequestHandler):
     def do_HEAD(self):
         self.send_response(200)
@@ -155,7 +154,7 @@ class HealthCheckHandler(BaseHTTPRequestHandler):
         self.send_response(200)
         self.send_header('Access-Control-Allow-Origin', '*')
         self.end_headers()
-        self.wfile.write(b"Bot Il Falsario 100% Active")
+        self.wfile.write(b"Bot Il Falsario 100% Active & Extended Engine Running")
 
     def do_POST(self):
         if self.path == '/api/order':
@@ -208,7 +207,8 @@ def get_admin_main_keyboard():
         types.InlineKeyboardButton("📦 Gestione Caveau", callback_data="m_prod"),
         types.InlineKeyboardButton("🛒 Gestione Richieste", callback_data="m_ord"),
         types.InlineKeyboardButton("📜 Storico Pratiche", callback_data="m_hist"),
-        types.InlineKeyboardButton("🏆 Gestione Privilegi", callback_data="m_pts")
+        types.InlineKeyboardButton("💎 Gestione Punti Fedeltà", callback_data="m_pts"),
+        types.InlineKeyboardButton("⚙️ Stato Sistema & Diagnostica", callback_data="m_diag")
     )
     return markup
 
@@ -234,7 +234,6 @@ def get_media_done_keyboard():
     )
     return markup
 
-# --- COMANDI TELEGRAM ---
 @bot.message_handler(commands=['start'])
 def send_welcome(message):
     user_id = message.chat.id
@@ -310,7 +309,18 @@ def handle_callbacks(call):
 
     elif data == "m_pts":
         user_states.pop(user_id, None)
-        bot.send_message(user_id, "🏆 GESTIONE\n• /punti ID QUANTITA\n• /trofeo ID NOMETROFEO", reply_markup=get_cancel_keyboard())
+        bot.send_message(user_id, "💎 GESTIONE PUNTI FEDELTÀ\n• /punti ID QUANTITA\n• /trofeo ID NOMERICONOSCIMENTO", reply_markup=get_cancel_keyboard())
+
+    elif data == "m_diag":
+        user_states.pop(user_id, None)
+        diag_msg = (
+            "🛠 **DIAGNOSTICA SISTEMA IL FALSARIO**\n\n"
+            f"• Connessione Supabase: {'Attiva ✅' if SUPABASE_URL else 'Assente ❌'}\n"
+            f"• Token Telegram: {'Configurato ✅' if TELEGRAM_TOKEN else 'Mancante ❌'}\n"
+            f"• Web App URL: {WEB_APP_URL or 'Non impostato'}\n"
+            f"• Admin ID: {ADMIN_ID}"
+        )
+        bot.send_message(user_id, diag_msg, parse_mode="Markdown", reply_markup=get_cancel_keyboard())
 
     elif data == "p_add":
         user_states.pop(user_id, None)
@@ -465,7 +475,7 @@ def handle_admin_text(message):
             parts = message.text.split()
             target_user, qty = int(parts[1]), int(parts[2])
             ok, new_total = db_update_user_points(target_user, qty)
-            if ok: bot.reply_to(message, f"✅ Livello Affidabilità aggiornato: {new_total}")
+            if ok: bot.reply_to(message, f"✅ Punti Fedeltà aggiornati: {new_total}")
         except: bot.reply_to(message, "❌ /punti ID QUANTITA")
         return
 
@@ -529,14 +539,13 @@ def handle_admin_text(message):
         bot.reply_to(message, "✅ Dettagli extra inviati al cliente!", reply_markup=get_admin_main_keyboard())
         user_states.pop(user_id, None)
 
-# --- AVVIO IN PARALLELO (SERVER + BOT) ---
 if __name__ == "__main__":
     threading.Thread(target=run_health_server, daemon=True).start()
-    
     print("🤖 Avvio Bot Il Falsario in corso...")
     while True:
         try:
             bot.remove_webhook()
+            time.sleep(1)
             bot.infinity_polling(skip_pending=True, timeout=20, long_polling_timeout=20)
         except Exception as e:
             time.sleep(3)
