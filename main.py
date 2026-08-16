@@ -317,18 +317,21 @@ def send_welcome(message):
     db_register_user(user_id, username)
 
     welcome_text = (
-        "🎭 Benvenuto ne Il Falsario!\n\n"
+        "Benvenuti dal Falsario 🤗\n\n"
+        "💬 Contatto Telegram Ufficiale: @il_falsario_ufficiale_x2\n"
+        "📢 Canale Feedback: https://t.me/+eRPnJSZq485kMzdk\n\n"
         "Massima serietà, discrezione totale e qualità impeccabile.\n"
         "Sei nel posto giusto per le tue necessità.\n\n"
-        "🔐 Clicca in basso per accedere al caveau."
+        "👇 Clicca in basso per accedere al caveau."
     )
 
     markup = types.InlineKeyboardMarkup()
     if WEB_APP_URL:
-        btn = types.InlineKeyboardButton("🎭 Accedi al Caveau", web_app=types.WebAppInfo(WEB_APP_URL))
+        btn = types.InlineKeyboardButton("🏦 Accedi al Caveau", web_app=types.WebAppInfo(WEB_APP_URL))
         markup.add(btn)
 
-    bot.send_message(user_id, welcome_text, reply_markup=markup)
+    # Invia il messaggio senza far generare l'anteprima gigante del link (disable_web_page_preview=True)
+    bot.send_message(user_id, welcome_text, reply_markup=markup, disable_web_page_preview=True)
 
 
 # --- COMANDI AMMINISTRATORE ---
