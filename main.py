@@ -8,11 +8,11 @@ import requests
 import telebot
 from telebot import types
 
-# --- VARIABILI D'AMBIENTE CON DATI INIETTATI IN AUTOMATICO ---
-TELEGRAM_TOKEN = os.environ.get('TELEGRAM_TOKEN', '8833925901:AAEenOo-x4eS7Lz-Mw6sviSBCT8T6uvLXJQ').strip()
+# --- VARIABILI D'AMBIENTE ---
+TELEGRAM_TOKEN = os.environ.get('TELEGRAM_TOKEN', '').strip()
 WEB_APP_URL = os.environ.get('WEB_APP_URL', '').strip()
-SUPABASE_URL = os.environ.get('SUPABASE_URL', 'https://niyhpvtiefisycxbkjie.supabase.co').strip().rstrip('/')
-SUPABASE_KEY = os.environ.get('SUPABASE_KEY', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5peWhwdnRpZWZpc3ljeGJramllIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY4MjQ2MDUsImV4cCI6MjEwMjQwMDYwNX0.ODucTrP0dzByGNhyyIYv-S-kIH5cTs8X_Url-7jXRMY').strip()
+SUPABASE_URL = os.environ.get('SUPABASE_URL', '').strip().rstrip('/')
+SUPABASE_KEY = os.environ.get('SUPABASE_KEY', '').strip()
 ADMIN_ID = int(os.environ.get('ADMIN_ID', 8716217678))
 
 bot = telebot.TeleBot(TELEGRAM_TOKEN)
@@ -137,6 +137,7 @@ def upload_to_supabase_storage(file_bytes, mime_type, file_extension):
     except: pass
     return None
 
+# --- SERVER HTTP PER RENDER E VERCEL ---
 class HealthCheckHandler(BaseHTTPRequestHandler):
     def do_HEAD(self):
         self.send_response(200)
@@ -201,8 +202,6 @@ def run_health_server():
     server = HTTPServer(('0.0.0.0', port), HealthCheckHandler)
     server.serve_forever()
 
-threading.Thread(target=run_health_server, daemon=True).start()
-
 def get_admin_main_keyboard():
     markup = types.InlineKeyboardMarkup(row_width=1)
     markup.add(
@@ -235,6 +234,7 @@ def get_media_done_keyboard():
     )
     return markup
 
+# --- COMANDI TELEGRAM ---
 @bot.message_handler(commands=['start'])
 def send_welcome(message):
     user_id = message.chat.id
@@ -529,11 +529,14 @@ def handle_admin_text(message):
         bot.reply_to(message, "✅ Dettagli extra inviati al cliente!", reply_markup=get_admin_main_keyboard())
         user_states.pop(user_id, None)
 
-print("🤖 Avvio Bot Il Falsario in corso...")
-while True:
-    try:
-        bot.remove_webhook()
-        bot.infinity_polling(skip_pending=True, timeout=20, long_polling_timeout=20)
-    except Exception as e:
-        time.sleep(3)
-
+# --- AVVIO IN PARALLELO (SERVER + BOT) ---
+if __name__ == "__main__":
+    threading.Thread(target=run_health_server, daemon=True).start()
+    
+    print("🤖 Avvio Bot Il Falsario in corso...")
+    while True:
+        try:
+            bot.remove_webhook()
+            bot.infinity_polling(skip_pending=True, timeout=20, long_polling_timeout=20)
+        except Exception as e:
+            time.sleep(3)
