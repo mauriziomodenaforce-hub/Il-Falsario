@@ -16,6 +16,8 @@ SUPABASE_KEY = os.environ.get('SUPABASE_KEY', '').strip()
 ADMIN_ID = int(os.environ.get('ADMIN_ID', 8716217678))
 
 bot = telebot.TeleBot(TELEGRAM_TOKEN)
+
+# Dizionario per memorizzare lo stato dell'amministratore durante l'inserimento o modifica
 user_states = {}
 
 # --- HELPER SUPABASE REST API ---
@@ -187,7 +189,7 @@ def upload_to_supabase_storage(file_bytes, mime_type, file_extension):
         print(f"Errore connessione Storage: {e}")
         return None
 
-# --- SERVER API PER GLI ORDINI DALLA MINI APP ---
+# --- SERVER API PER RICEVERE GLI ORDINI DALLA MINI APP ---
 class HealthCheckHandler(BaseHTTPRequestHandler):
     def do_HEAD(self):
         self.send_response(200)
@@ -270,8 +272,9 @@ def run_health_server():
     server = HTTPServer(('0.0.0.0', port), HealthCheckHandler)
     server.serve_forever()
 
-# Avvio del server HTTP in background
+# Avvia il server in background per Render
 threading.Thread(target=run_health_server, daemon=True).start()
+
 
 # --- TASTIERE GESTIONALI ---
 def get_admin_main_keyboard():
@@ -306,7 +309,8 @@ def get_media_done_keyboard():
     )
     return markup
 
-# --- COMANDI UTENTE ---
+
+# --- COMANDI UTENTE NORMALE ---
 @bot.message_handler(commands=['start'])
 def send_welcome(message):
     user_id = message.chat.id
@@ -327,7 +331,8 @@ def send_welcome(message):
 
     bot.send_message(user_id, welcome_text, reply_markup=markup)
 
-# --- COMANDI ADMIN ---
+
+# --- COMANDI AMMINISTRATORE ---
 @bot.message_handler(commands=['admin', 'cancel', 'menu'])
 def admin_panel(message):
     user_id = message.chat.id
@@ -343,7 +348,8 @@ def admin_panel(message):
         reply_markup=get_admin_main_keyboard()
     )
 
-# --- CALLBACKS ---
+
+# --- GESTIONE DEI PULSANTI INLINE ---
 @bot.callback_query_handler(func=lambda call: True)
 def handle_callbacks(call):
     user_id = call.message.chat.id
@@ -591,7 +597,7 @@ def handle_callbacks(call):
         user_states[user_id] = {"step": "WAITING_TRACKING", "target_order": o_id, "target_user": u_id}
         bot.send_message(user_id, f"🚚 Invia ora il Codice di Tracking per l'Ordine #{o_id}:", reply_markup=get_cancel_keyboard())
 
-# --- GESTIONE INVIO MEDIA ---
+# --- GESTIONE INVIO FOTO E VIDEO ---
 @bot.message_handler(content_types=['photo', 'video'])
 def handle_media(message):
     user_id = message.chat.id
@@ -638,7 +644,7 @@ def handle_media(message):
     except Exception as e:
         bot.edit_message_text(f"❌ Errore scaricamento da Telegram: {e}", user_id, wait_msg.message_id)
 
-# --- GESTIONE TESTO ADMIN ---
+# --- WIZARD TESTUALE PER L'ADMIN ---
 @bot.message_handler(func=lambda m: m.chat.id == ADMIN_ID)
 def handle_admin_text(message):
     user_id = message.chat.id
@@ -793,12 +799,13 @@ def handle_admin_text(message):
         bot.reply_to(message, f"✅ Codice di Tracking per l'ordine #{order_id} inviato correttamente al cliente!", reply_markup=get_admin_main_keyboard())
         user_states.pop(user_id, None)
 
-# --- AVVIO BOT ---
+# --- AVVIO BOT CON PREVENZIONE TIMEOUT ---
 print("🤖 Avvio Bot Il Falsario in corso...")
 while True:
     try:
         bot.remove_webhook()
-        bot.infinity_polling(skip_pending=True, timeout=20, long_polling_timeout=20)
+        time.sleep(2)
+        bot.infinity_polling(skip_pending=True)
     except Exception as e:
-        print(f"Errore di connessione a Telegram: {e}. Riavvio in corso...")
-        time.sleep(3)
+        print(f"Errore di connessione a Telegram: {e}. Riavvio in corso tra 5 secondi...")
+        time.sleep(5)
