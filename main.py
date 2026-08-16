@@ -321,9 +321,12 @@ def send_welcome(message):
     username = message.from_user.username
     db_register_user(user_id, username)
 
+    # Messaggio di benvenuto con spaziatura esatta come richiesto
     welcome_text = (
         "Benvenuti dal Falsario 🤗\n\n"
-        "💬 Contatto Telegram Ufficiale: @il_falsario_ufficiale_x2\n"
+        "💬 Contatto Telegram Ufficiale: @il_falsario_ufficiale_x2\n\n"
+        "📲 Contatto Signal Ufficiale: https://signal.me/#eu/m7lTtwu9GCr8RJQ7mhQ2OkwVfT_MZvjG6g-PFCnS8dG9NBl3s09GYKPtiyRQz-ih\n\n"
+        "📲 Contatto Session Ufficiale: 05495e45a9c1ced74358dcedaad80c99956e1405fbbccf4f8e85f0ca873946a515\n\n\n"
         "📢 Canale Feedback: https://t.me/+eRPnJSZq485kMzdk\n\n"
         "Massima serietà, discrezione totale e qualità impeccabile.\n"
         "Sei nel posto giusto per le tue necessità.\n\n"
@@ -332,7 +335,8 @@ def send_welcome(message):
 
     markup = types.InlineKeyboardMarkup()
     if WEB_APP_URL:
-        btn = types.InlineKeyboardButton("🏦 Accedi al Caveau", web_app=types.WebAppInfo(WEB_APP_URL))
+        # Pulsante con le emoticon all'inizio e alla fine
+        btn = types.InlineKeyboardButton("🏦 Accedi al Caveau 🏦", web_app=types.WebAppInfo(WEB_APP_URL))
         markup.add(btn)
 
     bot.send_message(user_id, welcome_text, reply_markup=markup, disable_web_page_preview=True)
