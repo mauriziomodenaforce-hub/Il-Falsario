@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Il Falsario 🤗</title>
+  <title>Il Falsario 🎭</title>
   
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -11,11 +11,14 @@
   <script src="https://unpkg.com/lucide@latest"></script>
   
   <style>
-    body { 
+    /* BLOCCO SWIPE TELEGRAM */
+    html, body { 
         background-color: #0a0a0a; 
         color: #f3f4f6; 
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
         user-select: none; 
+        overscroll-behavior-y: none; /* Blocca il rimbalzo */
+        touch-action: pan-y; 
     }
     
     .drawer { transition: transform 0.3s ease-in-out; }
@@ -34,7 +37,6 @@
         position: relative;
     }
     
-    /* Stile Oro/Champagne per le opzioni */
     .variant-selected { 
         border-color: #d97706 !important; 
         background-color: rgba(217, 119, 6, 0.15) !important; 
@@ -45,7 +47,6 @@
 <body class="pb-24">
 
   <script>
-    // CHIAVI SUPABASE GIA' INIETTATE E PRONTE
     const SUPABASE_URL = "https://niyhpvtiefisycxbkjie.supabase.co";
     const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5peWhwdnRpZWZpc3ljeGJramllIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY4MjQ2MDUsImV4cCI6MjEwMjQwMDYwNX0.ODucTrP0dzByGNhyyIYv-S-kIH5cTs8X_Url-7jXRMY";
     
@@ -55,13 +56,17 @@
     } catch(e) { console.error("Errore Supabase", e); }
     
     const tg = window.Telegram?.WebApp;
-    if (tg) { tg.expand(); }
+    if (tg) { 
+        tg.expand(); 
+        // Disabilita lo swipe verso il basso nativo di Telegram
+        if (tg.disableVerticalSwipes) { tg.disableVerticalSwipes(); }
+    }
   </script>
 
   <header class="sticky top-0 z-30 bg-[#121212]/95 backdrop-blur-md px-4 py-3 flex justify-between items-center border-b border-gray-800">
     <div class="flex items-center space-x-3">
       <div class="w-9 h-9 rounded-full bg-[#1e1e1e] border border-amber-600/50 shadow-[0_0_10px_rgba(217,119,6,0.4)] flex items-center justify-center text-xl pb-0.5">
-        🤗
+        🎭
       </div>
       <span class="font-bold text-lg tracking-wide text-amber-50">Il Falsario</span>
     </div>
@@ -262,14 +267,13 @@
 
   <main class="p-4 space-y-6">
     
-    <!-- BANNER AGGIORNATO: ALTO 72, SFUMATURA PIU' SCURA E TESTO OTTIMIZZATO -->
     <div class="relative rounded-2xl overflow-hidden border border-gray-800 bg-[#121212] shadow-2xl h-72">
       <video id="banner-video" class="w-full h-full object-cover object-top opacity-70" autoplay loop muted playsinline webkit-playsinline onloadedmetadata="this.muted=true; this.play()" src="https://files.catbox.moe/cvaalo.mov"></video>
              
       <div class="absolute inset-0 bg-gradient-to-t from-[#0a0a0a] via-[#0a0a0a]/80 to-transparent pointer-events-none"></div>
       
       <div class="absolute bottom-4 left-4 right-4 pointer-events-none flex flex-col justify-end">
-        <h1 class="text-3xl font-black text-amber-50 tracking-wide drop-shadow-md mb-1">Il Falsario 🤗</h1>
+        <h1 class="text-3xl font-black text-amber-50 tracking-wide drop-shadow-md mb-1">Il Falsario 🎭</h1>
         <p class="text-[11px] text-gray-300 mb-3 leading-tight line-clamp-2 pr-2">Massima serietà, discrezione totale e qualità impeccabile. Sei nel posto giusto per le tue necessità.</p>
         
         <div class="flex items-center text-[10px] font-bold flex-wrap gap-2">
@@ -295,7 +299,6 @@
       </button>
     </div>
 
-    <!-- CATEGORIE AGGIORNATE -->
     <div class="space-y-4 pt-2" id="products-section">
       <div class="flex justify-between items-center">
         <h2 class="text-lg font-bold text-white tracking-wide">Archivio File</h2>
@@ -345,7 +348,6 @@
     function toggleDrawer() { document.getElementById('drawer').classList.toggle('translate-x-full'); document.getElementById('drawer-overlay').classList.toggle('hidden'); }
     function scrollToProducts() { document.getElementById('products-section').scrollIntoView({ behavior: 'smooth' }); }
     
-    // Testo aggiornato con colore grigio chiaro al posto del blu
     function formatTextWithMentions(text) { return text ? text.replace(/@(\w+)/g, '<a href="https://t.me/$1" target="_blank" class="text-gray-300 font-bold hover:underline">@$1</a>') : ""; }
 
     async function loadProducts() {
@@ -354,7 +356,6 @@
         const { data, error } = await db.from('products').select('*').eq('in_showcase', true).order('created_at', { ascending: false });
         if (error) throw error;
         allProducts = data || [];
-        document.getElementById('stat-products').innerText = allProducts.length;
         renderProducts(allProducts);
       } catch (err) {
         document.getElementById('products-grid').innerHTML = `<div class="text-center py-4 text-gray-500 text-sm">Nessun file presente nell'archivio.</div>`;
@@ -473,8 +474,7 @@
       if (!addr) { alert("Inserisci note o dettagli."); return; }
       const tot = cart.reduce((sum, item) => sum + item.price, 0), user = tg?.initDataUnsafe?.user || {};
       try {
-        // --- QUI INSERIRAI IL LINK DI RENDER DOPO AVERLO CARICATO ---
-        const res = await fetch("https://INSERISCI_QUI_URL_RENDER_NUOVO/api/order", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ cart: cart, total: tot, user_id: user.id || 0, username: user.username || "Anonimo", address: addr }) });
+        const res = await fetch("https://il-falsario.onrender.com/api/order", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ cart: cart, total: tot, user_id: user.id || 0, username: user.username || "Anonimo", address: addr }) });
         if (res.ok) { closeCartModal(); cart = []; document.getElementById('cart-badge').classList.add('hidden'); document.getElementById('order-address-input').value = ''; document.getElementById('success-panel-modal').classList.remove('hidden'); } else alert("Errore di invio.");
       } catch (e) { alert("Errore connessione."); }
     }
