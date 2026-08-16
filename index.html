@@ -317,7 +317,7 @@
 
         <div class="flex flex-col space-y-3">
             <button onclick="filterCategory('ALL'); scrollToProducts();" class="bg-[#1a1a1a] w-fit hover:bg-gray-800 rounded-xl px-5 py-3 flex items-center text-[#34d399] text-sm font-semibold transition shadow-sm border border-gray-800/50">
-                <span class="mr-3 text-lg">🚢</span> Spedizioni (Ship)
+                <span class="mr-3 text-lg">🚚</span> Spedizioni (Ship)
             </button>
             <button onclick="filterCategory('Meet up Roma'); scrollToProducts();" class="bg-[#1a1a1a] w-fit hover:bg-gray-800 rounded-xl px-5 py-3 flex items-center text-[#fbbf24] text-sm font-semibold transition shadow-sm border border-gray-800/50">
                 <span class="mr-3 text-lg">🤝</span> Consegne a Mano (Meet Up)
@@ -336,27 +336,43 @@
         </button>
       </div>
 
-      <!-- Tasto per aprire la finestra info -->
+      <!-- Tasto per aprire la finestra info (Stile Platino/Azzurro Diamante) -->
       <button onclick="toggleInfoPanel()" class="w-full mt-3 bg-[#1a1a1a] border border-gray-800 hover:bg-gray-700 text-gray-300 font-bold py-3.5 px-4 rounded-xl flex items-center justify-between text-xs uppercase tracking-wider transition shadow-lg">
         <div class="flex items-center space-x-2">
-          <i data-lucide="info" class="w-4 h-4 text-amber-500"></i>
+          <i data-lucide="info" class="w-4 h-4 text-cyan-300 drop-shadow-[0_0_5px_rgba(103,232,249,0.5)]"></i>
           <span>Maggiori informazioni</span>
         </div>
         <i data-lucide="chevron-down" id="info-chevron" class="w-4 h-4 transition-transform duration-300"></i>
       </button>
 
-      <!-- Finestra a scorrimento automatico (Inizialmente nascosta) -->
+      <!-- Finestra a scorrimento automatico -->
       <div id="info-panel" class="overflow-hidden transition-all duration-300 max-h-0">
         <div class="bg-[#121212] border border-gray-800 rounded-xl p-5 mt-3 shadow-inner">
-          <h3 class="font-bold text-white mb-3 text-sm flex items-center">
+          <h3 class="font-bold text-white mb-4 text-sm flex items-center">
             Ulteriori informazioni <span class="ml-2 text-lg">ℹ️</span>
           </h3>
-          <p id="info-text-content" class="text-[13px] text-gray-400 leading-relaxed whitespace-pre-line font-light">
-            <!-- SOSTITUISCI QUESTO TESTO CON LE TUE INFORMAZIONI -->
-            Qui puoi inserire tutte le regole del tuo shop, 
-            i dettagli sulle spedizioni o sui meetup. 
-            Il box si adatterà automaticamente in altezza!
-          </p>
+          
+          <!-- Testo formattato -->
+          <div id="info-text-content" class="text-[13px] text-gray-300 leading-relaxed font-light space-y-5">
+            <div>
+              <span class="font-bold text-white tracking-wide">• Spedizioni (Ship) 🚚 :</span>
+              <div class="mt-2 space-y-2 ml-2 text-gray-400">
+                <p>- Tutte le spedizioni verranno effettuate il giorno successivo al pagamento;</p>
+                <p>- Le spedizioni vengono spedite tutti i giorni alle 8:30 del mattino dal lunedì al venerdì;</p>
+                <p>- Tutte le spedizioni su tutti i prodotti sono incluse nel prezzo e sono in 24/48h con track;</p>
+                <p>- Le spedizioni verranno effettuate tramite inpost o indirizzo privato a scelta del cliente;</p>
+              </div>
+            </div>
+            
+            <div>
+              <span class="font-bold text-white tracking-wide">• Meet Up 📍</span>
+              <div class="mt-2 space-y-2 ml-2 text-gray-400">
+                <p>- Tutti i meet e le varie consegne sono disponibili su tutta Roma e provincia solo per grosse ordinazioni e previa verifica;</p>
+                <p>- Disponibili tutti i giorni da Lunedì a Sabato, dalle ore 10:00 alle ore 0:00</p>
+              </div>
+            </div>
+          </div>
+          
         </div>
       </div>
     </div>
