@@ -274,9 +274,6 @@ def run_health_server():
     server = HTTPServer(('0.0.0.0', port), HealthCheckHandler)
     server.serve_forever()
 
-# Avvio del server in background per Render
-threading.Thread(target=run_health_server, daemon=True).start()
-
 
 # --- TASTIERE GESTIONALI ---
 def get_admin_main_keyboard():
@@ -803,14 +800,18 @@ def handle_admin_text(message):
         bot.reply_to(message, f"✅ Codice di Tracking per l'ordine #{order_id} inviato correttamente al cliente!", reply_markup=get_admin_main_keyboard())
         user_states.pop(user_id, None)
 
-
-# --- AVVIO BOT ---
-print("🤖 Avvio Bot Il Falsario in corso...")
-while True:
-    try:
-        bot.remove_webhook()
-        time.sleep(1)
-        bot.infinity_polling(skip_pending=True, timeout=20, long_polling_timeout=20)
-    except Exception as e:
-        print(f"Errore di connessione a Telegram: {e}. Riavvio in corso...")
-        time.sleep(3)
+# --- AVVIO BOT E SERVER WEB (STRUTTURA CORRETTA PER RENDER) ---
+if __name__ == '__main__':
+    # 1. Avvia il server web in background per Render
+    threading.Thread(target=run_health_server, daemon=True).start()
+    
+    # 2. Mantieni il bot Telegram in primissimo piano
+    print("🤖 Avvio Bot Il Falsario in corso...")
+    while True:
+        try:
+            bot.remove_webhook()
+            time.sleep(2)
+            bot.infinity_polling(skip_pending=True, timeout=20, long_polling_timeout=20)
+        except Exception as e:
+            print(f"Errore di connessione a Telegram: {e}. Riavvio in corso...")
+            time.sleep(5)
