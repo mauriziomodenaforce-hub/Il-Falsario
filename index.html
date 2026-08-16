@@ -161,7 +161,7 @@
     </button>
   </div>
 
-  <!-- MODALE PRIVILEGI E GAMIFICATION DI MARKETING BRUTALE -->
+  <!-- MODALE PRIVILEGI E MARKETING AGGRESSIVO -->
   <div id="trophies-modal" class="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4 hidden backdrop-blur-md">
     <div class="bg-[#121212] border border-amber-600/30 rounded-2xl w-full max-w-sm p-5 space-y-4 shadow-2xl">
       <div class="flex justify-between items-center border-b border-gray-800 pb-3">
@@ -170,8 +170,6 @@
         </h3>
         <button onclick="closeTrophiesModal()" class="text-gray-500 hover:text-white"><i data-lucide="x" class="w-5 h-5"></i></button>
       </div>
-
-      <!-- Card Livello Affidabilità & Risparmio -->
       <div class="bg-gradient-to-br from-[#1a1a1a] to-[#0a0a0a] border border-amber-600/40 rounded-xl p-4 text-center relative overflow-hidden shadow-lg">
         <div class="absolute -right-3 -top-3 text-amber-500/10"><i data-lucide="percent" class="w-20 h-20"></i></div>
         <div class="flex justify-between items-center mb-1">
@@ -187,18 +185,13 @@
         </div>
         <p class="text-[10px] text-gray-400 mt-2 font-light" id="rank-next-target">Compra per sbloccare sconti crescenti e omaggi!</p>
       </div>
-
-      <!-- Sezione Trofei & Premi Reali -->
       <div class="space-y-2">
         <div class="flex justify-between items-center">
           <span class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Premi & Sconti Sbloccabili</span>
           <span class="text-[9px] text-amber-500/80">Più acquisti, più risparmi</span>
         </div>
-        <div id="user-trophies-list" class="space-y-2 max-h-52 overflow-y-auto pr-1">
-          <!-- Popolato via JS con marketing persuasivo -->
-        </div>
+        <div id="user-trophies-list" class="space-y-2 max-h-52 overflow-y-auto pr-1"></div>
       </div>
-
       <button onclick="closeTrophiesModal()" class="w-full bg-[#1a1a1a] border border-gray-800 hover:bg-gray-900 text-gray-300 font-bold py-3 rounded-xl text-xs uppercase tracking-wider transition">Chiudi</button>
     </div>
   </div>
@@ -286,10 +279,8 @@
     </div>
   </div>
 
-
   <main class="p-4 space-y-5">
     
-    <!-- 1. VIDEO BANNER CON 300 FEED AGGIUNTI IN ALTO -->
     <div class="relative rounded-2xl overflow-hidden border border-gray-800 bg-[#121212] shadow-2xl h-64">
       <video id="banner-video" class="w-full h-full object-cover opacity-60" autoplay loop muted playsinline webkit-playsinline onloadedmetadata="this.muted=true; this.play()" 
              src="https://files.catbox.moe/cvaalo.mov"></video>
@@ -298,9 +289,7 @@
       <div class="absolute bottom-4 left-5 right-5 pointer-events-none">
         <h1 class="text-3xl font-black text-amber-50 tracking-wide drop-shadow-md">Il Falsario 🎭</h1>
         
-        <!-- Icone in basso nel banner disposte su due righe -->
         <div class="flex flex-col gap-1.5 mt-2 text-[11px] font-bold tracking-wide">
-          <!-- RIGA 1: +300 Feed e Qualità Top -->
           <div class="flex items-center gap-4">
             <span class="flex items-center text-amber-300 drop-shadow-[0_0_8px_rgba(252,211,77,0.8)]">
               <i data-lucide="star" class="w-3.5 h-3.5 mr-1.5 fill-amber-400 text-amber-400"></i> +300 Feed
@@ -309,7 +298,6 @@
               <i data-lucide="gem" class="w-3.5 h-3.5 mr-1.5 text-cyan-200"></i> Qualità Top
             </span>
           </div>
-          <!-- RIGA 2: Massima Sicurezza -->
           <div>
             <span class="inline-flex items-center text-slate-200 drop-shadow-[0_0_8px_rgba(203,213,225,0.8)]">
               <i data-lucide="lock" class="w-3.5 h-3.5 mr-1.5 text-slate-100"></i> Massima Sicurezza
@@ -319,7 +307,6 @@
       </div>
     </div>
 
-    <!-- 2. BOX AGGIUNTIVO "BOSTON STYLE" CON BENVENUTO CORRETTO -->
     <div class="bg-[#121212] border border-gray-800 rounded-2xl p-5 shadow-2xl">
         <div class="flex flex-col gap-1 mb-4">
             <div class="flex items-center gap-2">
@@ -345,35 +332,30 @@
         </div>
     </div>
 
-    <!-- 3. TASTI NAVIGAZIONE E PANNELLO MAGGIORI INFORMAZIONI -->
     <div class="mt-2">
       <div class="grid grid-cols-2 gap-3">
         <button onclick="scrollToProducts()" class="bg-[#121212] border border-amber-600/30 hover:border-amber-500 text-amber-500 font-bold py-3.5 px-3 rounded-xl flex items-center justify-center space-x-2 text-xs uppercase tracking-wider transition shadow-lg">
           <i data-lucide="folder-open" class="w-4 h-4"></i><span>I Lavori</span>
         </button>
-        <!-- Tasto Fiducia acceso a grigio platino / metallico lucido -->
         <button onclick="openTrophiesModal()" class="bg-[#121212] border border-slate-300/40 hover:border-slate-200 text-slate-100 font-bold py-3.5 px-3 rounded-xl flex items-center justify-center space-x-2 text-xs uppercase tracking-wider transition shadow-[0_0_12px_rgba(203,213,225,0.15)]">
           <i data-lucide="shield" class="w-4 h-4 text-slate-200"></i><span>Fiducia</span>
         </button>
       </div>
 
-      <!-- Tasto per aprire la finestra info (Uniformato al brand) -->
-      <button onclick="toggleInfoPanel()" class="w-full mt-3 bg-[#121212] border border-amber-600/30 hover:border-amber-500 text-amber-500 font-bold py-3.5 px-4 rounded-xl flex items-center justify-between text-xs uppercase tracking-wider transition shadow-lg">
+      <!-- Tasto "Maggiori informazioni" nello stile neutro della foto 3 -->
+      <button onclick="toggleInfoPanel()" class="w-full mt-3 bg-[#121212] border border-gray-800 hover:border-gray-700 text-gray-300 font-bold py-3.5 px-4 rounded-xl flex items-center justify-between text-xs uppercase tracking-wider transition shadow-lg">
         <div class="flex items-center space-x-2">
-          <i data-lucide="info" class="w-4 h-4 text-amber-500"></i>
+          <i data-lucide="info" class="w-4 h-4 text-gray-400"></i>
           <span>Maggiori informazioni</span>
         </div>
-        <i data-lucide="chevron-down" id="info-chevron" class="w-4 h-4 text-amber-500 transition-transform duration-300"></i>
+        <i data-lucide="chevron-down" id="info-chevron" class="w-4 h-4 text-gray-500 transition-transform duration-300"></i>
       </button>
 
-      <!-- Finestra a scorrimento automatico -->
       <div id="info-panel" class="overflow-hidden transition-all duration-300 max-h-0">
         <div class="bg-[#121212] border border-gray-800 rounded-xl p-5 mt-3 shadow-inner">
           <h3 class="font-bold text-white mb-4 text-sm flex items-center">
             Ulteriori informazioni <span class="ml-2 text-lg">ℹ️</span>
           </h3>
-          
-          <!-- Testo formattato -->
           <div id="info-text-content" class="text-[13px] text-gray-300 leading-relaxed font-light space-y-5">
             <div>
               <span class="font-bold text-white tracking-wide">• Spedizioni (Ship) 🚚 :</span>
@@ -384,7 +366,6 @@
                 <p>- Le spedizioni verranno effettuate tramite inpost o indirizzo privato a scelta del cliente;</p>
               </div>
             </div>
-            
             <div>
               <span class="font-bold text-white tracking-wide">• Meet Up 📍</span>
               <div class="mt-2 space-y-2 ml-2 text-gray-400">
@@ -393,24 +374,26 @@
               </div>
             </div>
           </div>
-          
         </div>
       </div>
     </div>
 
-    <!-- CATEGORIE NUOVE AGGIORNATE -->
+    <!-- CATEGORIE RIORDINATE ESATTAMENTE COME RICHIESTO -->
     <div class="space-y-4 pt-4" id="products-section">
       <div class="flex justify-between items-center">
         <h2 class="text-lg font-bold text-white tracking-wide">Archivio File</h2>
       </div>
       <div class="flex space-x-2 overflow-x-auto hide-scrollbar pb-1">
         <button onclick="filterCategory('ALL', this)" class="cat-btn px-4 py-2 rounded-xl bg-amber-600 text-white text-xs font-bold whitespace-nowrap shadow-[0_0_10px_rgba(217,119,6,0.3)]">Tutti</button>
-        <button onclick="filterCategory('Documenti', this)" class="cat-btn px-4 py-2 rounded-xl bg-[#121212] border border-gray-800 text-gray-400 text-xs font-semibold whitespace-nowrap hover:text-gray-200">Documenti</button>
-        <button onclick="filterCategory('Weed', this)" class="cat-btn px-4 py-2 rounded-xl bg-[#121212] border border-gray-800 text-gray-400 text-xs font-semibold whitespace-nowrap hover:text-gray-200">Weed</button>
-        <button onclick="filterCategory('Servizi', this)" class="cat-btn px-4 py-2 rounded-xl bg-[#121212] border border-gray-800 text-gray-400 text-xs font-semibold whitespace-nowrap hover:text-gray-200">Servizi</button>
+        <button onclick="filterCategory('Meet up Roma', this)" class="cat-btn px-4 py-2 rounded-xl bg-[#121212] border border-gray-800 text-gray-400 text-xs font-semibold whitespace-nowrap hover:text-gray-200">Meet up</button>
+        <button onclick="filterCategory('Documenti falsi', this)" class="cat-btn px-4 py-2 rounded-xl bg-[#121212] border border-gray-800 text-gray-400 text-xs font-semibold whitespace-nowrap hover:text-gray-200">Documenti falsi</button>
         <button onclick="filterCategory('Banconote false', this)" class="cat-btn px-4 py-2 rounded-xl bg-[#121212] border border-gray-800 text-gray-400 text-xs font-semibold whitespace-nowrap hover:text-gray-200">Banconote false</button>
         <button onclick="filterCategory('Monete false', this)" class="cat-btn px-4 py-2 rounded-xl bg-[#121212] border border-gray-800 text-gray-400 text-xs font-semibold whitespace-nowrap hover:text-gray-200">Monete false</button>
-        <button onclick="filterCategory('Meet up Roma', this)" class="cat-btn px-4 py-2 rounded-xl bg-[#121212] border border-gray-800 text-gray-400 text-xs font-semibold whitespace-nowrap hover:text-gray-200">Meet up Roma</button>
+        <button onclick="filterCategory('Coca', this)" class="cat-btn px-4 py-2 rounded-xl bg-[#121212] border border-gray-800 text-gray-400 text-xs font-semibold whitespace-nowrap hover:text-gray-200">Coca</button>
+        <button onclick="filterCategory('Weed', this)" class="cat-btn px-4 py-2 rounded-xl bg-[#121212] border border-gray-800 text-gray-400 text-xs font-semibold whitespace-nowrap hover:text-gray-200">Weed</button>
+        <button onclick="filterCategory('Hash', this)" class="cat-btn px-4 py-2 rounded-xl bg-[#121212] border border-gray-800 text-gray-400 text-xs font-semibold whitespace-nowrap hover:text-gray-200">Hash</button>
+        <button onclick="filterCategory('Telefoni Cryptati', this)" class="cat-btn px-4 py-2 rounded-xl bg-[#121212] border border-gray-800 text-gray-400 text-xs font-semibold whitespace-nowrap hover:text-gray-200">Telefoni Cryptati</button>
+        <button onclick="filterCategory('Servizi', this)" class="cat-btn px-4 py-2 rounded-xl bg-[#121212] border border-gray-800 text-gray-400 text-xs font-semibold whitespace-nowrap hover:text-gray-200">Servizi</button>
         <button onclick="filterCategory('Altro', this)" class="cat-btn px-4 py-2 rounded-xl bg-[#121212] border border-gray-800 text-gray-400 text-xs font-semibold whitespace-nowrap hover:text-gray-200">Altro</button>
       </div>
     </div>
@@ -424,7 +407,6 @@
     lucide.createIcons();
     let allProducts = [], cart = [], currentProd = null, selectedVariantIndex = 0, currentQty = 1;
 
-    // Funzione animazione pannello info
     function toggleInfoPanel() {
       const panel = document.getElementById('info-panel');
       const chevron = document.getElementById('info-chevron');
@@ -613,24 +595,18 @@
       if (cat === 'ALL') renderProducts(allProducts); else renderProducts(allProducts.filter(p => p.category && p.category.includes(cat)));
     }
 
-    // STRATEGIA DI MARKETING AGGRESSIVA: SCONTI A SCALARE & OMAGGI
     async function openTrophiesModal() {
       document.getElementById('trophies-modal').classList.remove('hidden'); 
       const uid = tg?.initDataUnsafe?.user?.id || 0;
-      
       let points = 50; 
-
       if (uid && db) {
         try {
           const { data } = await db.from('users').select('*').eq('telegram_id', uid);
-          if (data && data.length > 0) {
-            points = data[0].points || 50;
-          }
+          if (data && data.length > 0) points = data[0].points || 50;
         } catch(e) {}
       }
 
       document.getElementById('user-points-val').innerText = points;
-
       let rankTitle = "Cliente Standard 🥉";
       let progressPercent = Math.min(100, (points / 150) * 100);
       let nextTargetText = "Effettua ordini per sbloccare sconti crescenti e omaggi!";
@@ -638,62 +614,37 @@
       if (points >= 500) {
         rankTitle = "VIP Black Diamond 💎 (Sconto 15% Fisso)";
         progressPercent = 100;
-        nextTargetText = "Livello massimo! Hai accesso a tutti i vantaggi e omaggi segreti.";
+        nextTargetText = "Livello massimo! Sconti e omaggi massimi attivi.";
       } else if (points >= 300) {
         rankTitle = "Cliente Gold 🥇 (Sconto 10% Fisso)";
         progressPercent = (points / 500) * 100;
-        nextTargetText = `Mancano ${500 - points} punti per sbloccare lo sconto del 15% e i prodotti omaggio VIP.`;
+        nextTargetText = `Mancano ${500 - points} punti per il Black Diamond (15% di sconto).`;
       } else if (points >= 150) {
         rankTitle = "Cliente Silver 🥈 (Sconto 5% Fisso)";
         progressPercent = (points / 300) * 100;
-        nextTargetText = `Mancano ${300 - points} punti per salire a Gold (10% di sconto su tutto).`;
+        nextTargetText = `Mancano ${300 - points} punti per passare a Gold (10% di sconto).`;
       }
       
       document.getElementById('user-rank-title').innerText = rankTitle;
       document.getElementById('rank-progress-bar').style.width = `${progressPercent}%`;
       document.getElementById('rank-next-target').innerText = nextTargetText;
 
-      // Trofei e premi basati su marketing aggressivo per indurre l'acquisto compulsivo
       const marketTrophies = [
-        { name: "🎁 Bonus Benvenuto", desc: "50 punti accumulati all'ingresso nel Caveau.", unlocked: true, reward: "ATTIVO" },
-        { name: "🏷️ Sconto 5% Silver", desc: "Attivo superati i 150 punti spesa.", unlocked: points >= 150, reward: points >= 150 ? "ATTIVO" : "SBLOCCA" },
-        { name: "🔥 Sconto 10% Gold", desc: "Attivo superati i 300 punti spesa.", unlocked: points >= 300, reward: points >= 300 ? "ATTIVO" : "SBLOCCA" },
-        { name: "💎 Sconto 15% + Omaggi VIP", desc: "Attivo superati i 500 punti spesa.", unlocked: points >= 500, reward: points >= 500 ? "ATTIVO" : "SBLOCCA" }
+        { name: "🎁 Bonus Benvenuto", desc: "50 punti accumulati all'ingresso.", unlocked: true, reward: "ATTIVO" },
+        { name: "🏷️ Sconto 5% Silver", desc: "Sbloccato a 150 punti spesa.", unlocked: points >= 150, reward: points >= 150 ? "ATTIVO" : "SBLOCCA" },
+        { name: "🔥 Sconto 10% Gold", desc: "Sbloccato a 300 punti spesa.", unlocked: points >= 300, reward: points >= 300 ? "ATTIVO" : "SBLOCCA" },
+        { name: "💎 Sconto 15% + Omaggi VIP", desc: "Sbloccato a 500 punti spesa.", unlocked: points >= 500, reward: points >= 500 ? "ATTIVO" : "SBLOCCA" }
       ];
 
       const lDiv = document.getElementById('user-trophies-list');
       let tHTML = '';
-      
       marketTrophies.forEach(t => {
         if (t.unlocked) {
-          tHTML += `
-            <div class="bg-[#1a1a1a] border border-amber-600/30 p-3 rounded-xl text-xs text-gray-200 flex items-center justify-between shadow-sm">
-              <div class="flex items-center space-x-2.5">
-                <i data-lucide="check-circle-2" class="w-4 h-4 text-amber-500 flex-shrink-0"></i>
-                <div>
-                  <div class="font-bold text-amber-50">${t.name}</div>
-                  <div class="text-[10px] text-gray-400 font-light mt-0.5">${t.desc}</div>
-                </div>
-              </div>
-              <span class="text-[9px] bg-amber-500/20 text-amber-400 px-2.5 py-1 rounded font-extrabold uppercase tracking-wider">${t.reward}</span>
-            </div>
-          `;
+          tHTML += `<div class="bg-[#1a1a1a] border border-amber-600/30 p-3 rounded-xl text-xs text-gray-200 flex items-center justify-between shadow-sm"><div class="flex items-center space-x-2.5"><i data-lucide="check-circle-2" class="w-4 h-4 text-amber-500 flex-shrink-0"></i><div><div class="font-bold text-amber-50">${t.name}</div><div class="text-[10px] text-gray-400 font-light mt-0.5">${t.desc}</div></div></div><span class="text-[9px] bg-amber-500/20 text-amber-400 px-2.5 py-1 rounded font-extrabold uppercase tracking-wider">${t.reward}</span></div>`;
         } else {
-          tHTML += `
-            <div class="bg-[#121212] border border-gray-800/80 p-3 rounded-xl text-xs text-gray-500 flex items-center justify-between opacity-80">
-              <div class="flex items-center space-x-2.5">
-                <i data-lucide="lock" class="w-4 h-4 text-gray-500 flex-shrink-0"></i>
-                <div>
-                  <div class="font-bold text-gray-300">${t.name}</div>
-                  <div class="text-[10px] text-gray-500 font-light mt-0.5">${t.desc}</div>
-                </div>
-              </div>
-              <span class="text-[9px] bg-amber-600/20 text-amber-400 border border-amber-500/30 px-2.5 py-1 rounded font-bold uppercase tracking-wider animate-pulse">${t.reward}</span>
-            </div>
-          `;
+          tHTML += `<div class="bg-[#121212] border border-gray-800/80 p-3 rounded-xl text-xs text-gray-500 flex items-center justify-between opacity-80"><div class="flex items-center space-x-2.5"><i data-lucide="lock" class="w-4 h-4 text-gray-500 flex-shrink-0"></i><div><div class="font-bold text-gray-300">${t.name}</div><div class="text-[10px] text-gray-500 font-light mt-0.5">${t.desc}</div></div></div><span class="text-[9px] bg-amber-600/20 text-amber-400 border border-amber-500/30 px-2.5 py-1 rounded font-bold uppercase tracking-wider animate-pulse">${t.reward}</span></div>`;
         }
       });
-
       lDiv.innerHTML = tHTML;
       lucide.createIcons();
     }
