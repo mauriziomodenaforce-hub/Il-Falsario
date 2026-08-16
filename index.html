@@ -269,7 +269,7 @@
 
   <main class="p-4 space-y-5">
     
-    <!-- 1. VIDEO BANNER ORIGINALE A SCHERMO INTERO CON ICONE ILLUMINATE (PLATINO/DIAMANTE) -->
+    <!-- 1. VIDEO BANNER CON 300 FEED AGGIUNTI IN ALTO -->
     <div class="relative rounded-2xl overflow-hidden border border-gray-800 bg-[#121212] shadow-2xl h-64">
       <video id="banner-video" class="w-full h-full object-cover opacity-60" autoplay loop muted playsinline webkit-playsinline onloadedmetadata="this.muted=true; this.play()" 
              src="https://files.catbox.moe/cvaalo.mov"></video>
@@ -277,32 +277,33 @@
       <div class="absolute inset-0 bg-gradient-to-t from-[#0a0a0a] via-black/40 to-transparent pointer-events-none"></div>
       <div class="absolute bottom-4 left-5 right-5 pointer-events-none">
         <h1 class="text-3xl font-black text-amber-50 tracking-wide drop-shadow-md">Il Falsario 🎭</h1>
-        <div class="flex items-center space-x-4 text-xs mt-2 font-bold tracking-wide">
+        
+        <!-- Icone in basso nel banner modificate come richiesto -->
+        <div class="flex flex-wrap items-center gap-3 text-[11px] mt-2 font-bold tracking-wide">
+          <!-- +300 Feed brillanti -->
+          <span class="flex items-center text-amber-300 drop-shadow-[0_0_8px_rgba(252,211,77,0.8)]">
+            <i data-lucide="star" class="w-3.5 h-3.5 mr-1.5 fill-amber-400 text-amber-400"></i> +300 Feed
+          </span>
           <!-- Lucchetto illuminato in Platino/Argento -->
           <span class="flex items-center text-slate-200 drop-shadow-[0_0_8px_rgba(203,213,225,0.8)]">
-            <i data-lucide="lock" class="w-4 h-4 mr-1.5 text-slate-100"></i> Massima Sicurezza
+            <i data-lucide="lock" class="w-3.5 h-3.5 mr-1.5 text-slate-100"></i> Massima Sicurezza
           </span>
           <!-- Gemma illuminata in Azzurro Diamante -->
           <span class="flex items-center text-cyan-300 drop-shadow-[0_0_8px_rgba(103,232,249,0.8)]">
-            <i data-lucide="gem" class="w-4 h-4 mr-1.5 text-cyan-200"></i> Qualità Top
+            <i data-lucide="gem" class="w-3.5 h-3.5 mr-1.5 text-cyan-200"></i> Qualità Top
           </span>
         </div>
       </div>
     </div>
 
-    <!-- 2. BOX AGGIUNTIVO "BOSTON STYLE" ESATTO COME DA SCREENSHOT -->
+    <!-- 2. BOX AGGIUNTIVO "BOSTON STYLE" CON BENVENUTO CORRETTO -->
     <div class="bg-[#121212] border border-gray-800 rounded-2xl p-5 shadow-2xl">
         <div class="flex flex-col gap-1 mb-4">
             <div class="flex items-center gap-2">
                 <span class="text-[20px]">🤗</span>
                 <h2 class="text-[17px] font-bold text-white leading-tight">
-                    Benvenuto nello shop de Il Falsario!
+                    Benvenuto nello shop del Falsario!
                 </h2>
-            </div>
-            <div class="ml-8 mt-0.5">
-                <span class="text-amber-500 text-[10px] uppercase tracking-widest font-black bg-amber-500/10 px-2 py-1 rounded border border-amber-500/20 inline-flex items-center">
-                   <i data-lucide="star" class="w-3 h-3 mr-1 fill-amber-500"></i> +300 Feed Positivi
-                </span>
             </div>
         </div>
         
@@ -321,13 +322,40 @@
         </div>
     </div>
 
-    <div class="grid grid-cols-2 gap-3 mt-1">
-      <button onclick="scrollToProducts()" class="bg-[#121212] border border-amber-600/30 hover:border-amber-500 text-amber-500 font-bold py-3.5 px-3 rounded-xl flex items-center justify-center space-x-2 text-xs uppercase tracking-wider transition shadow-lg">
-        <i data-lucide="folder-open" class="w-4 h-4"></i><span>I Lavori</span>
+    <!-- 3. TASTI NAVIGAZIONE E PANNELLO MAGGIORI INFORMAZIONI -->
+    <div class="mt-2">
+      <div class="grid grid-cols-2 gap-3">
+        <button onclick="scrollToProducts()" class="bg-[#121212] border border-amber-600/30 hover:border-amber-500 text-amber-500 font-bold py-3.5 px-3 rounded-xl flex items-center justify-center space-x-2 text-xs uppercase tracking-wider transition shadow-lg">
+          <i data-lucide="folder-open" class="w-4 h-4"></i><span>I Lavori</span>
+        </button>
+        <button onclick="openTrophiesModal()" class="bg-[#121212] border border-gray-800 hover:border-gray-700 text-gray-300 font-bold py-3.5 px-3 rounded-xl flex items-center justify-center space-x-2 text-xs uppercase tracking-wider transition">
+          <i data-lucide="shield" class="w-4 h-4"></i><span>Fiducia</span>
+        </button>
+      </div>
+
+      <!-- Tasto per aprire la finestra info -->
+      <button onclick="toggleInfoPanel()" class="w-full mt-3 bg-[#1a1a1a] border border-gray-800 hover:bg-gray-700 text-gray-300 font-bold py-3.5 px-4 rounded-xl flex items-center justify-between text-xs uppercase tracking-wider transition shadow-lg">
+        <div class="flex items-center space-x-2">
+          <i data-lucide="info" class="w-4 h-4 text-amber-500"></i>
+          <span>Maggiori informazioni</span>
+        </div>
+        <i data-lucide="chevron-down" id="info-chevron" class="w-4 h-4 transition-transform duration-300"></i>
       </button>
-      <button onclick="openTrophiesModal()" class="bg-[#121212] border border-gray-800 hover:border-gray-700 text-gray-300 font-bold py-3.5 px-3 rounded-xl flex items-center justify-center space-x-2 text-xs uppercase tracking-wider transition">
-        <i data-lucide="shield" class="w-4 h-4"></i><span>Fiducia</span>
-      </button>
+
+      <!-- Finestra a scorrimento automatico (Inizialmente nascosta) -->
+      <div id="info-panel" class="overflow-hidden transition-all duration-300 max-h-0">
+        <div class="bg-[#121212] border border-gray-800 rounded-xl p-5 mt-3 shadow-inner">
+          <h3 class="font-bold text-white mb-3 text-sm flex items-center">
+            Ulteriori informazioni <span class="ml-2 text-lg">ℹ️</span>
+          </h3>
+          <p id="info-text-content" class="text-[13px] text-gray-400 leading-relaxed whitespace-pre-line font-light">
+            <!-- SOSTITUISCI QUESTO TESTO CON LE TUE INFORMAZIONI -->
+            Qui puoi inserire tutte le regole del tuo shop, 
+            i dettagli sulle spedizioni o sui meetup. 
+            Il box si adatterà automaticamente in altezza!
+          </p>
+        </div>
+      </div>
     </div>
 
     <!-- CATEGORIE NUOVE AGGIORNATE -->
@@ -355,6 +383,19 @@
   <script>
     lucide.createIcons();
     let allProducts = [], cart = [], currentProd = null, selectedVariantIndex = 0, currentQty = 1;
+
+    // Funzione animazione pannello info
+    function toggleInfoPanel() {
+      const panel = document.getElementById('info-panel');
+      const chevron = document.getElementById('info-chevron');
+      if (panel.style.maxHeight && panel.style.maxHeight !== '0px') {
+        panel.style.maxHeight = '0px';
+        chevron.style.transform = 'rotate(0deg)';
+      } else {
+        panel.style.maxHeight = panel.scrollHeight + 'px';
+        chevron.style.transform = 'rotate(180deg)';
+      }
+    }
 
     function openMediaFullscreen(url, type) {
         const modal = document.getElementById('fullscreen-media-modal');
