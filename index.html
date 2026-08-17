@@ -21,9 +21,18 @@
         touch-action: pan-y;
     }
     
-    .drawer { transition: transform 0.3s ease-in-out; }
-    .hide-scrollbar::-webkit-scrollbar { display: none; }
-    .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    .drawer { 
+        transition: transform 0.3s ease-in-out; 
+    }
+    
+    .hide-scrollbar::-webkit-scrollbar { 
+        display: none; 
+    }
+    
+    .hide-scrollbar { 
+        -ms-overflow-style: none; 
+        scrollbar-width: none; 
+    }
     
     .media-slider { 
         display: flex;
@@ -31,12 +40,14 @@
         scroll-snap-type: x mandatory; 
         -webkit-overflow-scrolling: touch;
     }
+    
     .media-item { 
         flex: 0 0 100%;
         scroll-snap-align: start; 
         position: relative;
     }
     
+    /* Stile Oro/Champagne per le opzioni */
     .variant-selected { 
         border-color: #d97706 !important; 
         background-color: rgba(217, 119, 6, 0.15) !important; 
@@ -50,9 +61,11 @@
         overflow: hidden;
         transition: max-height 0.3s ease;
     }
+    
     .desc-fade.expanded {
         max-height: 200rem;
     }
+    
     .desc-fade::after {
         content: "";
         position: absolute;
@@ -64,6 +77,7 @@
         pointer-events: none;
         transition: opacity 0.3s ease;
     }
+    
     .desc-fade.expanded::after {
         opacity: 0;
     }
@@ -72,18 +86,23 @@
 <body class="pb-24">
 
   <script>
+    // CHIAVI SUPABASE GIA' INIETTATE E PRONTE
     const SUPABASE_URL = "https://niyhpvtiefisycxbkjie.supabase.co";
     const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5peWhwdnRpZWZpc3ljeGJramllIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY4MjQ2MDUsImV4cCI6MjEwMjQwMDYwNX0.ODucTrP0dzByGNhyyIYv-S-kIH5cTs8X_Url-7jXRMY";
     
     let db;
     try { 
         db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY); 
-    } catch(e) { console.error("Errore Supabase", e); }
+    } catch(e) { 
+        console.error("Errore Supabase", e); 
+    }
     
     const tg = window.Telegram?.WebApp;
     if (tg) { 
         tg.expand(); 
-        if (tg.disableVerticalSwipes) { tg.disableVerticalSwipes(); }
+        if (tg.disableVerticalSwipes) { 
+            tg.disableVerticalSwipes(); 
+        }
     }
 
     // --- NUOVO SISTEMA ID UNICO PER UTENTI WEB/APP ---
@@ -116,6 +135,7 @@
     }
   </script>
 
+  <!-- HEADER -->
   <header class="sticky top-0 z-30 bg-[#121212]/95 backdrop-blur-md px-4 py-3 flex justify-between items-center border-b border-gray-800">
     <div class="flex items-center space-x-3">
       <div class="w-9 h-9 rounded-full bg-[#1e1e1e] border border-amber-600/50 shadow-[0_0_10px_rgba(217,119,6,0.4)] flex items-center justify-center text-xl pb-0.5">
@@ -134,6 +154,7 @@
     </div>
   </header>
 
+  <!-- MENU LATERALE (SIDEBAR) -->
   <div id="drawer-overlay" onclick="toggleDrawer()" class="fixed inset-0 bg-black/70 z-40 hidden backdrop-blur-sm"></div>
   <aside id="drawer" class="fixed top-0 right-0 w-72 h-full bg-[#121212] z-50 transform translate-x-full drawer p-5 flex flex-col border-l border-amber-900/30 overflow-y-auto">
     <div class="flex justify-between items-center mb-8">
@@ -142,6 +163,7 @@
         <i data-lucide="x" class="w-6 h-6"></i>
       </button>
     </div>
+    
     <nav class="space-y-2 flex-1">
       <a href="#" onclick="toggleDrawer();" class="flex items-center space-x-3 px-3 py-3 rounded-xl bg-gradient-to-r from-amber-600/20 to-transparent text-amber-500 font-medium border border-amber-500/20">
         <i data-lucide="key" class="w-5 h-5"></i><span>Accesso Principale</span>
@@ -163,7 +185,7 @@
       </a>
     </nav>
     
-    <!-- SEZIONE IDENTIFICATIVO WEB E LOGIN -->
+    <!-- SEZIONE IDENTIFICATIVO WEB E LOGIN NELLA SIDEBAR -->
     <div class="mt-6 pt-5 border-t border-gray-800">
       <span class="text-[10px] font-bold text-gray-500 uppercase tracking-widest pl-3 mb-2 block">Il tuo Account</span>
       <button onclick="copyUserId()" class="w-full flex items-center justify-between px-3 py-3 rounded-xl bg-[#1a1a1a] border border-gray-800 hover:border-amber-600/50 transition mb-2">
@@ -183,6 +205,7 @@
     </div>
   </aside>
 
+  <!-- MODALE MEDIA FULLSCREEN -->
   <div id="fullscreen-media-modal" class="fixed inset-0 bg-black z-[100] hidden flex-col items-center justify-center backdrop-blur-xl">
     <button onclick="closeFullscreenMedia()" class="absolute top-6 right-6 bg-gray-900/80 p-3 rounded-full z-[110] text-white border border-gray-700/50 shadow-2xl">
       <i data-lucide="x" class="w-7 h-7"></i>
@@ -190,6 +213,7 @@
     <div id="fs-media-content" class="w-full h-full flex items-center justify-center"></div>
   </div>
 
+  <!-- MODALE CARRELLO -->
   <div id="cart-modal" class="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4 hidden backdrop-blur-md">
     <div class="bg-[#121212] border border-gray-800 rounded-2xl w-full max-w-sm p-5 space-y-4 shadow-2xl">
       <div class="flex justify-between items-center border-b border-gray-800 pb-3">
@@ -217,6 +241,7 @@
     </div>
   </div>
 
+  <!-- MODALE SUCCESSO ORDINE -->
   <div id="success-panel-modal" class="fixed inset-0 bg-[#0a0a0a] z-50 flex flex-col items-center justify-center p-6 text-center hidden">
     <div class="w-20 h-20 bg-gradient-to-tr from-amber-500 to-yellow-700 rounded-2xl flex items-center justify-center mb-6 shadow-[0_0_40px_rgba(245,158,11,0.3)]">
       <i data-lucide="check" class="w-12 h-12 text-white stroke-[3]"></i>
@@ -230,7 +255,7 @@
     </button>
   </div>
 
-  <!-- MODALE PRIVILEGI E INTERFACCIA INTERATTIVA AUTOMATICA -->
+  <!-- MODALE PRIVILEGI E MARKETING AGGRESSIVO -->
   <div id="trophies-modal" class="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4 hidden backdrop-blur-md">
     <div class="bg-[#121212] border border-amber-600/30 rounded-2xl w-full max-w-sm p-5 space-y-4 shadow-2xl">
       <div class="flex justify-between items-center border-b border-gray-800 pb-3">
@@ -239,8 +264,12 @@
         </h3>
         <button onclick="closeTrophiesModal()" class="text-gray-500 hover:text-white"><i data-lucide="x" class="w-5 h-5"></i></button>
       </div>
+      
+      <!-- Box Status -->
       <div class="bg-gradient-to-br from-[#1a1a1a] to-[#0a0a0a] border border-amber-600/40 rounded-xl p-4 text-center relative overflow-hidden shadow-lg">
-        <div class="absolute -right-3 -top-3 text-amber-500/10"><i data-lucide="percent" class="w-20 h-20"></i></div>
+        <div class="absolute -right-3 -top-3 text-amber-500/10">
+            <i data-lucide="percent" class="w-20 h-20"></i>
+        </div>
         <div class="flex justify-between items-center mb-1">
           <span class="text-[9px] uppercase text-amber-500 font-extrabold tracking-widest">Il tuo Status</span>
           <span id="user-rank-title" class="text-[9px] bg-amber-500/20 text-amber-400 font-bold px-2 py-0.5 rounded-full border border-amber-500/30">Cliente Standard 🥉</span>
@@ -255,20 +284,24 @@
         <p class="text-[10px] text-gray-400 mt-2 font-light" id="rank-next-target">Ogni 500€ di spesa ricevi 50 punti. Sblocca sconti perenni su tutti gli acquisti!</p>
       </div>
       
+      <!-- Lista Trofei / Sconti -->
       <div class="space-y-2">
         <div class="flex justify-between items-center">
           <span class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Premi & Sconti Sbloccabili</span>
           <span class="text-[9px] text-amber-500/80">Vantaggi perenni</span>
         </div>
         <div id="user-trophies-list" class="space-y-2 max-h-52 overflow-y-auto pr-1">
-          <!-- Popolato dinamicamente via JS in tempo reale dai punti Supabase -->
+          <!-- Popolato dinamicamente via JS -->
         </div>
       </div>
 
-      <button onclick="closeTrophiesModal()" class="w-full bg-[#1a1a1a] border border-gray-800 hover:bg-gray-900 text-gray-300 font-bold py-3 rounded-xl text-xs uppercase tracking-wider transition">Chiudi</button>
+      <button onclick="closeTrophiesModal()" class="w-full bg-[#1a1a1a] border border-gray-800 hover:bg-gray-900 text-gray-300 font-bold py-3 rounded-xl text-xs uppercase tracking-wider transition">
+        Chiudi
+      </button>
     </div>
   </div>
 
+  <!-- MODALE TRACKING Lavorazioni -->
   <div id="tracking-modal" class="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4 hidden backdrop-blur-md">
     <div class="bg-[#121212] border border-gray-800 rounded-2xl w-full max-w-sm p-5 space-y-4 shadow-2xl">
       <div class="flex justify-between items-center border-b border-gray-800 pb-3">
@@ -289,7 +322,7 @@
     </div>
   </div>
 
-  <!-- MODALE CONTATTO DIRETTO -->
+  <!-- MODALE CONTATTO DIRETTO (Aggiornato con Chat 24/24 e copia Session) -->
   <div id="support-modal" class="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4 hidden backdrop-blur-md">
     <div class="bg-[#121212] border border-amber-600/30 rounded-2xl w-full max-w-sm p-5 space-y-4 shadow-2xl">
       <div class="flex justify-between items-center border-b border-gray-800 pb-3">
@@ -300,14 +333,16 @@
       </div>
       
       <div class="space-y-2.5 max-h-[75vh] overflow-y-auto pr-1">
+        <!-- Chat Sicura -->
         <div class="bg-[#1a1a1a] border border-gray-800 rounded-xl p-3.5 flex items-center space-x-3">
           <div class="p-2 bg-amber-500/10 rounded-lg text-amber-500"><i data-lucide="shield" class="w-4 h-4"></i></div>
           <div>
             <span class="text-[9px] uppercase font-bold text-gray-400 block tracking-widest">Discrezione Totale</span>
-            <span class="text-xs font-bold text-gray-200">Chat Sicura 20/24</span>
+            <span class="text-xs font-bold text-gray-200">Chat Sicura 24/24</span>
           </div>
         </div>
 
+        <!-- Telegram -->
         <a href="https://t.me/il_falsario_ufficiale_x2" target="_blank" class="bg-[#1a1a1a] border border-gray-800 hover:border-amber-600/50 rounded-xl p-3.5 flex items-center space-x-3 transition block">
           <div class="p-2 bg-blue-500/10 rounded-lg text-blue-400"><i data-lucide="send" class="w-4 h-4"></i></div>
           <div class="flex-1 min-w-0">
@@ -316,6 +351,7 @@
           </div>
         </a>
 
+        <!-- Signal -->
         <a href="https://signal.me/#eu/m7lTtwu9GCr8RJQ7mhQ2OkwVfT_MZvjG6g-PFCnS8dG9NBl3s09GYKPtiyRQz-ih" target="_blank" class="bg-[#1a1a1a] border border-gray-800 hover:border-amber-600/50 rounded-xl p-3.5 flex items-center space-x-3 transition block">
           <div class="p-2 bg-indigo-500/10 rounded-lg text-indigo-400"><i data-lucide="lock" class="w-4 h-4"></i></div>
           <div class="flex-1 min-w-0">
@@ -324,7 +360,7 @@
           </div>
         </a>
 
-        <!-- Blocco Session con copia e incolla chirurgico al tocco -->
+        <!-- Session Copy Button -->
         <button onclick="copySessionId()" class="w-full text-left bg-[#1a1a1a] border border-gray-800 hover:border-emerald-600/50 rounded-xl p-3.5 flex items-center space-x-3 transition block relative">
           <div class="p-2 bg-emerald-500/10 rounded-lg text-emerald-400"><i data-lucide="copy" class="w-4 h-4"></i></div>
           <div class="flex-1 min-w-0">
@@ -333,6 +369,7 @@
           </div>
         </button>
 
+        <!-- Feedback -->
         <a href="https://t.me/+eRPnJSZq485kMzdk" target="_blank" class="bg-[#1a1a1a] border border-gray-800 hover:border-amber-600/50 rounded-xl p-3.5 flex items-center space-x-3 transition block">
           <div class="p-2 bg-amber-500/10 rounded-lg text-amber-400"><i data-lucide="star" class="w-4 h-4"></i></div>
           <div class="flex-1 min-w-0">
@@ -342,10 +379,13 @@
         </a>
       </div>
 
-      <button onclick="closeSupportModal()" class="w-full bg-[#1a1a1a] border border-gray-800 hover:bg-gray-900 text-gray-300 font-bold py-3 rounded-xl text-xs uppercase tracking-wider transition mt-4">Chiudi</button>
+      <button onclick="closeSupportModal()" class="w-full bg-[#1a1a1a] border border-gray-800 hover:bg-gray-900 text-gray-300 font-bold py-3 rounded-xl text-xs uppercase tracking-wider transition mt-4">
+        Chiudi
+      </button>
     </div>
   </div>
 
+  <!-- MODALE DETTAGLIO PRODOTTO (Se cliccato per aprirlo a schermo intero) -->
   <div id="product-detail-modal" class="fixed inset-0 bg-[#0a0a0a] z-[80] hidden flex-col overflow-y-auto hide-scrollbar pb-24 transition-transform duration-300 transform translate-y-full">
     <button onclick="closeProductModal()" class="absolute top-4 right-4 bg-[#121212]/80 p-2.5 rounded-full z-[90] backdrop-blur-md shadow-xl border border-gray-800">
        <i data-lucide="x" class="w-5 h-5 text-gray-300"></i>
@@ -381,8 +421,10 @@
     </div>
   </div>
 
+  <!-- MAIN PAGE CONTENT -->
   <main class="p-4 space-y-5">
     
+    <!-- VIDEO BANNER -->
     <div class="relative rounded-2xl overflow-hidden border border-gray-800 bg-[#121212] shadow-2xl h-64">
       <video id="banner-video" class="w-full h-full object-cover opacity-60" autoplay loop muted playsinline webkit-playsinline onloadedmetadata="this.muted=true; this.play()" 
              src="https://files.catbox.moe/cvaalo.mov"></video>
@@ -409,6 +451,7 @@
       </div>
     </div>
 
+    <!-- BENVENUTO -->
     <div class="bg-[#121212] border border-gray-800 rounded-2xl p-5 shadow-2xl">
         <div class="flex flex-col gap-1 mb-4">
             <div class="flex items-center gap-2">
@@ -425,7 +468,7 @@
         </p>
 
         <div class="flex flex-col space-y-3">
-            <button onclick="filterCategory('ALL'); scrollToProducts();" class="bg-[#1a1a1a] w-fit hover:bg-gray-800 rounded-xl px-5 py-3 flex items-center text-[#34d399] text-sm font-semibold transition shadow-sm border border-gray-800/50">
+            <button onclick="filterCategory('SHIP'); scrollToProducts();" class="bg-[#1a1a1a] w-fit hover:bg-gray-800 rounded-xl px-5 py-3 flex items-center text-[#34d399] text-sm font-semibold transition shadow-sm border border-gray-800/50">
                 <span class="mr-3 text-lg">🚚</span> Spedizioni (Ship)
             </button>
             <button onclick="filterCategory('Meet up Roma'); scrollToProducts();" class="bg-[#1a1a1a] w-fit hover:bg-gray-800 rounded-xl px-5 py-3 flex items-center text-[#fbbf24] text-sm font-semibold transition shadow-sm border border-gray-800/50">
@@ -434,17 +477,19 @@
         </div>
     </div>
 
+    <!-- TASTI MENU CENTRALI -->
     <div class="mt-2">
       <div class="grid grid-cols-2 gap-3">
         <button onclick="scrollToProducts()" class="bg-[#121212] border border-amber-600/30 hover:border-amber-500 text-amber-500 font-bold py-3.5 px-3 rounded-xl flex items-center justify-center space-x-2 text-xs uppercase tracking-wider transition shadow-lg">
           <i data-lucide="folder-open" class="w-4 h-4"></i><span>I Lavori</span>
         </button>
+        <!-- Tasto Fiducia Platino Luminoso -->
         <button onclick="openTrophiesModal()" class="bg-[#121212] border border-slate-300/40 hover:border-slate-200 text-slate-100 font-bold py-3.5 px-3 rounded-xl flex items-center justify-center space-x-2 text-xs uppercase tracking-wider transition shadow-[0_0_12px_rgba(203,213,225,0.15)]">
           <i data-lucide="shield" class="w-4 h-4 text-slate-200"></i><span>Fiducia</span>
         </button>
       </div>
 
-      <!-- Tasto "Maggiori informazioni" nello stile neutro della foto 3 -->
+      <!-- Tasto "Maggiori informazioni" nello stile neutro foto 3 -->
       <button onclick="toggleInfoPanel()" class="w-full mt-3 bg-[#121212] border border-gray-800 hover:border-gray-700 text-gray-300 font-bold py-3.5 px-4 rounded-xl flex items-center justify-between text-xs uppercase tracking-wider transition shadow-lg">
         <div class="flex items-center space-x-2">
           <i data-lucide="info" class="w-4 h-4 text-gray-400"></i>
@@ -486,28 +531,34 @@
         <h2 class="text-lg font-bold text-white tracking-wide">Archivio File</h2>
       </div>
       <div class="flex space-x-2 overflow-x-auto hide-scrollbar pb-1">
-        <button onclick="filterCategory('ALL', this)" class="cat-btn px-4 py-2 rounded-xl bg-amber-600 text-white text-xs font-bold whitespace-nowrap shadow-[0_0_10px_rgba(217,119,6,0.3)]">Tutti</button>
-        <button onclick="filterCategory('Meet up Roma', this)" class="cat-btn px-4 py-2 rounded-xl bg-[#121212] border border-gray-800 text-gray-400 text-xs font-semibold whitespace-nowrap hover:text-gray-200">Meet up</button>
-        <button onclick="filterCategory('Documenti falsi', this)" class="cat-btn px-4 py-2 rounded-xl bg-[#121212] border border-gray-800 text-gray-400 text-xs font-semibold whitespace-nowrap hover:text-gray-200">Documenti falsi</button>
-        <button onclick="filterCategory('Banconote false', this)" class="cat-btn px-4 py-2 rounded-xl bg-[#121212] border border-gray-800 text-gray-400 text-xs font-semibold whitespace-nowrap hover:text-gray-200">Banconote false</button>
-        <button onclick="filterCategory('Monete false', this)" class="cat-btn px-4 py-2 rounded-xl bg-[#121212] border border-gray-800 text-gray-400 text-xs font-semibold whitespace-nowrap hover:text-gray-200">Monete false</button>
-        <button onclick="filterCategory('Coca', this)" class="cat-btn px-4 py-2 rounded-xl bg-[#121212] border border-gray-800 text-gray-400 text-xs font-semibold whitespace-nowrap hover:text-gray-200">Coca</button>
-        <button onclick="filterCategory('Weed', this)" class="cat-btn px-4 py-2 rounded-xl bg-[#121212] border border-gray-800 text-gray-400 text-xs font-semibold whitespace-nowrap hover:text-gray-200">Weed</button>
-        <button onclick="filterCategory('Hash', this)" class="cat-btn px-4 py-2 rounded-xl bg-[#121212] border border-gray-800 text-gray-400 text-xs font-semibold whitespace-nowrap hover:text-gray-200">Hash</button>
-        <button onclick="filterCategory('Telefoni Cryptati', this)" class="cat-btn px-4 py-2 rounded-xl bg-[#121212] border border-gray-800 text-gray-400 text-xs font-semibold whitespace-nowrap hover:text-gray-200">Telefoni Cryptati</button>
-        <button onclick="filterCategory('Servizi', this)" class="cat-btn px-4 py-2 rounded-xl bg-[#121212] border border-gray-800 text-gray-400 text-xs font-semibold whitespace-nowrap hover:text-gray-200">Servizi</button>
-        <button onclick="filterCategory('Altro', this)" class="cat-btn px-4 py-2 rounded-xl bg-[#121212] border border-gray-800 text-gray-400 text-xs font-semibold whitespace-nowrap hover:text-gray-200">Altro</button>
+        <button onclick="filterCategory('ALL', this)" class="cat-btn px-4 py-2 rounded-xl bg-amber-600 text-white text-xs font-bold whitespace-nowrap shadow-[0_0_10px_rgba(217,119,6,0.3)] transition">Tutti</button>
+        <button onclick="filterCategory('Meet up Roma', this)" class="cat-btn px-4 py-2 rounded-xl bg-[#121212] border border-gray-800 text-gray-400 text-xs font-semibold whitespace-nowrap hover:text-gray-200 transition">Meet up</button>
+        <button onclick="filterCategory('Documenti falsi', this)" class="cat-btn px-4 py-2 rounded-xl bg-[#121212] border border-gray-800 text-gray-400 text-xs font-semibold whitespace-nowrap hover:text-gray-200 transition">Documenti falsi</button>
+        <button onclick="filterCategory('Banconote false', this)" class="cat-btn px-4 py-2 rounded-xl bg-[#121212] border border-gray-800 text-gray-400 text-xs font-semibold whitespace-nowrap hover:text-gray-200 transition">Banconote false</button>
+        <button onclick="filterCategory('Monete false', this)" class="cat-btn px-4 py-2 rounded-xl bg-[#121212] border border-gray-800 text-gray-400 text-xs font-semibold whitespace-nowrap hover:text-gray-200 transition">Monete false</button>
+        <button onclick="filterCategory('Coca', this)" class="cat-btn px-4 py-2 rounded-xl bg-[#121212] border border-gray-800 text-gray-400 text-xs font-semibold whitespace-nowrap hover:text-gray-200 transition">Coca</button>
+        <button onclick="filterCategory('Weed', this)" class="cat-btn px-4 py-2 rounded-xl bg-[#121212] border border-gray-800 text-gray-400 text-xs font-semibold whitespace-nowrap hover:text-gray-200 transition">Weed</button>
+        <button onclick="filterCategory('Hash', this)" class="cat-btn px-4 py-2 rounded-xl bg-[#121212] border border-gray-800 text-gray-400 text-xs font-semibold whitespace-nowrap hover:text-gray-200 transition">Hash</button>
+        <button onclick="filterCategory('Telefoni Cryptati', this)" class="cat-btn px-4 py-2 rounded-xl bg-[#121212] border border-gray-800 text-gray-400 text-xs font-semibold whitespace-nowrap hover:text-gray-200 transition">Telefoni Cryptati</button>
+        <button onclick="filterCategory('Servizi', this)" class="cat-btn px-4 py-2 rounded-xl bg-[#121212] border border-gray-800 text-gray-400 text-xs font-semibold whitespace-nowrap hover:text-gray-200 transition">Servizi</button>
+        <button onclick="filterCategory('Altro', this)" class="cat-btn px-4 py-2 rounded-xl bg-[#121212] border border-gray-800 text-gray-400 text-xs font-semibold whitespace-nowrap hover:text-gray-200 transition">Altro</button>
       </div>
     </div>
 
+    <!-- GRIGLIA PRODOTTI (Qui avverrà l'espansione e l'inserimento dinamico) -->
     <div id="products-grid" class="grid grid-cols-1 gap-5">
       <div class="text-center py-12 text-gray-600 text-sm">Apertura cassaforte in corso...</div>
     </div>
   </main>
 
+  <!-- SCRIPTS COMPLETI (NON MINIFICATI) -->
   <script>
     lucide.createIcons();
-    let allProducts = [], cart = [], currentProd = null, selectedVariantIndex = 0, currentQty = 1;
+    let allProducts = [];
+    let cart = [];
+    let currentProd = null;
+    let selectedVariantIndex = 0;
+    let currentQty = 1;
 
     // Funzione JS chirurgica per copiare l'ID Utente
     function copyUserId() {
@@ -521,8 +572,12 @@
         document.execCommand('copy');
         const textEl = document.getElementById('sidebar-user-id');
         textEl.innerText = "Copiato! ✅";
-        if (tg && tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
-        setTimeout(() => { textEl.innerText = id; }, 2000);
+        if (tg && tg.HapticFeedback) {
+            tg.HapticFeedback.notificationOccurred('success');
+        }
+        setTimeout(() => { 
+            textEl.innerText = id; 
+        }, 2000);
       } catch (err) {}
       document.body.removeChild(ta);
     }
@@ -553,7 +608,9 @@
         textEl.innerText = "Copiato negli appunti! ✅";
         textEl.classList.remove('text-emerald-300', 'font-mono');
         textEl.classList.add('text-green-400');
-        if (tg && tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
+        if (tg && tg.HapticFeedback) {
+            tg.HapticFeedback.notificationOccurred('success');
+        }
       } catch (err) {}
       document.body.removeChild(textArea);
 
@@ -564,6 +621,7 @@
       }, 2000);
     }
 
+    // Funzione toggle per Maggiori Informazioni
     function toggleInfoPanel() {
       const panel = document.getElementById('info-panel');
       const chevron = document.getElementById('info-chevron');
@@ -576,32 +634,56 @@
       }
     }
 
+    // Media Fullscreen
     function openMediaFullscreen(url, type) {
         const modal = document.getElementById('fullscreen-media-modal');
         const content = document.getElementById('fs-media-content');
-        if (type === 'video') content.innerHTML = `<video src="${url}" controls autoplay playsinline webkit-playsinline class="w-full h-full object-contain"></video>`;
-        else content.innerHTML = `<img src="${url}" class="w-full h-full object-contain" />`;
-        modal.classList.remove('hidden'); modal.classList.add('flex');
+        if (type === 'video') {
+            content.innerHTML = `<video src="${url}" controls autoplay playsinline webkit-playsinline class="w-full h-full object-contain"></video>`;
+        } else {
+            content.innerHTML = `<img src="${url}" class="w-full h-full object-contain" />`;
+        }
+        modal.classList.remove('hidden'); 
+        modal.classList.add('flex');
     }
+
     function closeFullscreenMedia() {
         const modal = document.getElementById('fullscreen-media-modal');
-        modal.classList.add('hidden'); modal.classList.remove('flex');
+        modal.classList.add('hidden'); 
+        modal.classList.remove('flex');
         document.getElementById('fs-media-content').innerHTML = ''; 
     }
+
     function forcePlayAll() {
         document.querySelectorAll('video').forEach(vid => {
-            vid.muted = true; vid.defaultMuted = true; vid.playsInline = true;
-            let playPromise = vid.play(); if (playPromise !== undefined) playPromise.catch(e => {});
+            vid.muted = true; 
+            vid.defaultMuted = true; 
+            vid.playsInline = true;
+            let playPromise = vid.play(); 
+            if (playPromise !== undefined) {
+                playPromise.catch(e => {});
+            }
         });
     }
+
     window.addEventListener('touchstart', forcePlayAll, {once: true});
     window.addEventListener('click', forcePlayAll, {once: true});
 
-    function toggleDrawer() { document.getElementById('drawer').classList.toggle('translate-x-full'); document.getElementById('drawer-overlay').classList.toggle('hidden'); }
-    function scrollToProducts() { document.getElementById('products-section').scrollIntoView({ behavior: 'smooth' }); }
-    
-    function formatTextWithMentions(text) { return text ? text.replace(/@(\w+)/g, '<a href="https://t.me/$1" target="_blank" class="text-gray-300 font-bold hover:underline">@$1</a>') : ""; }
+    function toggleDrawer() { 
+        document.getElementById('drawer').classList.toggle('translate-x-full'); 
+        document.getElementById('drawer-overlay').classList.toggle('hidden'); 
+    }
 
+    function scrollToProducts() { 
+        document.getElementById('products-section').scrollIntoView({ behavior: 'smooth' }); 
+    }
+    
+    function formatTextWithMentions(text) { 
+        if(!text) return "";
+        return text.replace(/@(\w+)/g, '<a href="https://t.me/$1" target="_blank" class="text-gray-300 font-bold hover:underline">@$1</a>'); 
+    }
+
+    // Funzione toggle per allungare/accorciare la descrizione direttamente dalla card
     function toggleDescription(btn, prodId) {
         const descEl = document.getElementById(`desc-${prodId}`);
         if (descEl.classList.contains('expanded')) {
@@ -625,22 +707,90 @@
       }
     }
 
+    // GESTIONE EFFETTI PLATINO / ORO-ROSSO PER I PULSANTI CATEGORIA
+    function filterCategory(cat, btn) {
+      document.querySelectorAll('.cat-btn').forEach(b => { 
+        b.className = 'cat-btn px-4 py-2 rounded-xl bg-[#121212] border border-gray-800 text-gray-400 text-xs font-semibold whitespace-nowrap hover:text-gray-200 transition'; 
+      });
+      
+      if (cat === 'SHIP') {
+        // Platino su tutte tranne Meet up
+        document.querySelectorAll('.cat-btn').forEach(b => {
+          if (b.innerText.trim() !== 'Meet up') {
+            b.className = 'cat-btn px-4 py-2 rounded-xl bg-slate-200 text-black text-xs font-bold whitespace-nowrap shadow-[0_0_10px_rgba(203,213,225,0.6)] transition';
+          }
+        });
+        renderProducts(allProducts.filter(p => !(p.category && p.category.includes('Meet up'))));
+        return;
+      } 
+      else if (cat === 'Meet up Roma') {
+        // Oro tendente al rosso solo su Meet up
+        const targetBtn = Array.from(document.querySelectorAll('.cat-btn')).find(b => b.innerText.trim() === 'Meet up');
+        if(targetBtn) {
+           targetBtn.className = 'cat-btn px-4 py-2 rounded-xl bg-orange-600 text-white text-xs font-bold whitespace-nowrap shadow-[0_0_12px_rgba(234,88,12,0.6)] transition';
+        }
+        renderProducts(allProducts.filter(p => p.category && p.category.includes('Meet up Roma')));
+        return;
+      } 
+      else {
+        if (btn) { 
+          btn.className = 'cat-btn px-4 py-2 rounded-xl bg-amber-600 text-white text-xs font-bold whitespace-nowrap shadow-[0_0_10px_rgba(217,119,6,0.3)] transition'; 
+        } else {
+          const targetName = cat === 'ALL' ? 'Tutti' : cat;
+          const targetBtn = Array.from(document.querySelectorAll('.cat-btn')).find(b => b.innerText.trim() === targetName);
+          if(targetBtn) {
+             targetBtn.className = 'cat-btn px-4 py-2 rounded-xl bg-amber-600 text-white text-xs font-bold whitespace-nowrap shadow-[0_0_10px_rgba(217,119,6,0.3)] transition'; 
+          }
+        }
+        
+        if (cat === 'ALL') {
+            renderProducts(allProducts); 
+        } else {
+            renderProducts(allProducts.filter(p => p.category && p.category.includes(cat)));
+        }
+      }
+    }
+
+    // RENDERIZZAZIONE PRODOTTI ESPANSA E NON MINIFICATA
     function renderProducts(products) {
       const container = document.getElementById('products-grid');
-      if (products.length === 0) { container.innerHTML = `<div class="text-center py-6 text-gray-600 text-xs">Nessun elemento per questa categoria.</div>`; return; }
+      if (products.length === 0) { 
+          container.innerHTML = `<div class="text-center py-6 text-gray-600 text-xs">Nessun elemento per questa categoria.</div>`; 
+          return; 
+      }
 
       let htmlContent = '';
       products.forEach(p => {
-        let opts = p.price_options; if (typeof opts === 'string') { try { opts = JSON.parse(opts); } catch(e) { opts = []; } } opts = opts || [];
-        let media = p.media_list; if (typeof media === 'string') { try { media = JSON.parse(media); } catch(e) { media = []; } }
-        if (!media || media.length === 0) { media = [{ url: p.media_url, type: p.media_type || 'image' }]; }
+        let opts = p.price_options; 
+        if (typeof opts === 'string') { 
+            try { opts = JSON.parse(opts); } catch(e) { opts = []; } 
+        } 
+        opts = opts || [];
+        
+        let media = p.media_list; 
+        if (typeof media === 'string') { 
+            try { media = JSON.parse(media); } catch(e) { media = []; } 
+        }
+        
+        if (!media || media.length === 0) { 
+            media = [{ url: p.media_url, type: p.media_type || 'image' }]; 
+        }
 
         let mediaSliderHTML = '';
         media.forEach(m => {
             mediaSliderHTML += `<div class="w-full h-full flex-shrink-0 media-item relative">`;
-            if (m.type === 'video') mediaSliderHTML += `<video class="w-full h-full object-cover pointer-events-none" autoplay loop muted playsinline webkit-playsinline src="${m.url}" onloadedmetadata="this.muted=true; this.play()"></video>`;
-            else mediaSliderHTML += `<img class="w-full h-full object-cover pointer-events-none" src="${m.url}" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1611162617474-5b21e879e113?q=80&w=200&auto=format&fit=crop';" />`;
-            mediaSliderHTML += `<div onclick="openMediaFullscreen('${m.url}', '${m.type}')" class="absolute top-3 right-3 bg-[#121212]/80 backdrop-blur-md p-2 rounded-full z-[60] cursor-pointer hover:bg-amber-600/30 border border-gray-700 flex items-center justify-center" style="pointer-events: auto;"><i data-lucide="maximize" class="w-4 h-4 text-gray-300"></i></div></div>`;
+            
+            if (m.type === 'video') {
+                mediaSliderHTML += `<video class="w-full h-full object-cover pointer-events-none" autoplay loop muted playsinline webkit-playsinline src="${m.url}" onloadedmetadata="this.muted=true; this.play()"></video>`;
+            } else {
+                mediaSliderHTML += `<img class="w-full h-full object-cover pointer-events-none" src="${m.url}" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1611162617474-5b21e879e113?q=80&w=200&auto=format&fit=crop';" />`;
+            }
+            
+            mediaSliderHTML += `
+                <div onclick="openMediaFullscreen('${m.url}', '${m.type}')" class="absolute top-3 right-3 bg-[#121212]/80 backdrop-blur-md p-2 rounded-full z-[60] cursor-pointer hover:bg-amber-600/30 border border-gray-700 flex items-center justify-center" style="pointer-events: auto;">
+                    <i data-lucide="maximize" class="w-4 h-4 text-gray-300"></i>
+                </div>
+            </div>`;
         });
 
         let scorriBadge = media.length > 1 ? `<div class="absolute bottom-3 right-3 bg-black/80 backdrop-blur-sm text-gray-300 text-[10px] px-2.5 py-1 rounded-full font-bold z-10 pointer-events-none border border-gray-700 uppercase tracking-widest">Scorri (${media.length})</div>` : '';
@@ -652,7 +802,7 @@
                   <span class="font-semibold text-gray-300 text-xs">${opt.qty}</span>
                   <div class="flex items-center space-x-4">
                     <span class="font-black text-amber-500 text-sm">€${opt.price}</span>
-                    <button onclick="addToCart('${p.name}', '${opt.qty}', ${opt.price}, 1)" class="bg-gray-800 text-white px-3 py-1.5 rounded-lg font-bold text-[10px] uppercase tracking-wider hover:bg-amber-600 transition">Richiedi</button>
+                    <button onclick="addToCart('${p.name.replace(/'/g, "\\'")}', '${opt.qty.replace(/'/g, "\\'")}', ${opt.price}, 1)" class="bg-gray-800 text-white px-3 py-1.5 rounded-lg font-bold text-[10px] uppercase tracking-wider hover:bg-amber-600 transition">Richiedi</button>
                   </div>
                 </div>
             `;
@@ -662,86 +812,212 @@
         let formattedDesc = formatTextWithMentions(rawDesc);
 
         htmlContent += `
-        <div class="bg-[#121212] border border-gray-800 rounded-2xl overflow-hidden">
+        <div class="bg-[#121212] border border-gray-800 rounded-2xl overflow-hidden shadow-xl">
           <div class="relative w-full h-56 bg-[#0a0a0a]">
-            <div class="flex overflow-x-auto hide-scrollbar media-slider w-full h-full">${mediaSliderHTML}</div>
+            <div class="flex overflow-x-auto hide-scrollbar media-slider w-full h-full">
+                ${mediaSliderHTML}
+            </div>
             ${scorriBadge}
           </div>
           <div class="p-5">
             <div class="mb-4">
               <span class="text-[9px] uppercase font-bold text-gray-500 tracking-widest">${p.category || 'File'}</span>
-              <h3 onclick="openProductModal('${p.id}')" class="font-bold text-lg text-gray-100 mt-1 leading-tight cursor-pointer">${p.name || ''}</h3>
+              <h3 onclick="openProductModal('${p.id}')" class="font-bold text-lg text-gray-100 mt-1 leading-tight cursor-pointer hover:text-amber-500 transition">${p.name || ''}</h3>
               
+              <!-- Descrizione con effetto fantasma grigio e pulsante per allungarla -->
               <div class="mt-2">
                 <div id="desc-${p.id}" class="desc-fade text-xs text-gray-400 font-light leading-relaxed">${formattedDesc}</div>
-                <button onclick="toggleDescription(this, '${p.id}')" class="text-[11px] font-bold text-amber-500 hover:text-amber-400 mt-1 inline-block focus:outline-none">Leggi tutto</button>
+                <button onclick="toggleDescription(this, '${p.id}')" class="text-[11px] font-bold text-amber-500 hover:text-amber-400 mt-1.5 inline-block focus:outline-none transition">Leggi tutto</button>
               </div>
             </div>
-            <div class="border-t border-gray-800/60 pt-4">${bottoniHTML}</div>
+            <div class="border-t border-gray-800/60 pt-4">
+                ${bottoniHTML}
+            </div>
           </div>
         </div>
         `;
       });
-      container.innerHTML = htmlContent; lucide.createIcons(); setTimeout(forcePlayAll, 300);
+      container.innerHTML = htmlContent; 
+      lucide.createIcons(); 
+      setTimeout(forcePlayAll, 300);
     }
 
     function openProductModal(prodId) {
-        currentProd = allProducts.find(x => x.id === prodId); if(!currentProd) return;
-        selectedVariantIndex = 0; currentQty = 1;
-        let media = currentProd.media_list; if(typeof media === 'string') { try { media = JSON.parse(media); } catch(e) { media = []; } }
-        if(!media || media.length === 0) media = [{ url: currentProd.media_url, type: currentProd.media_type }];
+        currentProd = allProducts.find(x => x.id === prodId); 
+        if(!currentProd) return;
+        
+        selectedVariantIndex = 0; 
+        currentQty = 1;
+        
+        let media = currentProd.media_list; 
+        if(typeof media === 'string') { 
+            try { media = JSON.parse(media); } catch(e) { media = []; } 
+        }
+        if(!media || media.length === 0) {
+            media = [{ url: currentProd.media_url, type: currentProd.media_type }];
+        }
         
         let modaleMediaHTML = `<div class="flex overflow-x-auto hide-scrollbar media-slider w-full h-full">`;
         media.forEach(m => {
             modaleMediaHTML += `<div class="w-full h-full flex-shrink-0 media-item relative">`;
-            if(m.type === 'video') modaleMediaHTML += `<video class="w-full h-full object-cover pointer-events-none" autoplay loop muted playsinline webkit-playsinline src="${m.url}" onloadedmetadata="this.muted=true; this.play()"></video>`;
-            else modaleMediaHTML += `<img class="w-full h-full object-cover pointer-events-none" src="${m.url}" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1611162617474-5b21e879e113';" />`;
-            modaleMediaHTML += `<div onclick="openMediaFullscreen('${m.url}', '${m.type}')" class="absolute top-3 right-3 bg-[#121212]/80 backdrop-blur-md p-2.5 rounded-full z-[60] cursor-pointer hover:bg-gray-800 border border-gray-700 flex items-center justify-center" style="pointer-events: auto;"><i data-lucide="maximize" class="w-5 h-5 text-gray-300"></i></div></div>`;
+            if(m.type === 'video') {
+                modaleMediaHTML += `<video class="w-full h-full object-cover pointer-events-none" autoplay loop muted playsinline webkit-playsinline src="${m.url}" onloadedmetadata="this.muted=true; this.play()"></video>`;
+            } else {
+                modaleMediaHTML += `<img class="w-full h-full object-cover pointer-events-none" src="${m.url}" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1611162617474-5b21e879e113';" />`;
+            }
+            modaleMediaHTML += `
+                <div onclick="openMediaFullscreen('${m.url}', '${m.type}')" class="absolute top-3 right-3 bg-[#121212]/80 backdrop-blur-md p-2.5 rounded-full z-[60] cursor-pointer hover:bg-gray-800 border border-gray-700 flex items-center justify-center" style="pointer-events: auto;">
+                    <i data-lucide="maximize" class="w-5 h-5 text-gray-300"></i>
+                </div>
+            </div>`;
         });
         modaleMediaHTML += `</div>`;
-        if(media.length > 1) modaleMediaHTML += `<div class="absolute bottom-3 right-3 bg-black/80 backdrop-blur-sm text-gray-300 text-[10px] font-bold px-3 py-1.5 rounded-full z-10 pointer-events-none border border-gray-700 uppercase tracking-widest">1/${media.length} ↔ Scorri</div>`;
+        
+        if(media.length > 1) {
+            modaleMediaHTML += `<div class="absolute bottom-3 right-3 bg-black/80 backdrop-blur-sm text-gray-300 text-[10px] font-bold px-3 py-1.5 rounded-full z-10 pointer-events-none border border-gray-700 uppercase tracking-widest">1/${media.length} ↔ Scorri</div>`;
+        }
         
         document.getElementById('pd-media-container').innerHTML = modaleMediaHTML;
-        document.getElementById('pd-category').innerText = currentProd.category; document.getElementById('pd-title').innerText = currentProd.name;
+        document.getElementById('pd-category').innerText = currentProd.category; 
+        document.getElementById('pd-title').innerText = currentProd.name;
         document.getElementById('pd-desc').innerHTML = formatTextWithMentions(currentProd.description || `Dettagli confidenziali`);
         
-        let opts = currentProd.price_options; if(typeof opts === 'string') { try { opts = JSON.parse(opts); } catch(e) { opts = []; } } currentProd.parsedOpts = opts; 
-        const varContainer = document.getElementById('pd-variants-list'); let variantiHTML = '';
+        let opts = currentProd.price_options; 
+        if(typeof opts === 'string') { 
+            try { opts = JSON.parse(opts); } catch(e) { opts = []; } 
+        } 
+        currentProd.parsedOpts = opts; 
+        
+        const varContainer = document.getElementById('pd-variants-list'); 
+        let variantiHTML = '';
         opts.forEach((opt, idx) => {
             let activeStyle = idx === 0 ? 'variant-selected' : 'text-gray-400 border-gray-800';
-            variantiHTML += `<div onclick="selectVariant(${idx})" id="var-box-${idx}" class="border bg-[#1a1a1a] rounded-xl p-3.5 flex justify-between items-center cursor-pointer transition ${activeStyle}"><span class="font-bold text-sm">${opt.qty}</span><span class="font-black text-sm">€${opt.price}</span></div>`;
+            variantiHTML += `
+            <div onclick="selectVariant(${idx})" id="var-box-${idx}" class="border bg-[#1a1a1a] rounded-xl p-3.5 flex justify-between items-center cursor-pointer transition ${activeStyle}">
+                <span class="font-bold text-sm">${opt.qty}</span>
+                <span class="font-black text-sm">€${opt.price}</span>
+            </div>`;
         });
-        varContainer.innerHTML = variantiHTML; updateBottomBar();
+        
+        varContainer.innerHTML = variantiHTML; 
+        updateBottomBar();
+        
         const modalElement = document.getElementById('product-detail-modal');
-        modalElement.classList.remove('hidden'); modalElement.classList.add('flex');
-        setTimeout(() => { modalElement.classList.remove('translate-y-full'); }, 10);
-        setTimeout(() => { lucide.createIcons(); forcePlayAll(); }, 300);
+        modalElement.classList.remove('hidden'); 
+        modalElement.classList.add('flex');
+        
+        setTimeout(() => { 
+            modalElement.classList.remove('translate-y-full'); 
+        }, 10);
+        
+        setTimeout(() => { 
+            lucide.createIcons(); 
+            forcePlayAll(); 
+        }, 300);
     }
-    function closeProductModal() { const m = document.getElementById('product-detail-modal'); m.classList.add('translate-y-full'); setTimeout(() => { m.classList.add('hidden'); m.classList.remove('flex'); }, 300); }
-    function selectVariant(idx) { selectedVariantIndex = idx; currentProd.parsedOpts.forEach((_, i) => { const box = document.getElementById(`var-box-${i}`); if(i === idx) { box.classList.add('variant-selected'); box.classList.remove('text-gray-400', 'border-gray-800'); } else { box.classList.remove('variant-selected'); box.classList.add('text-gray-400', 'border-gray-800'); } }); updateBottomBar(); }
-    function changeQty(delta) { currentQty = Math.max(1, currentQty + delta); updateBottomBar(); if(tg && tg.HapticFeedback) tg.HapticFeedback.selectionChanged(); }
-    function updateBottomBar() { document.getElementById('pd-qty-val').innerText = currentQty; if(currentProd && currentProd.parsedOpts[selectedVariantIndex]) document.getElementById('pd-btn-price').innerText = `(€${(currentProd.parsedOpts[selectedVariantIndex].price * currentQty).toFixed(2)})`; }
-    function addToCartFromModal() { if(!currentProd) return; const opt = currentProd.parsedOpts[selectedVariantIndex]; addToCart(currentProd.name, opt.qty, opt.price * currentQty, currentQty); closeProductModal(); }
+
+    function closeProductModal() { 
+        const m = document.getElementById('product-detail-modal'); 
+        m.classList.add('translate-y-full'); 
+        setTimeout(() => { 
+            m.classList.add('hidden'); 
+            m.classList.remove('flex'); 
+        }, 300); 
+    }
+
+    function selectVariant(idx) { 
+        selectedVariantIndex = idx; 
+        currentProd.parsedOpts.forEach((_, i) => { 
+            const box = document.getElementById(`var-box-${i}`); 
+            if(i === idx) { 
+                box.classList.add('variant-selected'); 
+                box.classList.remove('text-gray-400', 'border-gray-800'); 
+            } else { 
+                box.classList.remove('variant-selected'); 
+                box.classList.add('text-gray-400', 'border-gray-800'); 
+            } 
+        }); 
+        updateBottomBar(); 
+    }
+
+    function changeQty(delta) { 
+        currentQty = Math.max(1, currentQty + delta); 
+        updateBottomBar(); 
+        if(tg && tg.HapticFeedback) {
+            tg.HapticFeedback.selectionChanged(); 
+        }
+    }
+
+    function updateBottomBar() { 
+        document.getElementById('pd-qty-val').innerText = currentQty; 
+        if(currentProd && currentProd.parsedOpts[selectedVariantIndex]) {
+            document.getElementById('pd-btn-price').innerText = `(€${(currentProd.parsedOpts[selectedVariantIndex].price * currentQty).toFixed(2)})`; 
+        }
+    }
+
+    function addToCartFromModal() { 
+        if(!currentProd) return; 
+        const opt = currentProd.parsedOpts[selectedVariantIndex]; 
+        addToCart(currentProd.name, opt.qty, opt.price * currentQty, currentQty); 
+        closeProductModal(); 
+    }
     
     function addToCart(name, qtyLabel, finalPrice, numericQty = 1) {
       cart.push({ name: `${name} - ${qtyLabel}`, qty: numericQty, price: finalPrice });
-      const badge = document.getElementById('cart-badge'); badge.innerText = cart.length; badge.classList.remove('hidden');
-      if (tg && tg.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
+      const badge = document.getElementById('cart-badge'); 
+      badge.innerText = cart.length; 
+      badge.classList.remove('hidden');
+      if (tg && tg.HapticFeedback) {
+          tg.HapticFeedback.impactOccurred('light');
+      }
     }
+
     function openCartModal() {
-      if (cart.length === 0) { alert("Valigetta vuota."); return; }
-      const list = document.getElementById('cart-items-list'); let h = '';
-      cart.forEach((i, idx) => { h += `<div class="flex justify-between items-center bg-[#1a1a1a] p-3 rounded-xl border border-gray-800 text-xs"><div><div class="font-bold text-gray-200">${i.name}</div><div class="text-amber-500 font-black mt-1">€${i.price}</div></div><button onclick="removeFromCart(${idx})" class="text-gray-500 font-bold p-1 hover:text-red-500 transition"><i data-lucide="trash-2" class="w-4 h-4"></i></button></div>`; });
-      list.innerHTML = h; lucide.createIcons();
+      if (cart.length === 0) { 
+          alert("Valigetta vuota."); 
+          return; 
+      }
+      const list = document.getElementById('cart-items-list'); 
+      let h = '';
+      cart.forEach((i, idx) => { 
+          h += `
+          <div class="flex justify-between items-center bg-[#1a1a1a] p-3 rounded-xl border border-gray-800 text-xs">
+              <div>
+                  <div class="font-bold text-gray-200">${i.name}</div>
+                  <div class="text-amber-500 font-black mt-1">€${i.price}</div>
+              </div>
+              <button onclick="removeFromCart(${idx})" class="text-gray-500 font-bold p-1 hover:text-red-500 transition">
+                  <i data-lucide="trash-2" class="w-4 h-4"></i>
+              </button>
+          </div>`; 
+      });
+      list.innerHTML = h; 
+      lucide.createIcons();
       document.getElementById('cart-total-price').innerText = `€${cart.reduce((tot, item) => tot + item.price, 0)}`;
       document.getElementById('cart-modal').classList.remove('hidden');
     }
-    function closeCartModal() { document.getElementById('cart-modal').classList.add('hidden'); }
-    function removeFromCart(idx) { cart.splice(idx, 1); if (cart.length === 0) { document.getElementById('cart-badge').classList.add('hidden'); closeCartModal(); } else { document.getElementById('cart-badge').innerText = cart.length; openCartModal(); } }
+
+    function closeCartModal() { 
+        document.getElementById('cart-modal').classList.add('hidden'); 
+    }
+
+    function removeFromCart(idx) { 
+        cart.splice(idx, 1); 
+        if (cart.length === 0) { 
+            document.getElementById('cart-badge').classList.add('hidden'); 
+            closeCartModal(); 
+        } else { 
+            document.getElementById('cart-badge').innerText = cart.length; 
+            openCartModal(); 
+        } 
+    }
     
     async function submitOrderProcess() {
       const addr = document.getElementById('order-address-input').value.trim();
-      if (!addr) { alert("Inserisci note o dettagli."); return; }
+      if (!addr) { 
+          alert("Inserisci note o dettagli."); 
+          return; 
+      }
       
       const savedId = localStorage.getItem('falsario_user_id');
       const user = tg?.initDataUnsafe?.user || {};
@@ -754,31 +1030,32 @@
         const res = await fetch("https://il-falsario.onrender.com/api/order", { 
             method: "POST", 
             headers: { "Content-Type": "application/json" }, 
-            body: JSON.stringify({ cart: cart, total: tot, user_id: finalUserId, username: finalUsername, address: addr }) 
+            body: JSON.stringify({ 
+                cart: cart, 
+                total: tot, 
+                user_id: finalUserId, 
+                username: finalUsername, 
+                address: addr 
+            }) 
         });
-        if (res.ok) { closeCartModal(); cart = []; document.getElementById('cart-badge').classList.add('hidden'); document.getElementById('order-address-input').value = ''; document.getElementById('success-panel-modal').classList.remove('hidden'); } else alert("Errore di invio.");
-      } catch (e) { alert("Errore connessione."); }
-    }
-    function closeSuccessPanel() { document.getElementById('success-panel-modal').classList.add('hidden'); if (tg) tg.close(); }
-
-    function filterCategory(cat, btn) {
-      document.querySelectorAll('.cat-btn').forEach(b => { 
-        b.classList.remove('bg-amber-600', 'text-white', 'shadow-[0_0_10px_rgba(217,119,6,0.3)]'); 
-        b.classList.add('bg-[#121212]', 'text-gray-400'); 
-      });
-      
-      if (btn) { 
-        btn.classList.remove('bg-[#121212]', 'text-gray-400'); 
-        btn.classList.add('bg-amber-600', 'text-white', 'shadow-[0_0_10px_rgba(217,119,6,0.3)]'); 
-      } else {
-        const targetBtn = Array.from(document.querySelectorAll('.cat-btn')).find(b => b.innerText.trim() === cat);
-        if(targetBtn) {
-           targetBtn.classList.remove('bg-[#121212]', 'text-gray-400'); 
-           targetBtn.classList.add('bg-amber-600', 'text-white', 'shadow-[0_0_10px_rgba(217,119,6,0.3)]'); 
+        
+        if (res.ok) { 
+            closeCartModal(); 
+            cart = []; 
+            document.getElementById('cart-badge').classList.add('hidden'); 
+            document.getElementById('order-address-input').value = ''; 
+            document.getElementById('success-panel-modal').classList.remove('hidden'); 
+        } else {
+            alert("Errore di invio.");
         }
+      } catch (e) { 
+          alert("Errore connessione."); 
       }
-      
-      if (cat === 'ALL') renderProducts(allProducts); else renderProducts(allProducts.filter(p => p.category && p.category.includes(cat)));
+    }
+
+    function closeSuccessPanel() { 
+        document.getElementById('success-panel-modal').classList.add('hidden'); 
+        if (tg) tg.close(); 
     }
 
     // INTERFACCIA INTERATTIVA AUTOMATICA PER I PRIVILEGI E SCONTI CON ID GLOBALE
@@ -856,7 +1133,7 @@
       marketTrophies.forEach(t => {
         if (t.unlocked) {
           tHTML += `
-            <div class="bg-[#1a1a1a] border border-amber-600/30 p-3 rounded-xl text-xs text-gray-200 flex items-center justify-between shadow-sm">
+            <div class="bg-[#1a1a1a] border border-amber-600/30 p-3 rounded-xl text-xs text-gray-200 flex items-center justify-between shadow-sm mb-2">
               <div class="flex items-center space-x-2.5">
                 <i data-lucide="check-circle-2" class="w-4 h-4 text-amber-500 flex-shrink-0"></i>
                 <div>
@@ -869,7 +1146,7 @@
           `;
         } else {
           tHTML += `
-            <div class="bg-[#121212] border border-gray-800/80 p-3 rounded-xl text-xs text-gray-500 flex items-center justify-between opacity-80">
+            <div class="bg-[#121212] border border-gray-800/80 p-3 rounded-xl text-xs text-gray-500 flex items-center justify-between opacity-80 mb-2">
               <div class="flex items-center space-x-2.5">
                 <i data-lucide="lock" class="w-4 h-4 text-gray-500 flex-shrink-0"></i>
                 <div>
@@ -887,30 +1164,73 @@
       lucide.createIcons();
     }
 
-    function closeTrophiesModal() { document.getElementById('trophies-modal').classList.add('hidden'); }
-    function openTrackingModal() { document.getElementById('tracking-modal').classList.remove('hidden'); }
-    function closeTrackingModal() { document.getElementById('tracking-modal').classList.add('hidden'); document.getElementById('tracking-result').classList.add('hidden'); }
+    function closeTrophiesModal() { 
+        document.getElementById('trophies-modal').classList.add('hidden'); 
+    }
+
+    function openTrackingModal() { 
+        document.getElementById('tracking-modal').classList.remove('hidden'); 
+    }
+
+    function closeTrackingModal() { 
+        document.getElementById('tracking-modal').classList.add('hidden'); 
+        document.getElementById('tracking-result').classList.add('hidden'); 
+    }
+
     async function searchOrderTracking() {
-      const oid = document.getElementById('tracking-order-id').value.trim(), rc = document.getElementById('tracking-result'); if (!oid) return;
-      rc.innerHTML = `<div class="text-xs text-gray-500 text-center py-3">Ricerca archivi...</div>`; rc.classList.remove('hidden');
+      const oid = document.getElementById('tracking-order-id').value.trim();
+      const rc = document.getElementById('tracking-result'); 
+      if (!oid) return;
+      
+      rc.innerHTML = `<div class="text-xs text-gray-500 text-center py-3">Ricerca archivi...</div>`; 
+      rc.classList.remove('hidden');
+      
       try {
         const { data } = await db.from('orders').select('*').eq('id', oid);
         if (data && data.length > 0) {
-          const o = data[0], sMap = { "PENDING": "⏳ In Analisi", "ACCEPTED": "✅ Approvato", "SHIPPED": "🚚 Consegnato", "CANCELLED": "❌ Respinto" };
-          rc.innerHTML = `<div class="bg-[#1a1a1a] border border-gray-800 p-4 rounded-xl text-xs space-y-2"><div class="flex justify-between font-bold"><span class="text-white">Pratica #${o.id}</span><span class="text-amber-500">${sMap[o.status] || o.status}</span></div><div class="text-gray-400 font-mono bg-[#121212] p-3 rounded-lg mt-3"><b>Info / Link:</b><br>${o.tracking_code || 'Nessun dettaglio aggiuntivo.'}</div></div>`;
-        } else rc.innerHTML = `<div class="text-xs text-red-500 text-center py-3">Pratica non trovata.</div>`;
-      } catch(e) { rc.innerHTML = `<div class="text-xs text-red-500 text-center py-3">Errore di rete.</div>`; }
+          const o = data[0];
+          const sMap = { 
+              "PENDING": "⏳ In Analisi", 
+              "ACCEPTED": "✅ Approvato", 
+              "SHIPPED": "🚚 Consegnato", 
+              "CANCELLED": "❌ Respinto" 
+          };
+          rc.innerHTML = `
+          <div class="bg-[#1a1a1a] border border-gray-800 p-4 rounded-xl text-xs space-y-2">
+              <div class="flex justify-between font-bold">
+                  <span class="text-white">Pratica #${o.id}</span>
+                  <span class="text-amber-500">${sMap[o.status] || o.status}</span>
+              </div>
+              <div class="text-gray-400 font-mono bg-[#121212] p-3 rounded-lg mt-3">
+                  <b>Info / Link:</b><br>${o.tracking_code || 'Nessun dettaglio aggiuntivo.'}
+              </div>
+          </div>`;
+        } else {
+            rc.innerHTML = `<div class="text-xs text-red-500 text-center py-3">Pratica non trovata.</div>`;
+        }
+      } catch(e) { 
+          rc.innerHTML = `<div class="text-xs text-red-500 text-center py-3">Errore di rete.</div>`; 
+      }
     }
-    function openSupportModal() { document.getElementById('support-modal').classList.remove('hidden'); lucide.createIcons(); }
-    function closeSupportModal() { document.getElementById('support-modal').classList.add('hidden'); }
+
+    function openSupportModal() { 
+        document.getElementById('support-modal').classList.remove('hidden'); 
+        lucide.createIcons(); 
+    }
+    
+    function closeSupportModal() { 
+        document.getElementById('support-modal').classList.add('hidden'); 
+    }
     
     document.addEventListener("DOMContentLoaded", async () => { 
         loadProducts(); 
         
-        // Inizializza l'ID per Web e Sidebar
+        // Inizializza l'ID per Web e Sidebar in automatico all'apertura
         const uid = await getOrInitUserId();
         const idEl = document.getElementById('sidebar-user-id');
-        if(idEl) idEl.innerText = uid;
+        if(idEl) {
+            idEl.innerText = uid;
+        }
     });
   </script>
 </body>
