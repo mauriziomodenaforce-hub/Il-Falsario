@@ -37,7 +37,6 @@
         position: relative;
     }
     
-    /* Stile Oro/Champagne per le opzioni */
     .variant-selected { 
         border-color: #d97706 !important; 
         background-color: rgba(217, 119, 6, 0.15) !important; 
@@ -73,7 +72,6 @@
 <body class="pb-24">
 
   <script>
-    // CHIAVI SUPABASE GIA' INIETTATE E PRONTE
     const SUPABASE_URL = "https://niyhpvtiefisycxbkjie.supabase.co";
     const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5peWhwdnRpZWZpc3ljeGJramllIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY4MjQ2MDUsImV4cCI6MjEwMjQwMDYwNX0.ODucTrP0dzByGNhyyIYv-S-kIH5cTs8X_Url-7jXRMY";
     
@@ -255,7 +253,7 @@
         <button onclick="closeSupportModal()" class="text-gray-500 hover:text-white"><i data-lucide="x" class="w-5 h-5"></i></button>
       </div>
       
-      <div class="space-y-2.5 max-h-72 overflow-y-auto pr-1">
+      <div class="space-y-2.5 max-h-[75vh] overflow-y-auto pr-1">
         <div class="bg-[#1a1a1a] border border-gray-800 rounded-xl p-3.5 flex items-center space-x-3">
           <div class="p-2 bg-amber-500/10 rounded-lg text-amber-500"><i data-lucide="shield" class="w-4 h-4"></i></div>
           <div>
@@ -266,38 +264,39 @@
 
         <a href="https://t.me/il_falsario_ufficiale_x2" target="_blank" class="bg-[#1a1a1a] border border-gray-800 hover:border-amber-600/50 rounded-xl p-3.5 flex items-center space-x-3 transition block">
           <div class="p-2 bg-blue-500/10 rounded-lg text-blue-400"><i data-lucide="send" class="w-4 h-4"></i></div>
-          <div>
+          <div class="flex-1 min-w-0">
             <span class="text-[9px] uppercase font-bold text-gray-400 block tracking-widest">Telegram Ufficiale</span>
-            <span class="text-xs font-bold text-blue-300">@il_falsario_ufficiale_x2</span>
+            <span class="text-[11px] font-bold text-blue-300 truncate block w-full">@il_falsario_ufficiale_x2</span>
           </div>
         </a>
 
         <a href="https://signal.me/#eu/m7lTtwu9GCr8RJQ7mhQ2OkwVfT_MZvjG6g-PFCnS8dG9NBl3s09GYKPtiyRQz-ih" target="_blank" class="bg-[#1a1a1a] border border-gray-800 hover:border-amber-600/50 rounded-xl p-3.5 flex items-center space-x-3 transition block">
           <div class="p-2 bg-indigo-500/10 rounded-lg text-indigo-400"><i data-lucide="lock" class="w-4 h-4"></i></div>
-          <div>
+          <div class="flex-1 min-w-0">
             <span class="text-[9px] uppercase font-bold text-gray-400 block tracking-widest">Signal Ufficiale</span>
-            <span class="text-[11px] font-bold text-indigo-300 truncate block w-52">signal.me/#eu/...</span>
+            <span class="text-[11px] font-bold text-indigo-300 truncate block w-full">signal.me/#eu/...</span>
           </div>
         </a>
 
-        <div class="bg-[#1a1a1a] border border-gray-800 rounded-xl p-3.5 flex items-center space-x-3">
-          <div class="p-2 bg-emerald-500/10 rounded-lg text-emerald-400"><i data-lucide="key" class="w-4 h-4"></i></div>
-          <div>
-            <span class="text-[9px] uppercase font-bold text-gray-400 block tracking-widest">Session Ufficiale</span>
-            <span class="text-[10px] font-mono font-bold text-emerald-300 truncate block w-52">05495e45a...</span>
+        <!-- Blocco Session con copia e incolla chirurgico al tocco -->
+        <button onclick="copySessionId()" class="w-full text-left bg-[#1a1a1a] border border-gray-800 hover:border-emerald-600/50 rounded-xl p-3.5 flex items-center space-x-3 transition block relative">
+          <div class="p-2 bg-emerald-500/10 rounded-lg text-emerald-400"><i data-lucide="copy" class="w-4 h-4"></i></div>
+          <div class="flex-1 min-w-0">
+            <span class="text-[9px] uppercase font-bold text-gray-400 block tracking-widest">Session Ufficiale (Tocca)</span>
+            <span id="session-id-text" class="text-[10px] font-mono font-bold text-emerald-300 truncate block w-full">05495e45a9c1ced74358dcedaad80c99956e1405fbbccf4f8e85f0ca873946a515</span>
           </div>
-        </div>
+        </button>
 
         <a href="https://t.me/+eRPnJSZq485kMzdk" target="_blank" class="bg-[#1a1a1a] border border-gray-800 hover:border-amber-600/50 rounded-xl p-3.5 flex items-center space-x-3 transition block">
           <div class="p-2 bg-amber-500/10 rounded-lg text-amber-400"><i data-lucide="star" class="w-4 h-4"></i></div>
-          <div>
+          <div class="flex-1 min-w-0">
             <span class="text-[9px] uppercase font-bold text-gray-400 block tracking-widest">Canale Feedback</span>
             <span class="text-xs font-bold text-amber-300">Apri Canale Recensioni</span>
           </div>
         </a>
       </div>
 
-      <button onclick="closeSupportModal()" class="w-full bg-[#1a1a1a] border border-gray-800 hover:bg-gray-900 text-gray-300 font-bold py-3 rounded-xl text-xs uppercase tracking-wider transition">Chiudi</button>
+      <button onclick="closeSupportModal()" class="w-full bg-[#1a1a1a] border border-gray-800 hover:bg-gray-900 text-gray-300 font-bold py-3 rounded-xl text-xs uppercase tracking-wider transition mt-4">Chiudi</button>
     </div>
   </div>
 
@@ -464,6 +463,33 @@
     lucide.createIcons();
     let allProducts = [], cart = [], currentProd = null, selectedVariantIndex = 0, currentQty = 1;
 
+    // Funzione JS chirurgica per copiare il Session ID senza alert invadenti
+    function copySessionId() {
+      const sessionId = "05495e45a9c1ced74358dcedaad80c99956e1405fbbccf4f8e85f0ca873946a515";
+      const textEl = document.getElementById('session-id-text');
+      
+      const textArea = document.createElement("textarea");
+      textArea.value = sessionId;
+      document.body.appendChild(textArea);
+      textArea.select();
+      try {
+        document.execCommand('copy');
+        textEl.innerText = "Copiato negli appunti! ✅";
+        textEl.classList.remove('text-emerald-300', 'font-mono');
+        textEl.classList.add('text-green-400');
+        if (tg && tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
+      } catch (err) {
+        console.error('Errore copia', err);
+      }
+      document.body.removeChild(textArea);
+
+      setTimeout(() => {
+        textEl.innerText = "05495e45a9c1ced74358dcedaad80c99956e1405fbbccf4f8e85f0ca873946a515";
+        textEl.classList.add('text-emerald-300', 'font-mono');
+        textEl.classList.remove('text-green-400');
+      }, 2000);
+    }
+
     function toggleInfoPanel() {
       const panel = document.getElementById('info-panel');
       const chevron = document.getElementById('info-chevron');
@@ -502,7 +528,6 @@
     
     function formatTextWithMentions(text) { return text ? text.replace(/@(\w+)/g, '<a href="https://t.me/$1" target="_blank" class="text-gray-300 font-bold hover:underline">@$1</a>') : ""; }
 
-    // Funzione toggle per allungare/accorciare la descrizione direttamente dalla card
     function toggleDescription(btn, prodId) {
         const descEl = document.getElementById(`desc-${prodId}`);
         if (descEl.classList.contains('expanded')) {
@@ -573,10 +598,9 @@
               <span class="text-[9px] uppercase font-bold text-gray-500 tracking-widest">${p.category || 'File'}</span>
               <h3 onclick="openProductModal('${p.id}')" class="font-bold text-lg text-gray-100 mt-1 leading-tight cursor-pointer">${p.name || ''}</h3>
               
-              <!-- Descrizione con effetto fantasma grigio e pulsante per allungarla -->
               <div class="mt-2">
                 <div id="desc-${p.id}" class="desc-fade text-xs text-gray-400 font-light leading-relaxed">${formattedDesc}</div>
-                <button onclick="this.previousElementSibling.classList.toggle('expanded'); this.innerText = this.previousElementSibling.classList.contains('expanded') ? 'Riduci' : 'Leggi tutto';" class="text-[11px] font-bold text-amber-500 hover:text-amber-400 mt-1 inline-block focus:outline-none">Leggi tutto</button>
+                <button onclick="toggleDescription(this, '${p.id}')" class="text-[11px] font-bold text-amber-500 hover:text-amber-400 mt-1 inline-block focus:outline-none">Leggi tutto</button>
               </div>
             </div>
             <div class="border-t border-gray-800/60 pt-4">${bottoniHTML}</div>
@@ -672,11 +696,9 @@
       if (cat === 'ALL') renderProducts(allProducts); else renderProducts(allProducts.filter(p => p.category && p.category.includes(cat)));
     }
 
-    // INTERFACCIA INTERATTIVA AUTOMATICA PER I PRIVILEGI E SCONTI
     async function openTrophiesModal() {
       document.getElementById('trophies-modal').classList.remove('hidden'); 
       const uid = tg?.initDataUnsafe?.user?.id || 0;
-      
       let points = 50; 
       if (uid && db) {
         try {
@@ -700,7 +722,7 @@
       } else if (points >= 300) {
         rankTitle = "Cliente Gold 🥇";
         progressPercent = (points / 500) * 100;
-        nextTargetText = `Mancano ${500 - points} punti per il Black Diamond e gli omaggi VIP!`;
+        nextTargetText = `Mancano ${500 - points} punti per sbloccare il Black Diamond e gli omaggi VIP perenni!`;
       } else if (points >= 150) {
         rankTitle = "Cliente Silver 🥈";
         progressPercent = (points / 300) * 100;
@@ -731,8 +753,8 @@
           reward: points >= 300 ? "ATTIVO" : "SBLOCCA" 
         },
         { 
-          name: "💎 Sconto 15% + Omaggi VIP", 
-          desc: "Sconto massimo + un omaggio incluso su ogni ordine per sempre! Sbloccato a 500 punti.", 
+          name: "💎 Sconto 15% + Omaggi VIP Inclusi", 
+          desc: "Sconto massimo + un omaggio segreto incluso su ogni ordine per sempre! Sbloccato a 500 punti.", 
           unlocked: points >= 500, 
           reward: points >= 500 ? "ATTIVO" : "SBLOCCA" 
         }
