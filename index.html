@@ -224,9 +224,7 @@
             <i data-lucide="x" class="w-5 h-5"></i>
         </button>
       </div>
-      
       <div id="cart-items-list" class="space-y-2 max-h-40 overflow-y-auto pr-1"></div>
-      
       <div class="border-t border-gray-800 pt-3 space-y-3">
         <div class="flex justify-between text-sm font-bold text-white">
           <span>Totale da saldare:</span>
@@ -257,7 +255,7 @@
     </button>
   </div>
 
-  <!-- MODALE PRIVILEGI E MARKETING AGGRESSIVO (AUTOMATICO) -->
+  <!-- MODALE PRIVILEGI E INTERFACCIA INTERATTIVA AUTOMATICA -->
   <div id="trophies-modal" class="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4 hidden backdrop-blur-md">
     <div class="bg-[#121212] border border-amber-600/30 rounded-2xl w-full max-w-sm p-5 space-y-4 shadow-2xl">
       <div class="flex justify-between items-center border-b border-gray-800 pb-3">
@@ -266,12 +264,8 @@
         </h3>
         <button onclick="closeTrophiesModal()" class="text-gray-500 hover:text-white"><i data-lucide="x" class="w-5 h-5"></i></button>
       </div>
-      
-      <!-- Box Status -->
       <div class="bg-gradient-to-br from-[#1a1a1a] to-[#0a0a0a] border border-amber-600/40 rounded-xl p-4 text-center relative overflow-hidden shadow-lg">
-        <div class="absolute -right-3 -top-3 text-amber-500/10">
-            <i data-lucide="percent" class="w-20 h-20"></i>
-        </div>
+        <div class="absolute -right-3 -top-3 text-amber-500/10"><i data-lucide="percent" class="w-20 h-20"></i></div>
         <div class="flex justify-between items-center mb-1">
           <span class="text-[9px] uppercase text-amber-500 font-extrabold tracking-widest">Il tuo Status</span>
           <span id="user-rank-title" class="text-[9px] bg-amber-500/20 text-amber-400 font-bold px-2 py-0.5 rounded-full border border-amber-500/30">Cliente Standard 🥉</span>
@@ -286,24 +280,20 @@
         <p class="text-[10px] text-gray-400 mt-2 font-light" id="rank-next-target">Ogni 500€ di spesa ricevi 50 punti. Sblocca sconti perenni su tutti gli acquisti!</p>
       </div>
       
-      <!-- Lista Trofei / Sconti -->
       <div class="space-y-2">
         <div class="flex justify-between items-center">
           <span class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Premi & Sconti Sbloccabili</span>
           <span class="text-[9px] text-amber-500/80">Vantaggi perenni</span>
         </div>
         <div id="user-trophies-list" class="space-y-2 max-h-52 overflow-y-auto pr-1">
-          <!-- Popolato dinamicamente via JS -->
+          <!-- Popolato dinamicamente via JS in tempo reale dai punti Supabase -->
         </div>
       </div>
 
-      <button onclick="closeTrophiesModal()" class="w-full bg-[#1a1a1a] border border-gray-800 hover:bg-gray-900 text-gray-300 font-bold py-3 rounded-xl text-xs uppercase tracking-wider transition">
-        Chiudi
-      </button>
+      <button onclick="closeTrophiesModal()" class="w-full bg-[#1a1a1a] border border-gray-800 hover:bg-gray-900 text-gray-300 font-bold py-3 rounded-xl text-xs uppercase tracking-wider transition">Chiudi</button>
     </div>
   </div>
 
-  <!-- MODALE TRACKING -->
   <div id="tracking-modal" class="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4 hidden backdrop-blur-md">
     <div class="bg-[#121212] border border-gray-800 rounded-2xl w-full max-w-sm p-5 space-y-4 shadow-2xl">
       <div class="flex justify-between items-center border-b border-gray-800 pb-3">
@@ -324,7 +314,7 @@
     </div>
   </div>
 
-  <!-- MODALE CONTATTO DIRETTO (Con Chat 24/24 e Copia Session ID interattivo) -->
+  <!-- MODALE CONTATTO DIRETTO (Aggiornato con Chat 24/24 e copia Session) -->
   <div id="support-modal" class="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4 hidden backdrop-blur-md">
     <div class="bg-[#121212] border border-amber-600/30 rounded-2xl w-full max-w-sm p-5 space-y-4 shadow-2xl">
       <div class="flex justify-between items-center border-b border-gray-800 pb-3">
@@ -335,7 +325,6 @@
       </div>
       
       <div class="space-y-2.5 max-h-[75vh] overflow-y-auto pr-1">
-        
         <!-- Chat Sicura -->
         <div class="bg-[#1a1a1a] border border-gray-800 rounded-xl p-3.5 flex items-center space-x-3">
           <div class="p-2 bg-amber-500/10 rounded-lg text-amber-500"><i data-lucide="shield" class="w-4 h-4"></i></div>
@@ -393,9 +382,7 @@
     <button onclick="closeProductModal()" class="absolute top-4 right-4 bg-[#121212]/80 p-2.5 rounded-full z-[90] backdrop-blur-md shadow-xl border border-gray-800">
        <i data-lucide="x" class="w-5 h-5 text-gray-300"></i>
     </button>
-    
     <div id="pd-media-container" class="w-full h-[45vh] bg-[#121212] relative border-b border-gray-800"></div>
-    
     <div class="p-5 space-y-5">
         <div>
             <span id="pd-category" class="text-[10px] uppercase font-bold text-amber-600 tracking-widest"></span>
@@ -530,7 +517,7 @@
       </div>
     </div>
 
-    <!-- CATEGORIE RIORDINATE -->
+    <!-- CATEGORIE RIORDINATE ESATTAMENTE COME RICHIESTO -->
     <div class="space-y-4 pt-4" id="products-section">
       <div class="flex justify-between items-center">
         <h2 class="text-lg font-bold text-white tracking-wide">Archivio File</h2>
@@ -550,12 +537,13 @@
       </div>
     </div>
 
-    <!-- GRIGLIA PRODOTTI -->
+    <!-- GRIGLIA PRODOTTI (Qui avverrà l'espansione e l'inserimento dinamico) -->
     <div id="products-grid" class="grid grid-cols-1 gap-5">
       <div class="text-center py-12 text-gray-600 text-sm">Apertura cassaforte in corso...</div>
     </div>
   </main>
 
+  <!-- SCRIPTS COMPLETI (NON MINIFICATI) -->
   <script>
     lucide.createIcons();
     let allProducts = [];
@@ -625,6 +613,7 @@
       }, 2000);
     }
 
+    // --- FUNZIONE TOGGLE INFO PANEL ---
     function toggleInfoPanel() {
       const panel = document.getElementById('info-panel');
       const chevron = document.getElementById('info-chevron');
@@ -637,6 +626,7 @@
       }
     }
 
+    // --- MEDIA FULLSCREEN ---
     function openMediaFullscreen(url, type) {
         const modal = document.getElementById('fullscreen-media-modal');
         const content = document.getElementById('fs-media-content');
@@ -709,25 +699,27 @@
       }
     }
 
-    // --- GESTIONE EFFETTI PLATINO E ORO PER I PULSANTI CATEGORIA ---
+    // --- GESTIONE EFFETTI PLATINO SCURO E ORO-ROSSO PER I PULSANTI CATEGORIA ---
     function filterCategory(cat, btn) {
       document.querySelectorAll('.cat-btn').forEach(b => { 
         b.className = 'cat-btn px-4 py-2 rounded-xl bg-[#121212] border border-gray-800 text-gray-400 text-xs font-semibold whitespace-nowrap hover:text-gray-200 transition'; 
       });
       
       if (cat === 'SHIP') {
-        const excluded = ['Tutti', 'Meet up', 'Servizi', 'Altro'];
+        const excluded = ['Tutti', 'Meet up', 'Servizi']; // Rimosso 'Altro', così si illumina anche lui
         document.querySelectorAll('.cat-btn').forEach(b => {
           if (!excluded.includes(b.innerText.trim())) {
-            b.className = 'cat-btn px-4 py-2 rounded-xl bg-gradient-to-tr from-gray-300 via-gray-100 to-gray-200 text-gray-800 border border-gray-400 text-xs font-extrabold whitespace-nowrap shadow-[0_0_15px_rgba(229,231,235,0.6)] transition';
+            // Platino scuro/ardesia elegante, senza alone luminoso (shadow-sm), testo nero intenso
+            b.className = 'cat-btn px-4 py-2 rounded-xl bg-gradient-to-tr from-gray-400 to-gray-500 text-gray-900 border border-gray-600 text-xs font-extrabold whitespace-nowrap shadow-sm transition';
           }
         });
-        renderProducts(allProducts.filter(p => p.category && !['Meet up Roma', 'Meet up', 'Servizi', 'Altro'].includes(p.category)));
+        renderProducts(allProducts.filter(p => p.category && !['Meet up Roma', 'Meet up', 'Servizi'].includes(p.category))); // Ora mostra anche 'Altro'
         return;
       } 
       else if (cat === 'Meet up Roma') {
         const targetBtn = Array.from(document.querySelectorAll('.cat-btn')).find(b => b.innerText.trim() === 'Meet up');
         if(targetBtn) {
+           // Oro tendente al rosso acceso
            targetBtn.className = 'cat-btn px-4 py-2 rounded-xl bg-gradient-to-r from-orange-500 to-red-500 text-white text-xs font-bold whitespace-nowrap shadow-[0_0_12px_rgba(249,115,22,0.5)] transition';
         }
         renderProducts(allProducts.filter(p => p.category && (p.category.includes('Meet up') || p.category.includes('Meet up Roma'))));
@@ -752,7 +744,7 @@
       }
     }
 
-    // --- RENDERIZZAZIONE PRODOTTI CON EFFETTO GHOST PER LA DESCRIZIONE ---
+    // --- RENDERIZZAZIONE PRODOTTI CON EFFETTO FANTASMA PER LA DESCRIZIONE ---
     function renderProducts(products) {
       const container = document.getElementById('products-grid');
       if (products.length === 0) { 
@@ -825,6 +817,7 @@
               <span class="text-[9px] uppercase font-bold text-gray-500 tracking-widest">${p.category || 'File'}</span>
               <h3 onclick="openProductModal('${p.id}')" class="font-bold text-lg text-gray-100 mt-1 leading-tight cursor-pointer hover:text-amber-500 transition">${p.name || ''}</h3>
               
+              <!-- Descrizione con effetto fantasma grigio e pulsante per allungarla -->
               <div class="mt-2">
                 <div id="desc-${p.id}" class="desc-fade text-xs text-gray-400 font-light leading-relaxed">${formattedDesc}</div>
                 <button onclick="toggleDescription(this, '${p.id}')" class="text-[11px] font-bold text-amber-500 hover:text-amber-400 mt-1.5 inline-block focus:outline-none transition">Leggi tutto</button>
@@ -1082,6 +1075,7 @@
       let progressPercent = Math.min(100, (points / 150) * 100);
       let nextTargetText = "Ogni 500€ di spesa ricevi 50 punti. Sblocca sconti perenni su tutti gli acquisti!";
 
+      // Logica automatica interattiva di transizione rank con marketing persuasivo
       if (points >= 500) {
         rankTitle = "VIP Black Diamond 💎";
         progressPercent = 100;
@@ -1100,6 +1094,7 @@
       document.getElementById('rank-progress-bar').style.width = `${progressPercent}%`;
       document.getElementById('rank-next-target').innerText = nextTargetText;
 
+      // Generazione dinamica dei premi sbloccati o bloccati in base ai punti reali dell'utente
       const marketTrophies = [
         { 
           name: "🎁 Bonus Benvenuto", 
