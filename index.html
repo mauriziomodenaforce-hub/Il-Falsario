@@ -73,6 +73,7 @@
 <body class="pb-24">
 
   <script>
+    // CHIAVI SUPABASE GIA' INIETTATE E PRONTE
     const SUPABASE_URL = "https://niyhpvtiefisycxbkjie.supabase.co";
     const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5peWhwdnRpZWZpc3ljeGJramllIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY4MjQ2MDUsImV4cCI6MjEwMjQwMDYwNX0.ODucTrP0dzByGNhyyIYv-S-kIH5cTs8X_Url-7jXRMY";
     
@@ -185,7 +186,7 @@
     </button>
   </div>
 
-  <!-- MODALE PRIVILEGI E MARKETING AGGRESSIVO -->
+  <!-- MODALE PRIVILEGI E INTERFACCIA INTERATTIVA AUTOMATICA -->
   <div id="trophies-modal" class="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4 hidden backdrop-blur-md">
     <div class="bg-[#121212] border border-amber-600/30 rounded-2xl w-full max-w-sm p-5 space-y-4 shadow-2xl">
       <div class="flex justify-between items-center border-b border-gray-800 pb-3">
@@ -207,45 +208,16 @@
         <div class="mt-3 w-full bg-gray-800 rounded-full h-1.5 overflow-hidden">
           <div id="rank-progress-bar" class="bg-gradient-to-r from-amber-600 to-yellow-400 h-1.5 rounded-full" style="width: 30%;"></div>
         </div>
-        <p class="text-[10px] text-gray-400 mt-2 font-light" id="rank-next-target">Ogni 500€ di spesa sono 50 punti. Sblocca sconti crescenti e omaggi!</p>
+        <p class="text-[10px] text-gray-400 mt-2 font-light" id="rank-next-target">Ogni 500€ di spesa ricevi 50 punti. Sblocca sconti perenni su tutti gli acquisti!</p>
       </div>
       
       <div class="space-y-2">
         <div class="flex justify-between items-center">
           <span class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Premi & Sconti Sbloccabili</span>
-          <span class="text-[9px] text-amber-500/80">Più acquisti, più risparmi</span>
+          <span class="text-[9px] text-amber-500/80">Vantaggi perenni</span>
         </div>
         <div id="user-trophies-list" class="space-y-2 max-h-52 overflow-y-auto pr-1">
-          <div class="bg-[#1a1a1a] border border-amber-600/30 p-3 rounded-xl text-xs text-gray-200 flex items-center justify-between shadow-sm">
-            <div class="flex items-center space-x-2.5">
-              <i data-lucide="gift" class="w-4 h-4 text-amber-500 flex-shrink-0"></i>
-              <div>
-                <div class="font-bold text-amber-50">Bonus Benvenuto</div>
-                <div class="text-[10px] text-gray-400 font-light mt-0.5">50 punti accumulati all'ingresso nel Caveau.</div>
-              </div>
-            </div>
-            <span class="text-[9px] bg-amber-500/20 text-amber-400 px-2.5 py-1 rounded font-extrabold uppercase tracking-wider">ATTIVO</span>
-          </div>
-          <div class="bg-[#121212] border border-gray-800/80 p-3 rounded-xl text-xs text-gray-500 flex items-center justify-between opacity-80">
-            <div class="flex items-center space-x-2.5">
-              <i data-lucide="lock" class="w-4 h-4 text-gray-500 flex-shrink-0"></i>
-              <div>
-                <div class="font-bold text-gray-300">Sconto 5% Silver</div>
-                <div class="text-[10px] text-gray-500 font-light mt-0.5">Attivo superati i 150 punti spesa.</div>
-              </div>
-            </div>
-            <span class="text-[9px] bg-amber-600/20 text-amber-400 border border-amber-500/30 px-2.5 py-1 rounded font-bold uppercase tracking-wider">SBLOCCA</span>
-          </div>
-          <div class="bg-[#121212] border border-gray-800/80 p-3 rounded-xl text-xs text-gray-500 flex items-center justify-between opacity-80">
-            <div class="flex items-center space-x-2.5">
-              <i data-lucide="lock" class="w-4 h-4 text-gray-500 flex-shrink-0"></i>
-              <div>
-                <div class="font-bold text-gray-300">Sconto 10% Gold</div>
-                <div class="text-[10px] text-gray-500 font-light mt-0.5">Attivo superati i 300 punti spesa.</div>
-              </div>
-            </div>
-            <span class="text-[9px] bg-amber-600/20 text-amber-400 border border-amber-500/30 px-2.5 py-1 rounded font-bold uppercase tracking-wider">SBLOCCA</span>
-          </div>
+          <!-- Popolato dinamicamente via JS in tempo reale dai punti Supabase -->
         </div>
       </div>
 
@@ -530,6 +502,18 @@
     
     function formatTextWithMentions(text) { return text ? text.replace(/@(\w+)/g, '<a href="https://t.me/$1" target="_blank" class="text-gray-300 font-bold hover:underline">@$1</a>') : ""; }
 
+    // Funzione toggle per allungare/accorciare la descrizione direttamente dalla card
+    function toggleDescription(btn, prodId) {
+        const descEl = document.getElementById(`desc-${prodId}`);
+        if (descEl.classList.contains('expanded')) {
+            descEl.classList.remove('expanded');
+            btn.innerText = "Leggi tutto";
+        } else {
+            descEl.classList.add('expanded');
+            btn.innerText = "Riduci";
+        }
+    }
+
     async function loadProducts() {
       try {
         if (!db) throw new Error();
@@ -688,34 +672,39 @@
       if (cat === 'ALL') renderProducts(allProducts); else renderProducts(allProducts.filter(p => p.category && p.category.includes(cat)));
     }
 
+    // INTERFACCIA INTERATTIVA AUTOMATICA PER I PRIVILEGI E SCONTI
     async function openTrophiesModal() {
       document.getElementById('trophies-modal').classList.remove('hidden'); 
       const uid = tg?.initDataUnsafe?.user?.id || 0;
+      
       let points = 50; 
       if (uid && db) {
         try {
           const { data } = await db.from('users').select('*').eq('telegram_id', uid);
-          if (data && data.length > 0) points = data[0].points || 50;
+          if (data && data.length > 0) {
+            points = data[0].points || 50;
+          }
         } catch(e) {}
       }
 
       document.getElementById('user-points-val').innerText = points;
+
       let rankTitle = "Cliente Standard 🥉";
       let progressPercent = Math.min(100, (points / 150) * 100);
-      let nextTargetText = "Ogni 500€ di spesa sono 50 punti. Sblocca sconti crescenti e omaggi!";
+      let nextTargetText = "Ogni 500€ di spesa ricevi 50 punti. Sblocca sconti perenni su tutti gli acquisti!";
 
       if (points >= 500) {
-        rankTitle = "VIP Black Diamond 💎 (Sconto 15% Fisso)";
+        rankTitle = "VIP Black Diamond 💎";
         progressPercent = 100;
-        nextTargetText = "Livello massimo! Sconti e omaggi massimi attivi.";
+        nextTargetText = "Massimo livello attivo! Omaggi VIP inclusi su ogni ordine per sempre.";
       } else if (points >= 300) {
-        rankTitle = "Cliente Gold 🥇 (Sconto 10% Fisso)";
+        rankTitle = "Cliente Gold 🥇";
         progressPercent = (points / 500) * 100;
-        nextTargetText = `Mancano ${500 - points} punti per il Black Diamond (15% di sconto).`;
+        nextTargetText = `Mancano ${500 - points} punti per il Black Diamond e gli omaggi VIP!`;
       } else if (points >= 150) {
-        rankTitle = "Cliente Silver 🥈 (Sconto 5% Fisso)";
+        rankTitle = "Cliente Silver 🥈";
         progressPercent = (points / 300) * 100;
-        nextTargetText = `Mancano ${300 - points} punti per passare a Gold (10% di sconto).`;
+        nextTargetText = `Mancano ${300 - points} punti per salire a Gold (10% di sconto perenne).`;
       }
       
       document.getElementById('user-rank-title').innerText = rankTitle;
@@ -723,21 +712,65 @@
       document.getElementById('rank-next-target').innerText = nextTargetText;
 
       const marketTrophies = [
-        { name: "🎁 Bonus Benvenuto", desc: "50 punti accumulati all'ingresso.", unlocked: true, reward: "ATTIVO" },
-        { name: "🏷️ Sconto 5% Silver", desc: "Sbloccato a 150 punti spesa.", unlocked: points >= 150, reward: points >= 150 ? "ATTIVO" : "SBLOCCA" },
-        { name: "🔥 Sconto 10% Gold", desc: "Sbloccato a 300 punti spesa.", unlocked: points >= 300, reward: points >= 300 ? "ATTIVO" : "SBLOCCA" },
-        { name: "💎 Sconto 15% + Omaggi VIP", desc: "Sbloccato a 500 punti spesa.", unlocked: points >= 500, reward: points >= 500 ? "ATTIVO" : "SBLOCCA" }
+        { 
+          name: "🎁 Bonus Benvenuto", 
+          desc: "50 punti accumulati all'ingresso nel Caveau.", 
+          unlocked: true, 
+          reward: "ATTIVO" 
+        },
+        { 
+          name: "🏷️ Sconto 5% Silver Perenne", 
+          desc: "Sconto fisso valido su tutti gli acquisti futuri. Sbloccato a 150 punti.", 
+          unlocked: points >= 150, 
+          reward: points >= 150 ? "ATTIVO" : "SBLOCCA" 
+        },
+        { 
+          name: "🔥 Sconto 10% Gold Perenne", 
+          desc: "Sconto fisso valido su tutti gli acquisti futuri. Sbloccato a 300 punti.", 
+          unlocked: points >= 300, 
+          reward: points >= 300 ? "ATTIVO" : "SBLOCCA" 
+        },
+        { 
+          name: "💎 Sconto 15% + Omaggi VIP", 
+          desc: "Sconto massimo + un omaggio incluso su ogni ordine per sempre! Sbloccato a 500 punti.", 
+          unlocked: points >= 500, 
+          reward: points >= 500 ? "ATTIVO" : "SBLOCCA" 
+        }
       ];
 
       const lDiv = document.getElementById('user-trophies-list');
       let tHTML = '';
+      
       marketTrophies.forEach(t => {
         if (t.unlocked) {
-          tHTML += `<div class="bg-[#1a1a1a] border border-amber-600/30 p-3 rounded-xl text-xs text-gray-200 flex items-center justify-between shadow-sm"><div class="flex items-center space-x-2.5"><i data-lucide="check-circle-2" class="w-4 h-4 text-amber-500 flex-shrink-0"></i><div><div class="font-bold text-amber-50">${t.name}</div><div class="text-[10px] text-gray-400 font-light mt-0.5">${t.desc}</div></div></div><span class="text-[9px] bg-amber-500/20 text-amber-400 px-2.5 py-1 rounded font-extrabold uppercase tracking-wider">${t.reward}</span></div>`;
+          tHTML += `
+            <div class="bg-[#1a1a1a] border border-amber-600/30 p-3 rounded-xl text-xs text-gray-200 flex items-center justify-between shadow-sm">
+              <div class="flex items-center space-x-2.5">
+                <i data-lucide="check-circle-2" class="w-4 h-4 text-amber-500 flex-shrink-0"></i>
+                <div>
+                  <div class="font-bold text-amber-50">${t.name}</div>
+                  <div class="text-[10px] text-gray-400 font-light mt-0.5">${t.desc}</div>
+                </div>
+              </div>
+              <span class="text-[9px] bg-amber-500/20 text-amber-400 px-2.5 py-1 rounded font-extrabold uppercase tracking-wider">${t.reward}</span>
+            </div>
+          `;
         } else {
-          tHTML += `<div class="bg-[#121212] border border-gray-800/80 p-3 rounded-xl text-xs text-gray-500 flex items-center justify-between opacity-80"><div class="flex items-center space-x-2.5"><i data-lucide="lock" class="w-4 h-4 text-gray-500 flex-shrink-0"></i><div><div class="font-bold text-gray-300">${t.name}</div><div class="text-[10px] text-gray-500 font-light mt-0.5">${t.desc}</div></div></div><span class="text-[9px] bg-amber-600/20 text-amber-400 border border-amber-500/30 px-2.5 py-1 rounded font-bold uppercase tracking-wider animate-pulse">${t.reward}</span></div>`;
+          tHTML += `
+            <div class="bg-[#121212] border border-gray-800/80 p-3 rounded-xl text-xs text-gray-500 flex items-center justify-between opacity-80">
+              <div class="flex items-center space-x-2.5">
+                <i data-lucide="lock" class="w-4 h-4 text-gray-500 flex-shrink-0"></i>
+                <div>
+                  <div class="font-bold text-gray-300">${t.name}</div>
+                  <div class="text-[10px] text-gray-500 font-light mt-0.5">${t.desc}</div>
+                </div>
+              </div>
+              <span class="text-[9px] bg-amber-600/20 text-amber-400 border border-amber-500/30 px-2.5 py-1 rounded font-bold uppercase tracking-wider animate-pulse">${t.reward}</span>
+            </div>
+          `;
         }
       });
+
       lDiv.innerHTML = tHTML;
       lucide.createIcons();
     }
