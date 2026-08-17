@@ -43,6 +43,31 @@
         background-color: rgba(217, 119, 6, 0.15) !important; 
         color: #fef3c7 !important; 
     }
+
+    /* Effetto dissolvenza grigia "fantasma" per descrizioni lunghe */
+    .desc-fade {
+        position: relative;
+        max-height: 2.8rem; /* Circa 2 righe */
+        overflow: hidden;
+        transition: max-height 0.3s ease;
+    }
+    .desc-fade.expanded {
+        max-height: 200rem;
+    }
+    .desc-fade::after {
+        content: "";
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 1.5rem;
+        background: linear-gradient(to bottom, rgba(18,18,18,0), rgba(18,18,18,0.95));
+        pointer-events: none;
+        transition: opacity 0.3s ease;
+    }
+    .desc-fade.expanded::after {
+        opacity: 0;
+    }
   </style>
 </head>
 <body class="pb-24">
@@ -183,7 +208,6 @@
         <div class="mt-3 w-full bg-gray-800 rounded-full h-1.5 overflow-hidden">
           <div id="rank-progress-bar" class="bg-gradient-to-r from-amber-600 to-yellow-400 h-1.5 rounded-full" style="width: 20%;"></div>
         </div>
-        <!-- Legenda chiara e trasparente aggiornata -->
         <p class="text-[10px] text-gray-400 mt-2 font-light" id="rank-next-target">Ogni 500€ di spesa sono 50 punti. Sblocca sconti crescenti e omaggi!</p>
       </div>
       <div class="space-y-2">
@@ -217,7 +241,7 @@
     </div>
   </div>
 
-  <!-- MODALE CONTATTO DIRETTO AGGIORNATA CON TUTTI I CANALI E CHAT 20/24 -->
+  <!-- MODALE CONTATTO DIRETTO -->
   <div id="support-modal" class="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4 hidden backdrop-blur-md">
     <div class="bg-[#121212] border border-amber-600/30 rounded-2xl w-full max-w-sm p-5 space-y-4 shadow-2xl">
       <div class="flex justify-between items-center border-b border-gray-800 pb-3">
@@ -228,7 +252,6 @@
       </div>
       
       <div class="space-y-2.5 max-h-72 overflow-y-auto pr-1">
-        <!-- Chat Sicura 20/24 -->
         <div class="bg-[#1a1a1a] border border-gray-800 rounded-xl p-3.5 flex items-center space-x-3">
           <div class="p-2 bg-amber-500/10 rounded-lg text-amber-500"><i data-lucide="shield" class="w-4 h-4"></i></div>
           <div>
@@ -237,7 +260,6 @@
           </div>
         </div>
 
-        <!-- Telegram Ufficiale -->
         <a href="https://t.me/il_falsario_ufficiale_x2" target="_blank" class="bg-[#1a1a1a] border border-gray-800 hover:border-amber-600/50 rounded-xl p-3.5 flex items-center space-x-3 transition block">
           <div class="p-2 bg-blue-500/10 rounded-lg text-blue-400"><i data-lucide="send" class="w-4 h-4"></i></div>
           <div>
@@ -246,7 +268,6 @@
           </div>
         </a>
 
-        <!-- Signal Ufficiale -->
         <a href="https://signal.me/#eu/m7lTtwu9GCr8RJQ7mhQ2OkwVfT_MZvjG6g-PFCnS8dG9NBl3s09GYKPtiyRQz-ih" target="_blank" class="bg-[#1a1a1a] border border-gray-800 hover:border-amber-600/50 rounded-xl p-3.5 flex items-center space-x-3 transition block">
           <div class="p-2 bg-indigo-500/10 rounded-lg text-indigo-400"><i data-lucide="lock" class="w-4 h-4"></i></div>
           <div>
@@ -255,7 +276,6 @@
           </div>
         </a>
 
-        <!-- Session Ufficiale -->
         <div class="bg-[#1a1a1a] border border-gray-800 rounded-xl p-3.5 flex items-center space-x-3">
           <div class="p-2 bg-emerald-500/10 rounded-lg text-emerald-400"><i data-lucide="key" class="w-4 h-4"></i></div>
           <div>
@@ -264,7 +284,6 @@
           </div>
         </div>
 
-        <!-- Canale Feedback -->
         <a href="https://t.me/+eRPnJSZq485kMzdk" target="_blank" class="bg-[#1a1a1a] border border-gray-800 hover:border-amber-600/50 rounded-xl p-3.5 flex items-center space-x-3 transition block">
           <div class="p-2 bg-amber-500/10 rounded-lg text-amber-400"><i data-lucide="star" class="w-4 h-4"></i></div>
           <div>
@@ -479,6 +498,18 @@
     
     function formatTextWithMentions(text) { return text ? text.replace(/@(\w+)/g, '<a href="https://t.me/$1" target="_blank" class="text-gray-300 font-bold hover:underline">@$1</a>') : ""; }
 
+    // Funzione toggle per allungare/accorciare la descrizione direttamente dalla card
+    function toggleDescription(btn, prodId) {
+        const descEl = document.getElementById(`desc-${prodId}`);
+        if (descEl.classList.contains('expanded')) {
+            descEl.classList.remove('expanded');
+            btn.innerText = "Leggi tutto";
+        } else {
+            descEl.classList.add('expanded');
+            btn.innerText = "Riduci";
+        }
+    }
+
     async function loadProducts() {
       try {
         if (!db) throw new Error();
@@ -524,6 +555,9 @@
             `;
         });
 
+        let rawDesc = p.description || 'Dettagli su richiesta';
+        let formattedDesc = formatTextWithMentions(rawDesc);
+
         htmlContent += `
         <div class="bg-[#121212] border border-gray-800 rounded-2xl overflow-hidden">
           <div class="relative w-full h-56 bg-[#0a0a0a]">
@@ -531,10 +565,15 @@
             ${scorriBadge}
           </div>
           <div class="p-5">
-            <div onclick="openProductModal('${p.id}')" class="cursor-pointer mb-4">
+            <div class="mb-4">
               <span class="text-[9px] uppercase font-bold text-gray-500 tracking-widest">${p.category || 'File'}</span>
-              <h3 class="font-bold text-lg text-gray-100 mt-1 leading-tight">${p.name || ''}</h3>
-              <p class="text-xs text-gray-400 line-clamp-2 mt-1.5 font-light">${formatTextWithMentions(p.description || 'Dettagli su richiesta')}</p>
+              <h3 onclick="openProductModal('${p.id}')" class="font-bold text-lg text-gray-100 mt-1 leading-tight cursor-pointer">${p.name || ''}</h3>
+              
+              <!-- Descrizione con effetto fantasma grigio e pulsante per allungarla -->
+              <div class="mt-2">
+                <div id="desc-${p.id}" class="desc-fade text-xs text-gray-400 font-light leading-relaxed">${formattedDesc}</div>
+                <button onclick="this.previousElementSibling.classList.toggle('expanded'); this.innerText = this.previousElementSibling.classList.contains('expanded') ? 'Riduci' : 'Leggi tutto';" class="text-[11px] font-bold text-amber-500 hover:text-amber-400 mt-1 inline-block focus:outline-none">Leggi tutto</button>
+              </div>
             </div>
             <div class="border-t border-gray-800/60 pt-4">${bottoniHTML}</div>
           </div>
