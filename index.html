@@ -47,7 +47,7 @@
         position: relative;
     }
     
-    /* Stile Oro/Champagne per le opzioni */
+    /* Stile Oro/Champagne per le opzioni selezionate */
     .variant-selected { 
         border-color: #d97706 !important; 
         background-color: rgba(217, 119, 6, 0.15) !important; 
@@ -224,7 +224,9 @@
             <i data-lucide="x" class="w-5 h-5"></i>
         </button>
       </div>
+      
       <div id="cart-items-list" class="space-y-2 max-h-40 overflow-y-auto pr-1"></div>
+      
       <div class="border-t border-gray-800 pt-3 space-y-3">
         <div class="flex justify-between text-sm font-bold text-white">
           <span>Totale da saldare:</span>
@@ -255,7 +257,7 @@
     </button>
   </div>
 
-  <!-- MODALE PRIVILEGI E MARKETING AGGRESSIVO -->
+  <!-- MODALE PRIVILEGI E MARKETING AGGRESSIVO (AUTOMATICO) -->
   <div id="trophies-modal" class="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4 hidden backdrop-blur-md">
     <div class="bg-[#121212] border border-amber-600/30 rounded-2xl w-full max-w-sm p-5 space-y-4 shadow-2xl">
       <div class="flex justify-between items-center border-b border-gray-800 pb-3">
@@ -301,7 +303,7 @@
     </div>
   </div>
 
-  <!-- MODALE TRACKING Lavorazioni -->
+  <!-- MODALE TRACKING -->
   <div id="tracking-modal" class="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4 hidden backdrop-blur-md">
     <div class="bg-[#121212] border border-gray-800 rounded-2xl w-full max-w-sm p-5 space-y-4 shadow-2xl">
       <div class="flex justify-between items-center border-b border-gray-800 pb-3">
@@ -318,11 +320,11 @@
         </div>
       </div>
       <div id="tracking-result" class="hidden border-t border-gray-800 pt-3 space-y-2"></div>
-      <button onclick="closeTrackingModal()" class="w-full bg-[#1a1a1a] border border-gray-800 hover:bg-gray-900 text-gray-300 font-bold py-3 rounded-xl text-xs uppercase tracking-wider">Chiudi</button>
+      <button onclick="closeTrackingModal()" class="w-full bg-[#1a1a1a] border border-gray-800 hover:bg-gray-900 text-gray-300 font-bold py-3 rounded-xl text-xs uppercase tracking-wider transition">Chiudi</button>
     </div>
   </div>
 
-  <!-- MODALE CONTATTO DIRETTO (Aggiornato con Chat 24/24 e copia Session) -->
+  <!-- MODALE CONTATTO DIRETTO (Con Chat 24/24 e Copia Session ID interattivo) -->
   <div id="support-modal" class="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4 hidden backdrop-blur-md">
     <div class="bg-[#121212] border border-amber-600/30 rounded-2xl w-full max-w-sm p-5 space-y-4 shadow-2xl">
       <div class="flex justify-between items-center border-b border-gray-800 pb-3">
@@ -333,6 +335,7 @@
       </div>
       
       <div class="space-y-2.5 max-h-[75vh] overflow-y-auto pr-1">
+        
         <!-- Chat Sicura -->
         <div class="bg-[#1a1a1a] border border-gray-800 rounded-xl p-3.5 flex items-center space-x-3">
           <div class="p-2 bg-amber-500/10 rounded-lg text-amber-500"><i data-lucide="shield" class="w-4 h-4"></i></div>
@@ -385,12 +388,14 @@
     </div>
   </div>
 
-  <!-- MODALE DETTAGLIO PRODOTTO (Se cliccato per aprirlo a schermo intero) -->
+  <!-- MODALE DETTAGLIO PRODOTTO (Apertura a schermo intero) -->
   <div id="product-detail-modal" class="fixed inset-0 bg-[#0a0a0a] z-[80] hidden flex-col overflow-y-auto hide-scrollbar pb-24 transition-transform duration-300 transform translate-y-full">
     <button onclick="closeProductModal()" class="absolute top-4 right-4 bg-[#121212]/80 p-2.5 rounded-full z-[90] backdrop-blur-md shadow-xl border border-gray-800">
        <i data-lucide="x" class="w-5 h-5 text-gray-300"></i>
     </button>
+    
     <div id="pd-media-container" class="w-full h-[45vh] bg-[#121212] relative border-b border-gray-800"></div>
+    
     <div class="p-5 space-y-5">
         <div>
             <span id="pd-category" class="text-[10px] uppercase font-bold text-amber-600 tracking-widest"></span>
@@ -451,7 +456,7 @@
       </div>
     </div>
 
-    <!-- BENVENUTO -->
+    <!-- BENVENUTO E TASTI PRINCIPALI SHIP / MEET -->
     <div class="bg-[#121212] border border-gray-800 rounded-2xl p-5 shadow-2xl">
         <div class="flex flex-col gap-1 mb-4">
             <div class="flex items-center gap-2">
@@ -477,7 +482,7 @@
         </div>
     </div>
 
-    <!-- TASTI MENU CENTRALI -->
+    <!-- NAVIGAZIONE -->
     <div class="mt-2">
       <div class="grid grid-cols-2 gap-3">
         <button onclick="scrollToProducts()" class="bg-[#121212] border border-amber-600/30 hover:border-amber-500 text-amber-500 font-bold py-3.5 px-3 rounded-xl flex items-center justify-center space-x-2 text-xs uppercase tracking-wider transition shadow-lg">
@@ -489,7 +494,7 @@
         </button>
       </div>
 
-      <!-- Tasto "Maggiori informazioni" nello stile neutro foto 3 -->
+      <!-- Tasto "Maggiori informazioni" in stile neutro -->
       <button onclick="toggleInfoPanel()" class="w-full mt-3 bg-[#121212] border border-gray-800 hover:border-gray-700 text-gray-300 font-bold py-3.5 px-4 rounded-xl flex items-center justify-between text-xs uppercase tracking-wider transition shadow-lg">
         <div class="flex items-center space-x-2">
           <i data-lucide="info" class="w-4 h-4 text-gray-400"></i>
@@ -525,7 +530,7 @@
       </div>
     </div>
 
-    <!-- CATEGORIE RIORDINATE ESATTAMENTE COME RICHIESTO -->
+    <!-- CATEGORIE RIORDINATE -->
     <div class="space-y-4 pt-4" id="products-section">
       <div class="flex justify-between items-center">
         <h2 class="text-lg font-bold text-white tracking-wide">Archivio File</h2>
@@ -545,13 +550,12 @@
       </div>
     </div>
 
-    <!-- GRIGLIA PRODOTTI (Qui avverrà l'espansione e l'inserimento dinamico) -->
+    <!-- GRIGLIA PRODOTTI -->
     <div id="products-grid" class="grid grid-cols-1 gap-5">
       <div class="text-center py-12 text-gray-600 text-sm">Apertura cassaforte in corso...</div>
     </div>
   </main>
 
-  <!-- SCRIPTS COMPLETI (NON MINIFICATI) -->
   <script>
     lucide.createIcons();
     let allProducts = [];
@@ -560,7 +564,7 @@
     let selectedVariantIndex = 0;
     let currentQty = 1;
 
-    // Funzione JS chirurgica per copiare l'ID Utente
+    // --- FUNZIONE JS PER COPIARE L'ID UTENTE ---
     function copyUserId() {
       const id = localStorage.getItem('falsario_user_id');
       if(!id) return;
@@ -572,8 +576,8 @@
         document.execCommand('copy');
         const textEl = document.getElementById('sidebar-user-id');
         textEl.innerText = "Copiato! ✅";
-        if (tg && tg.HapticFeedback) {
-            tg.HapticFeedback.notificationOccurred('success');
+        if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.HapticFeedback) {
+            window.Telegram.WebApp.HapticFeedback.notificationOccurred('success');
         }
         setTimeout(() => { 
             textEl.innerText = id; 
@@ -582,7 +586,7 @@
       document.body.removeChild(ta);
     }
 
-    // Funzione per il Login con ID esistente
+    // --- FUNZIONE PER LOGIN CON ID ESISTENTE ---
     function loginWithId() {
       const newId = prompt("Inserisci il tuo ID Utente per recuperare il tuo account, i tuoi punti e i tuoi sconti:");
       if(newId && newId.trim() !== "" && !isNaN(newId)) {
@@ -594,7 +598,7 @@
       }
     }
 
-    // Funzione JS chirurgica per copiare il Session ID
+    // --- FUNZIONE JS PER COPIARE SESSION ID ---
     function copySessionId() {
       const sessionId = "05495e45a9c1ced74358dcedaad80c99956e1405fbbccf4f8e85f0ca873946a515";
       const textEl = document.getElementById('session-id-text');
@@ -608,8 +612,8 @@
         textEl.innerText = "Copiato negli appunti! ✅";
         textEl.classList.remove('text-emerald-300', 'font-mono');
         textEl.classList.add('text-green-400');
-        if (tg && tg.HapticFeedback) {
-            tg.HapticFeedback.notificationOccurred('success');
+        if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.HapticFeedback) {
+            window.Telegram.WebApp.HapticFeedback.notificationOccurred('success');
         }
       } catch (err) {}
       document.body.removeChild(textArea);
@@ -621,7 +625,6 @@
       }, 2000);
     }
 
-    // Funzione toggle per Maggiori Informazioni
     function toggleInfoPanel() {
       const panel = document.getElementById('info-panel');
       const chevron = document.getElementById('info-chevron');
@@ -634,7 +637,6 @@
       }
     }
 
-    // Media Fullscreen
     function openMediaFullscreen(url, type) {
         const modal = document.getElementById('fullscreen-media-modal');
         const content = document.getElementById('fs-media-content');
@@ -683,7 +685,7 @@
         return text.replace(/@(\w+)/g, '<a href="https://t.me/$1" target="_blank" class="text-gray-300 font-bold hover:underline">@$1</a>'); 
     }
 
-    // Funzione toggle per allungare/accorciare la descrizione direttamente dalla card
+    // --- FUNZIONE LEGGI TUTTO / EFFETTO FANTASMA ---
     function toggleDescription(btn, prodId) {
         const descEl = document.getElementById(`desc-${prodId}`);
         if (descEl.classList.contains('expanded')) {
@@ -707,29 +709,28 @@
       }
     }
 
-    // GESTIONE EFFETTI PLATINO / ORO-ROSSO PER I PULSANTI CATEGORIA
+    // --- GESTIONE EFFETTI PLATINO E ORO PER I PULSANTI CATEGORIA ---
     function filterCategory(cat, btn) {
       document.querySelectorAll('.cat-btn').forEach(b => { 
         b.className = 'cat-btn px-4 py-2 rounded-xl bg-[#121212] border border-gray-800 text-gray-400 text-xs font-semibold whitespace-nowrap hover:text-gray-200 transition'; 
       });
       
       if (cat === 'SHIP') {
-        // Platino su tutte tranne Meet up
+        const excluded = ['Tutti', 'Meet up', 'Servizi', 'Altro'];
         document.querySelectorAll('.cat-btn').forEach(b => {
-          if (b.innerText.trim() !== 'Meet up') {
-            b.className = 'cat-btn px-4 py-2 rounded-xl bg-slate-200 text-black text-xs font-bold whitespace-nowrap shadow-[0_0_10px_rgba(203,213,225,0.6)] transition';
+          if (!excluded.includes(b.innerText.trim())) {
+            b.className = 'cat-btn px-4 py-2 rounded-xl bg-gradient-to-tr from-gray-300 via-gray-100 to-gray-200 text-gray-800 border border-gray-400 text-xs font-extrabold whitespace-nowrap shadow-[0_0_15px_rgba(229,231,235,0.6)] transition';
           }
         });
-        renderProducts(allProducts.filter(p => !(p.category && p.category.includes('Meet up'))));
+        renderProducts(allProducts.filter(p => p.category && !['Meet up Roma', 'Meet up', 'Servizi', 'Altro'].includes(p.category)));
         return;
       } 
       else if (cat === 'Meet up Roma') {
-        // Oro tendente al rosso solo su Meet up
         const targetBtn = Array.from(document.querySelectorAll('.cat-btn')).find(b => b.innerText.trim() === 'Meet up');
         if(targetBtn) {
-           targetBtn.className = 'cat-btn px-4 py-2 rounded-xl bg-orange-600 text-white text-xs font-bold whitespace-nowrap shadow-[0_0_12px_rgba(234,88,12,0.6)] transition';
+           targetBtn.className = 'cat-btn px-4 py-2 rounded-xl bg-gradient-to-r from-orange-500 to-red-500 text-white text-xs font-bold whitespace-nowrap shadow-[0_0_12px_rgba(249,115,22,0.5)] transition';
         }
-        renderProducts(allProducts.filter(p => p.category && p.category.includes('Meet up Roma')));
+        renderProducts(allProducts.filter(p => p.category && (p.category.includes('Meet up') || p.category.includes('Meet up Roma'))));
         return;
       } 
       else {
@@ -751,7 +752,7 @@
       }
     }
 
-    // RENDERIZZAZIONE PRODOTTI ESPANSA E NON MINIFICATA
+    // --- RENDERIZZAZIONE PRODOTTI CON EFFETTO GHOST PER LA DESCRIZIONE ---
     function renderProducts(products) {
       const container = document.getElementById('products-grid');
       if (products.length === 0) { 
@@ -824,7 +825,6 @@
               <span class="text-[9px] uppercase font-bold text-gray-500 tracking-widest">${p.category || 'File'}</span>
               <h3 onclick="openProductModal('${p.id}')" class="font-bold text-lg text-gray-100 mt-1 leading-tight cursor-pointer hover:text-amber-500 transition">${p.name || ''}</h3>
               
-              <!-- Descrizione con effetto fantasma grigio e pulsante per allungarla -->
               <div class="mt-2">
                 <div id="desc-${p.id}" class="desc-fade text-xs text-gray-400 font-light leading-relaxed">${formattedDesc}</div>
                 <button onclick="toggleDescription(this, '${p.id}')" class="text-[11px] font-bold text-amber-500 hover:text-amber-400 mt-1.5 inline-block focus:outline-none transition">Leggi tutto</button>
@@ -943,8 +943,8 @@
     function changeQty(delta) { 
         currentQty = Math.max(1, currentQty + delta); 
         updateBottomBar(); 
-        if(tg && tg.HapticFeedback) {
-            tg.HapticFeedback.selectionChanged(); 
+        if(window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.HapticFeedback) {
+            window.Telegram.WebApp.HapticFeedback.selectionChanged(); 
         }
     }
 
@@ -967,8 +967,8 @@
       const badge = document.getElementById('cart-badge'); 
       badge.innerText = cart.length; 
       badge.classList.remove('hidden');
-      if (tg && tg.HapticFeedback) {
-          tg.HapticFeedback.impactOccurred('light');
+      if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.HapticFeedback) {
+          window.Telegram.WebApp.HapticFeedback.impactOccurred('light');
       }
     }
 
@@ -1020,7 +1020,7 @@
       }
       
       const savedId = localStorage.getItem('falsario_user_id');
-      const user = tg?.initDataUnsafe?.user || {};
+      const user = window.Telegram?.WebApp?.initDataUnsafe?.user || {};
       const finalUserId = savedId ? parseInt(savedId) : (user.id || Math.floor(Math.random() * 9000000000) + 1000000000);
       const finalUsername = user.username || "Web_User_" + String(finalUserId).slice(-4);
 
@@ -1055,10 +1055,12 @@
 
     function closeSuccessPanel() { 
         document.getElementById('success-panel-modal').classList.add('hidden'); 
-        if (tg) tg.close(); 
+        if (window.Telegram && window.Telegram.WebApp) {
+            window.Telegram.WebApp.close(); 
+        }
     }
 
-    // INTERFACCIA INTERATTIVA AUTOMATICA PER I PRIVILEGI E SCONTI CON ID GLOBALE
+    // --- INTERFACCIA INTERATTIVA AUTOMATICA PER I PRIVILEGI E SCONTI CON ID GLOBALE ---
     async function openTrophiesModal() {
       document.getElementById('trophies-modal').classList.remove('hidden'); 
       
@@ -1080,7 +1082,6 @@
       let progressPercent = Math.min(100, (points / 150) * 100);
       let nextTargetText = "Ogni 500€ di spesa ricevi 50 punti. Sblocca sconti perenni su tutti gli acquisti!";
 
-      // Logica automatica interattiva di transizione rank con marketing persuasivo
       if (points >= 500) {
         rankTitle = "VIP Black Diamond 💎";
         progressPercent = 100;
@@ -1099,7 +1100,6 @@
       document.getElementById('rank-progress-bar').style.width = `${progressPercent}%`;
       document.getElementById('rank-next-target').innerText = nextTargetText;
 
-      // Generazione dinamica dei premi sbloccati o bloccati in base ai punti reali dell'utente
       const marketTrophies = [
         { 
           name: "🎁 Bonus Benvenuto", 
