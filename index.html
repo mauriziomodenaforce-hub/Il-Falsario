@@ -626,7 +626,7 @@
         </div>
     </div>
 
-    <!-- MODALE CONTATTO DIRETTO (Aggiornato con Chat 24/24 e copia Session) -->
+    <!-- MODALE CONTATTO DIRETTO -->
     <div 
         id="support-modal" 
         class="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4 hidden backdrop-blur-md"
@@ -749,7 +749,7 @@
         </div>
     </div>
 
-    <!-- MODALE DETTAGLIO PRODOTTO (Apertura a schermo intero) -->
+    <!-- MODALE DETTAGLIO PRODOTTO -->
     <div 
         id="product-detail-modal" 
         class="fixed inset-0 bg-[#0a0a0a] z-[80] hidden flex-col overflow-y-auto hide-scrollbar pb-24 transition-transform duration-300 transform translate-y-full"
@@ -1031,10 +1031,10 @@
                     Hash
                 </button>
                 <button 
-                    onclick="filterCategory('Telefoni Cryptati', this)" 
+                    onclick="filterCategory('Telefoni Criptati', this)" 
                     class="cat-btn px-4 py-2 rounded-xl bg-[#121212] border border-gray-800 text-gray-400 text-xs font-semibold whitespace-nowrap hover:text-gray-200 transition"
                 >
-                    Telefoni Cryptati
+                    Telefoni Criptati
                 </button>
                 <button 
                     onclick="filterCategory('Servizi', this)" 
@@ -1256,8 +1256,8 @@
                 b.className = 'cat-btn px-4 py-2 rounded-xl bg-[#121212] border border-gray-800 text-gray-400 text-xs font-semibold whitespace-nowrap hover:text-gray-200 transition'; 
             });
             
-            // L'array corretto e completo con "Altro"
-            const shipCats = ['Documenti falsi', 'Banconote false', 'Monete false', 'Coca', 'Weed', 'Hash', 'Telefoni Cryptati', 'Altro'];
+            // L'array corretto e completo con "Telefoni Criptati"
+            const shipCats = ['Documenti falsi', 'Banconote false', 'Monete false', 'Coca', 'Weed', 'Hash', 'Telefoni Criptati', 'Altro'];
             const meetCats = ['Meet up', 'Meet up Roma'];
             
             // Mappa per ordinamento visivo
@@ -1268,7 +1268,7 @@
                 "Coca": 4, 
                 "Weed": 5, 
                 "Hash": 6, 
-                "Telefoni Cryptati": 7, 
+                "Telefoni Criptati": 7, 
                 "Servizi": 8, 
                 "Altro": 9, 
                 "Meet up Roma": 10, 
@@ -1285,7 +1285,7 @@
                     }
                 });
                 
-                // Filtra includendo anche "Altro"
+                // Filtra solo le categorie valide per Ship
                 filtered = allProducts.filter(p => shipCats.includes(p.category));
             } 
             else if (meetCats.includes(cat)) {
@@ -1371,7 +1371,13 @@
                     if (m.type === 'video') {
                         mediaSliderHTML += `<video class="w-full h-full object-cover pointer-events-none" autoplay loop muted playsinline webkit-playsinline src="${m.url}" onloadedmetadata="this.muted=true; this.play()"></video>`;
                     } else {
-                        mediaSliderHTML += `<img class="w-full h-full object-cover pointer-events-none" src="${m.url}" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1611162617474-5b21e879e113?q=80&w=200&auto=format&fit=crop';" />`;
+                        // FIX CENTRATURA SOLO PER TELEFONI CRIPTATI
+                        let imgClass = "w-full h-full object-cover pointer-events-none";
+                        if (p.category === 'Telefoni Criptati') {
+                            imgClass = "w-full h-full object-contain p-2 pointer-events-none";
+                        }
+                        
+                        mediaSliderHTML += `<img class="${imgClass}" src="${m.url}" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1611162617474-5b21e879e113?q=80&w=200&auto=format&fit=crop';" />`;
                     }
                     
                     mediaSliderHTML += `
