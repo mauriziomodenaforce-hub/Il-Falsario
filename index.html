@@ -1256,8 +1256,8 @@
                 b.className = 'cat-btn px-4 py-2 rounded-xl bg-[#121212] border border-gray-800 text-gray-400 text-xs font-semibold whitespace-nowrap hover:text-gray-200 transition'; 
             });
             
-            // Le categorie da mostrare in SHIP e quelle da ignorare
-            const shipCats = ['Documenti falsi', 'Banconote false', 'Monete false', 'Coca', 'Weed', 'Hash', 'Telefoni Cryptati'];
+            // L'array corretto e completo con "Altro"
+            const shipCats = ['Documenti falsi', 'Banconote false', 'Monete false', 'Coca', 'Weed', 'Hash', 'Telefoni Cryptati', 'Altro'];
             const meetCats = ['Meet up', 'Meet up Roma'];
             
             // Mappa per ordinamento visivo
@@ -1285,7 +1285,7 @@
                     }
                 });
                 
-                // Filtra solo le categorie valide per Ship (esclude Servizi, Altro e Meet Up)
+                // Filtra includendo anche "Altro"
                 filtered = allProducts.filter(p => shipCats.includes(p.category));
             } 
             else if (meetCats.includes(cat)) {
