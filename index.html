@@ -85,6 +85,35 @@
         tg.expand(); 
         if (tg.disableVerticalSwipes) { tg.disableVerticalSwipes(); }
     }
+
+    // --- NUOVO SISTEMA ID UNICO PER UTENTI WEB/APP ---
+    async function getOrInitUserId() {
+        let localId = localStorage.getItem('falsario_user_id');
+        let tgId = window.Telegram?.WebApp?.initDataUnsafe?.user?.id;
+
+        if (localId) return localId;
+        if (tgId) {
+            localStorage.setItem('falsario_user_id', tgId);
+            return tgId;
+        }
+        
+        // Se non c'è ID, genera un identificativo web unico a 10 cifre
+        let newId = Math.floor(Math.random() * 9000000000) + 1000000000;
+        localStorage.setItem('falsario_user_id', newId);
+
+        // Registrazione silenziosa dell'utente Web su Supabase (per permettere l'accumulo punti)
+        if (db) {
+            try {
+                await db.from('users').insert([{
+                    telegram_id: newId,
+                    username: "Web_User_" + String(newId).slice(-4),
+                    points: 50,
+                    trophies: []
+                }]);
+            } catch(e) {}
+        }
+        return newId;
+    }
   </script>
 
   <header class="sticky top-0 z-30 bg-[#121212]/95 backdrop-blur-md px-4 py-3 flex justify-between items-center border-b border-gray-800">
@@ -106,34 +135,51 @@
   </header>
 
   <div id="drawer-overlay" onclick="toggleDrawer()" class="fixed inset-0 bg-black/70 z-40 hidden backdrop-blur-sm"></div>
-  <aside id="drawer" class="fixed top-0 right-0 w-72 h-full bg-[#121212] z-50 transform translate-x-full drawer p-5 flex flex-col justify-between border-l border-amber-900/30">
-    <div>
-      <div class="flex justify-between items-center mb-8">
-        <span class="text-sm font-semibold text-amber-600 uppercase tracking-widest">IL CAVEAU</span>
-        <button onclick="toggleDrawer()" class="p-1 text-gray-500 hover:text-white">
-          <i data-lucide="x" class="w-6 h-6"></i>
-        </button>
-      </div>
-      <nav class="space-y-2">
-        <a href="#" onclick="toggleDrawer();" class="flex items-center space-x-3 px-3 py-3 rounded-xl bg-gradient-to-r from-amber-600/20 to-transparent text-amber-500 font-medium border border-amber-500/20">
-          <i data-lucide="key" class="w-5 h-5"></i><span>Accesso Principale</span>
-        </a>
-        <a href="#" onclick="scrollToProducts(); toggleDrawer();" class="flex items-center space-x-3 px-3 py-3 rounded-xl text-gray-400 hover:bg-gray-800/50 hover:text-gray-200 transition">
-          <i data-lucide="folder-lock" class="w-5 h-5"></i><span>Documenti e File</span>
-        </a>
-        <a href="#" onclick="openCartModal(); toggleDrawer();" class="flex items-center space-x-3 px-3 py-3 rounded-xl text-gray-400 hover:bg-gray-800/50 hover:text-gray-200 transition">
-          <i data-lucide="briefcase" class="w-5 h-5"></i><span>La tua Valigetta</span>
-        </a>
-        <a href="#" onclick="openTrophiesModal(); toggleDrawer();" class="flex items-center space-x-3 px-3 py-3 rounded-xl text-gray-400 hover:bg-gray-800/50 hover:text-gray-200 transition">
-          <i data-lucide="award" class="w-5 h-5"></i><span>Privilegi Clienti</span>
-        </a>
-        <a href="#" onclick="openTrackingModal(); toggleDrawer();" class="flex items-center space-x-3 px-3 py-3 rounded-xl text-gray-400 hover:bg-gray-800/50 hover:text-gray-200 transition">
-          <i data-lucide="map" class="w-5 h-5"></i><span>Stato Lavorazioni</span>
-        </a>
-        <a href="#" onclick="openSupportModal(); toggleDrawer();" class="flex items-center space-x-3 px-3 py-3 rounded-xl text-gray-400 hover:bg-gray-800/50 hover:text-gray-200 transition">
-          <i data-lucide="message-square" class="w-5 h-5"></i><span>Contatto Diretto</span>
-        </a>
-      </nav>
+  <aside id="drawer" class="fixed top-0 right-0 w-72 h-full bg-[#121212] z-50 transform translate-x-full drawer p-5 flex flex-col border-l border-amber-900/30 overflow-y-auto">
+    <div class="flex justify-between items-center mb-8">
+      <span class="text-sm font-semibold text-amber-600 uppercase tracking-widest">IL CAVEAU</span>
+      <button onclick="toggleDrawer()" class="p-1 text-gray-500 hover:text-white">
+        <i data-lucide="x" class="w-6 h-6"></i>
+      </button>
+    </div>
+    <nav class="space-y-2 flex-1">
+      <a href="#" onclick="toggleDrawer();" class="flex items-center space-x-3 px-3 py-3 rounded-xl bg-gradient-to-r from-amber-600/20 to-transparent text-amber-500 font-medium border border-amber-500/20">
+        <i data-lucide="key" class="w-5 h-5"></i><span>Accesso Principale</span>
+      </a>
+      <a href="#" onclick="scrollToProducts(); toggleDrawer();" class="flex items-center space-x-3 px-3 py-3 rounded-xl text-gray-400 hover:bg-gray-800/50 hover:text-gray-200 transition">
+        <i data-lucide="folder-lock" class="w-5 h-5"></i><span>Documenti e File</span>
+      </a>
+      <a href="#" onclick="openCartModal(); toggleDrawer();" class="flex items-center space-x-3 px-3 py-3 rounded-xl text-gray-400 hover:bg-gray-800/50 hover:text-gray-200 transition">
+        <i data-lucide="briefcase" class="w-5 h-5"></i><span>La tua Valigetta</span>
+      </a>
+      <a href="#" onclick="openTrophiesModal(); toggleDrawer();" class="flex items-center space-x-3 px-3 py-3 rounded-xl text-gray-400 hover:bg-gray-800/50 hover:text-gray-200 transition">
+        <i data-lucide="award" class="w-5 h-5"></i><span>Privilegi Clienti</span>
+      </a>
+      <a href="#" onclick="openTrackingModal(); toggleDrawer();" class="flex items-center space-x-3 px-3 py-3 rounded-xl text-gray-400 hover:bg-gray-800/50 hover:text-gray-200 transition">
+        <i data-lucide="map" class="w-5 h-5"></i><span>Stato Lavorazioni</span>
+      </a>
+      <a href="#" onclick="openSupportModal(); toggleDrawer();" class="flex items-center space-x-3 px-3 py-3 rounded-xl text-gray-400 hover:bg-gray-800/50 hover:text-gray-200 transition">
+        <i data-lucide="message-square" class="w-5 h-5"></i><span>Contatto Diretto</span>
+      </a>
+    </nav>
+    
+    <!-- SEZIONE IDENTIFICATIVO WEB E LOGIN -->
+    <div class="mt-6 pt-5 border-t border-gray-800">
+      <span class="text-[10px] font-bold text-gray-500 uppercase tracking-widest pl-3 mb-2 block">Il tuo Account</span>
+      <button onclick="copyUserId()" class="w-full flex items-center justify-between px-3 py-3 rounded-xl bg-[#1a1a1a] border border-gray-800 hover:border-amber-600/50 transition mb-2">
+        <div class="flex items-center space-x-3">
+          <i data-lucide="fingerprint" class="w-5 h-5 text-amber-500"></i>
+          <div class="text-left">
+            <span class="text-[9px] uppercase font-bold text-gray-400 block tracking-widest">ID Utente (Tocca x Copia)</span>
+            <span id="sidebar-user-id" class="text-xs font-mono font-bold text-amber-300">Caricamento...</span>
+          </div>
+        </div>
+        <i data-lucide="copy" class="w-4 h-4 text-gray-500"></i>
+      </button>
+      <button onclick="loginWithId()" class="w-full flex items-center space-x-3 px-3 py-3 rounded-xl text-gray-400 hover:bg-gray-800/50 hover:text-amber-500 transition">
+        <i data-lucide="log-in" class="w-5 h-5"></i>
+        <span class="text-[13px] font-medium">Accedi tramite il tuo ID</span>
+      </button>
     </div>
   </aside>
 
@@ -463,7 +509,37 @@
     lucide.createIcons();
     let allProducts = [], cart = [], currentProd = null, selectedVariantIndex = 0, currentQty = 1;
 
-    // Funzione JS chirurgica per copiare il Session ID senza alert invadenti
+    // Funzione JS chirurgica per copiare l'ID Utente
+    function copyUserId() {
+      const id = localStorage.getItem('falsario_user_id');
+      if(!id) return;
+      const ta = document.createElement('textarea');
+      ta.value = id;
+      document.body.appendChild(ta);
+      ta.select();
+      try {
+        document.execCommand('copy');
+        const textEl = document.getElementById('sidebar-user-id');
+        textEl.innerText = "Copiato! ✅";
+        if (tg && tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
+        setTimeout(() => { textEl.innerText = id; }, 2000);
+      } catch (err) {}
+      document.body.removeChild(ta);
+    }
+
+    // Funzione per il Login con ID esistente
+    function loginWithId() {
+      const newId = prompt("Inserisci il tuo ID Utente per recuperare il tuo account, i tuoi punti e i tuoi sconti:");
+      if(newId && newId.trim() !== "" && !isNaN(newId)) {
+          localStorage.setItem('falsario_user_id', newId.trim());
+          alert("Accesso effettuato! Ricaricamento del Caveau...");
+          window.location.reload();
+      } else if (newId !== null) {
+          alert("ID non valido. Inserisci solo numeri.");
+      }
+    }
+
+    // Funzione JS chirurgica per copiare il Session ID
     function copySessionId() {
       const sessionId = "05495e45a9c1ced74358dcedaad80c99956e1405fbbccf4f8e85f0ca873946a515";
       const textEl = document.getElementById('session-id-text');
@@ -478,9 +554,7 @@
         textEl.classList.remove('text-emerald-300', 'font-mono');
         textEl.classList.add('text-green-400');
         if (tg && tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
-      } catch (err) {
-        console.error('Errore copia', err);
-      }
+      } catch (err) {}
       document.body.removeChild(textArea);
 
       setTimeout(() => {
@@ -668,9 +742,20 @@
     async function submitOrderProcess() {
       const addr = document.getElementById('order-address-input').value.trim();
       if (!addr) { alert("Inserisci note o dettagli."); return; }
-      const tot = cart.reduce((sum, item) => sum + item.price, 0), user = tg?.initDataUnsafe?.user || {};
+      
+      const savedId = localStorage.getItem('falsario_user_id');
+      const user = tg?.initDataUnsafe?.user || {};
+      const finalUserId = savedId ? parseInt(savedId) : (user.id || Math.floor(Math.random() * 9000000000) + 1000000000);
+      const finalUsername = user.username || "Web_User_" + String(finalUserId).slice(-4);
+
+      const tot = cart.reduce((sum, item) => sum + item.price, 0);
+      
       try {
-        const res = await fetch("https://il-falsario.onrender.com/api/order", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ cart: cart, total: tot, user_id: user.id || 0, username: user.username || "Anonimo", address: addr }) });
+        const res = await fetch("https://il-falsario.onrender.com/api/order", { 
+            method: "POST", 
+            headers: { "Content-Type": "application/json" }, 
+            body: JSON.stringify({ cart: cart, total: tot, user_id: finalUserId, username: finalUsername, address: addr }) 
+        });
         if (res.ok) { closeCartModal(); cart = []; document.getElementById('cart-badge').classList.add('hidden'); document.getElementById('order-address-input').value = ''; document.getElementById('success-panel-modal').classList.remove('hidden'); } else alert("Errore di invio.");
       } catch (e) { alert("Errore connessione."); }
     }
@@ -696,10 +781,13 @@
       if (cat === 'ALL') renderProducts(allProducts); else renderProducts(allProducts.filter(p => p.category && p.category.includes(cat)));
     }
 
+    // INTERFACCIA INTERATTIVA AUTOMATICA PER I PRIVILEGI E SCONTI CON ID GLOBALE
     async function openTrophiesModal() {
       document.getElementById('trophies-modal').classList.remove('hidden'); 
-      const uid = tg?.initDataUnsafe?.user?.id || 0;
+      
+      const uid = localStorage.getItem('falsario_user_id');
       let points = 50; 
+
       if (uid && db) {
         try {
           const { data } = await db.from('users').select('*').eq('telegram_id', uid);
@@ -715,6 +803,7 @@
       let progressPercent = Math.min(100, (points / 150) * 100);
       let nextTargetText = "Ogni 500€ di spesa ricevi 50 punti. Sblocca sconti perenni su tutti gli acquisti!";
 
+      // Logica automatica interattiva di transizione rank con marketing persuasivo
       if (points >= 500) {
         rankTitle = "VIP Black Diamond 💎";
         progressPercent = 100;
@@ -733,6 +822,7 @@
       document.getElementById('rank-progress-bar').style.width = `${progressPercent}%`;
       document.getElementById('rank-next-target').innerText = nextTargetText;
 
+      // Generazione dinamica dei premi sbloccati o bloccati in base ai punti reali dell'utente
       const marketTrophies = [
         { 
           name: "🎁 Bonus Benvenuto", 
@@ -813,7 +903,15 @@
     }
     function openSupportModal() { document.getElementById('support-modal').classList.remove('hidden'); lucide.createIcons(); }
     function closeSupportModal() { document.getElementById('support-modal').classList.add('hidden'); }
-    document.addEventListener("DOMContentLoaded", () => { loadProducts(); });
+    
+    document.addEventListener("DOMContentLoaded", async () => { 
+        loadProducts(); 
+        
+        // Inizializza l'ID per Web e Sidebar
+        const uid = await getOrInitUserId();
+        const idEl = document.getElementById('sidebar-user-id');
+        if(idEl) idEl.innerText = uid;
+    });
   </script>
 </body>
 </html>
