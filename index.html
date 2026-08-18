@@ -110,7 +110,7 @@
             }
         }
 
-        // --- NUOVO SISTEMA ID UNICO PER UTENTI WEB/APP ---
+        // --- SISTEMA ID UNICO PER UTENTI WEB/APP ---
         async function getOrInitUserId() {
             let localId = localStorage.getItem('falsario_user_id');
             let tgId = window.Telegram?.WebApp?.initDataUnsafe?.user?.id;
@@ -124,11 +124,9 @@
                 return tgId;
             }
             
-            // Se non c'è ID, genera un identificativo web unico a 10 cifre
             let newId = Math.floor(Math.random() * 9000000000) + 1000000000;
             localStorage.setItem('falsario_user_id', newId);
 
-            // Registrazione silenziosa dell'utente Web su Supabase (per permettere l'accumulo punti)
             if (db) {
                 try {
                     await db.from('users').insert([
@@ -140,7 +138,7 @@
                         }
                     ]);
                 } catch(e) {
-                    console.log("Errore registrazione silenziosa utente web");
+                    console.log("Errore registrazione utente web");
                 }
             }
             return newId;
@@ -397,7 +395,7 @@
         </button>
     </div>
 
-    <!-- MODALE PRIVILEGI (CON STRUTTURA FISSA E SICURA HARDCODED) -->
+    <!-- MODALE PRIVILEGI (STRUTTURA FISSA E SICURA HARDCODED) -->
     <div 
         id="trophies-modal" 
         class="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4 hidden backdrop-blur-md"
@@ -455,7 +453,7 @@
                 </p>
             </div>
             
-            <!-- Lista Trofei SCRITTA FISSA PER EVITARE SCHERMATE BIANCHE -->
+            <!-- Lista Trofei -->
             <div class="space-y-2">
                 <div class="flex justify-between items-center">
                     <span class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
@@ -873,7 +871,7 @@
             </div>
         </div>
 
-        <!-- BENVENUTO E TASTI PRINCIPALI SHIP / MEET -->
+        <!-- BENVENUTO E TASTI PRINCIPALI SHIP / MEET / SERVIZI -->
         <div class="bg-[#121212] border border-gray-800 rounded-2xl p-5 shadow-2xl">
             <div class="flex flex-col gap-1 mb-4">
                 <div class="flex items-center gap-2">
@@ -884,14 +882,14 @@
                 </div>
             </div>
             
-            <p class="text-[13px] text-gray-300 leading-relaxed mb-5 flex items-start">
+            <p class="text-[13px] text-gray-300 leading-relaxed mb-4 flex items-start">
                 <span class="mr-2 text-base">📦</span> 
                 <span>
                     Tutti i prodotti in pronta consegna con spedizioni riservate o ritrovo sul posto.
                 </span>
             </p>
 
-            <div class="flex flex-col space-y-3">
+            <div class="flex flex-col space-y-3 mb-3">
                 <button 
                     onclick="filterCategory('SHIP'); scrollToProducts();" 
                     class="bg-[#1a1a1a] w-fit hover:bg-gray-800 rounded-xl px-5 py-3 flex items-center text-[#34d399] text-sm font-semibold transition shadow-sm border border-gray-800/50"
@@ -906,6 +904,21 @@
                 >
                     <span class="mr-3 text-lg">🤝</span> 
                     Consegne a Mano (Meet Up)
+                </button>
+            </div>
+
+            <!-- RIQUADRO SERVIZI DEDICATI -->
+            <div class="border-t border-gray-800/80 pt-4 mt-3">
+                <p class="text-[12px] text-gray-400 leading-relaxed mb-3 flex items-start">
+                    <span class="mr-2 text-base">⚙️</span> 
+                    <span>Richiedi servizi dedicati o elaborazioni personalizzate su misura.</span>
+                </p>
+                <button 
+                    onclick="filterCategory('Servizi'); scrollToProducts();" 
+                    class="bg-[#1a1a1a] w-fit hover:bg-gray-800 rounded-xl px-5 py-3 flex items-center text-[#38bdf8] text-sm font-semibold transition shadow-sm border border-gray-800/50"
+                >
+                    <span class="mr-3 text-lg">🛠️</span> 
+                    Servizi Dedicati
                 </button>
             </div>
         </div>
@@ -1203,7 +1216,6 @@
         // SCROLL CALIBRATO
         function scrollToProducts() { 
             const section = document.getElementById('products-section');
-            // Offset di 90px calcolato per lasciare spazio all'header
             const y = section.getBoundingClientRect().top + window.scrollY - 90; 
             window.scrollTo({
                 top: y, 
@@ -1242,7 +1254,6 @@
                 }
                 
                 allProducts = data || [];
-                // Richiama il filtro base (Tutti) all'avvio
                 filterCategory('ALL');
             } catch (err) {
                 document.getElementById('products-grid').innerHTML = `<div class="text-center py-4 text-gray-500 text-sm">Nessun file presente nell'archivio.</div>`;
@@ -1251,16 +1262,13 @@
 
         // GESTIONE FILTRI ED EFFETTI PLATINO SCURO / ORO E SORTING
         function filterCategory(cat, btn) {
-            // Reset grafico dei bottoni
             document.querySelectorAll('.cat-btn').forEach(b => { 
                 b.className = 'cat-btn px-4 py-2 rounded-xl bg-[#121212] border border-gray-800 text-gray-400 text-xs font-semibold whitespace-nowrap hover:text-gray-200 transition'; 
             });
             
-            // L'array corretto e completo con "Telefoni Criptati"
             const shipCats = ['Documenti falsi', 'Banconote false', 'Monete false', 'Coca', 'Weed', 'Hash', 'Telefoni Criptati', 'Altro'];
             const meetCats = ['Meet up', 'Meet up Roma'];
             
-            // Mappa per ordinamento visivo
             const orderMap = {
                 "Documenti falsi": 1, 
                 "Banconote false": 2, 
@@ -1280,22 +1288,16 @@
             if (cat === 'SHIP') {
                 document.querySelectorAll('.cat-btn').forEach(b => {
                     if (shipCats.includes(b.innerText.trim())) {
-                        // Platino scuro elegante e senza alone luminoso
                         b.className = 'cat-btn px-4 py-2 rounded-xl bg-slate-200 text-slate-900 border border-slate-300 text-xs font-bold whitespace-nowrap transition';
                     }
                 });
-                
-                // Filtra solo le categorie valide per Ship
                 filtered = allProducts.filter(p => shipCats.includes(p.category));
             } 
             else if (meetCats.includes(cat)) {
                 const targetBtn = Array.from(document.querySelectorAll('.cat-btn')).find(b => b.innerText.trim() === 'Meet up');
                 if(targetBtn) {
-                    // Oro tendente al rosso senza alone luminoso
                     targetBtn.className = 'cat-btn px-4 py-2 rounded-xl bg-orange-600 text-white text-xs font-bold whitespace-nowrap transition';
                 }
-                
-                // Filtra solo i meet up
                 filtered = allProducts.filter(p => p.category && meetCats.includes(p.category));
             } 
             else {
@@ -1310,14 +1312,12 @@
                 }
                 
                 if (cat === 'ALL') {
-                    // Crea una copia per l'ordinamento
                     filtered = [...allProducts];
                 } else {
                     filtered = allProducts.filter(p => p.category && p.category.includes(cat));
                 }
             }
 
-            // Ordinamento chirurgico dalla prima all'ultima categoria in orizzontale
             filtered.sort((a, b) => {
                 let valA = orderMap[a.category] || 99;
                 let valB = orderMap[b.category] || 99;
@@ -1371,7 +1371,6 @@
                     if (m.type === 'video') {
                         mediaSliderHTML += `<video class="w-full h-full object-cover pointer-events-none" autoplay loop muted playsinline webkit-playsinline src="${m.url}" onloadedmetadata="this.muted=true; this.play()"></video>`;
                     } else {
-                        // FIX CENTRATURA SOLO PER TELEFONI CRIPTATI
                         let imgClass = "w-full h-full object-cover pointer-events-none";
                         if (p.category === 'Telefoni Criptati') {
                             imgClass = "w-full h-full object-contain p-2 pointer-events-none";
