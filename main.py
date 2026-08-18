@@ -256,7 +256,8 @@ class HealthCheckHandler(BaseHTTPRequestHandler):
             markup.add(
                 types.InlineKeyboardButton("✅ Accetta", callback_data=f"ord_acc_{order_id}_{user_id}"),
                 types.InlineKeyboardButton("❌ Annulla", callback_data=f"ord_cnc_{order_id}_{user_id}"),
-                types.InlineKeyboardButton("🚚 Invia Tracking", callback_data=f"ord_trk_{order_id}_{user_id}")
+                types.InlineKeyboardButton("🚚 Invia Tracking", callback_data=f"ord_trk_{order_id}_{user_id}"),
+                types.InlineKeyboardButton("📍 Conferma Meet up", callback_data=f"ord_meet_{order_id}_{user_id}")
             )
 
             if ADMIN_ID and ADMIN_ID != 0:
@@ -376,40 +377,30 @@ def handle_callbacks(call):
 
     elif data == "m_ord":
         user_states.pop(user_id, None)
-        bot.edit_message_text("🛒 GESTIONE ORDINI RICEVUTI\n\nGli ordini arrivano in chat in tempo reale.", user_id, call.message.message_id, reply_markup=get_admin_main_keyboard())
-
-    elif data == "m_hist":
-        user_states.pop(user_id, None)
         orders = db_get_all_orders()
-        if not orders:
-            bot.send_message(user_id, "📭 Nessun ordine presente nello storico.", reply_markup=get_cancel_keyboard())
-            return
+        pending_orders = [o for o in orders if o.get('status') == 'PENDING']
         
-        bot.send_message(user_id, f"📜 STORICO COMPLETO ORDINI ({len(orders)} totali):")
-        status_map = {
-            "PENDING": "⏳ In Attesa",
-            "ACCEPTED": "✅ Confermato",
-            "SHIPPED": "🚚 Spedito",
-            "CANCELLED": "❌ Annullato"
-        }
-
-        for o in orders:
-            st = status_map.get(o.get('status'), o.get('status'))
+        bot.edit_message_text(
+            "🛒 GESTIONE ORDINI RICEVUTI\n\nGli ordini arrivano in chat in tempo reale. Qui trovi quelli in attesa di gestione:", 
+            user_id, call.message.message_id
+        )
+        
+        if not pending_orders:
+            bot.send_message(user_id, "✅ Nessun ordine in attesa al momento.", reply_markup=get_cancel_keyboard())
+            return
+            
+        for o in pending_orders:
             items = o.get('items', [])
             if isinstance(items, str):
-                try: 
-                    items = json.loads(items)
-                except Exception: 
-                    items = []
+                try: items = json.loads(items)
+                except: items = []
             
             items_str = "\n".join([f"  • {i['name']} ({i['qty']}) - €{i['price']}" for i in items]) if items else "  • Nessun dettaglio"
             
             card_msg = (
-                f"🛒 ORDINE #{o.get('id')}\n"
+                f"🚨 ORDINE IN ATTESA #{o.get('id')}\n"
                 f"👤 Utente: @{o.get('username')} (ID: {o.get('user_id')})\n"
-                f"📍 Indirizzo: {o.get('address', 'N/D')}\n"
-                f"📌 Stato: {st}\n"
-                f"🚚 Tracking: {o.get('tracking_code', 'N/D')}\n\n"
+                f"📍 Indirizzo / Ritrovo: {o.get('address', 'N/D')}\n\n"
                 f"📦 Prodotti:\n{items_str}\n\n"
                 f"💰 Totale: €{o.get('total_price')}"
             )
@@ -418,14 +409,54 @@ def handle_callbacks(call):
             markup.add(
                 types.InlineKeyboardButton("✅ Accetta", callback_data=f"ord_acc_{o['id']}_{o.get('user_id')}"),
                 types.InlineKeyboardButton("❌ Annulla", callback_data=f"ord_cnc_{o['id']}_{o.get('user_id')}"),
-                types.InlineKeyboardButton("🚚 Tracking", callback_data=f"ord_trk_{o['id']}_{o.get('user_id')}")
+                types.InlineKeyboardButton("🚚 Invia Tracking", callback_data=f"ord_trk_{o['id']}_{o.get('user_id')}"),
+                types.InlineKeyboardButton("📍 Conferma Meet up", callback_data=f"ord_meet_{o['id']}_{o.get('user_id')}")
             )
-            try:
-                bot.send_message(user_id, card_msg, reply_markup=markup)
-            except Exception:
+            try: bot.send_message(user_id, card_msg, reply_markup=markup)
+            except: pass
+            
+        bot.send_message(user_id, "👇 Opzioni:", reply_markup=get_cancel_keyboard())
+
+    elif data == "m_hist":
+        user_states.pop(user_id, None)
+        orders = db_get_all_orders()
+        if not orders:
+            bot.send_message(user_id, "📭 Nessun ordine presente nello storico.", reply_markup=get_cancel_keyboard())
+            return
+        
+        bot.send_message(user_id, f"📜 MASTRO LIBERO - STORICO COMPLETO ({len(orders)} totali):")
+        status_map = {
+            "PENDING": "⏳ In Attesa",
+            "ACCEPTED": "✅ Confermato",
+            "SHIPPED": "🚚 Spedito / Ritirato",
+            "CANCELLED": "❌ Annullato"
+        }
+
+        for o in orders:
+            st = status_map.get(o.get('status'), o.get('status'))
+            items = o.get('items', [])
+            if isinstance(items, str):
+                try: items = json.loads(items)
+                except: items = []
+            
+            items_str = "\n".join([f"  • {i['name']} ({i['qty']}) - €{i['price']}" for i in items]) if items else "  • Nessun dettaglio"
+            
+            # Mastro libero stampato senza alcun tasto di interazione
+            card_msg = (
+                f"🛒 ORDINE #{o.get('id')} [{st}]\n"
+                f"👤 Utente: @{o.get('username')} (ID: {o.get('user_id')})\n"
+                f"📍 Recapito: {o.get('address', 'N/D')}\n"
+                f"🚚 Tracking / Note: {o.get('tracking_code', 'N/D')}\n\n"
+                f"📦 Prodotti:\n{items_str}\n\n"
+                f"💰 Totale: €{o.get('total_price')}\n"
+                f"────────────────────────"
+            )
+            try: 
+                bot.send_message(user_id, card_msg)
+            except: 
                 pass
                 
-        bot.send_message(user_id, "👇 Fine dello storico ordini:", reply_markup=get_cancel_keyboard())
+        bot.send_message(user_id, "👇 Fine del registro storico:", reply_markup=get_cancel_keyboard())
 
     elif data == "m_pts":
         user_states.pop(user_id, None)
@@ -449,7 +480,7 @@ def handle_callbacks(call):
             "Coca",
             "Weed",
             "Hash",
-            "Telefoni Cryptati",
+            "Telefoni Criptati",
             "Servizi",
             "Altro"
         ]
@@ -529,14 +560,10 @@ def handle_callbacks(call):
         
         if db_toggle_product(p_id, curr_st):
             bot.answer_callback_query(call.id, "✅ Stato aggiornato con successo!")
-            
             msg_text = call.message.text
-            if "🟢 In Vetrina" in msg_text:
-                new_text = msg_text.replace("🟢 In Vetrina", "🔴 Nascosto")
-            elif "🔴 Nascosto" in msg_text:
-                new_text = msg_text.replace("🔴 Nascosto", "🟢 In Vetrina")
-            else:
-                new_text = msg_text
+            if "🟢 In Vetrina" in msg_text: new_text = msg_text.replace("🟢 In Vetrina", "🔴 Nascosto")
+            elif "🔴 Nascosto" in msg_text: new_text = msg_text.replace("🔴 Nascosto", "🟢 In Vetrina")
+            else: new_text = msg_text
 
             markup = types.InlineKeyboardMarkup(row_width=2)
             markup.add(
@@ -544,10 +571,8 @@ def handle_callbacks(call):
                 types.InlineKeyboardButton("✏️ Modifica", callback_data=f"edit_{p_id}")
             )
             markup.add(types.InlineKeyboardButton("🗑️ Elimina", callback_data=f"del_{p_id}"))
-            try:
-                bot.edit_message_text(new_text, user_id, call.message.message_id, reply_markup=markup)
-            except Exception as e:
-                print(f"Errore modifica messaggio: {e}")
+            try: bot.edit_message_text(new_text, user_id, call.message.message_id, reply_markup=markup)
+            except: pass
         else:
             bot.answer_callback_query(call.id, "❌ Errore durante l'aggiornamento.")
 
@@ -555,10 +580,8 @@ def handle_callbacks(call):
         p_id = data.split("_")[1]
         if db_delete_product(p_id):
             bot.answer_callback_query(call.id, "🗑️ Prodotto eliminato definitivamente!")
-            try:
-                bot.delete_message(user_id, call.message.message_id)
-            except Exception:
-                pass
+            try: bot.delete_message(user_id, call.message.message_id)
+            except: pass
         else:
             bot.answer_callback_query(call.id, "❌ Errore durante l'eliminazione.")
 
@@ -585,38 +608,48 @@ def handle_callbacks(call):
             bot.send_message(user_id, "✅ Foto/Video aggiornati con successo nel prodotto!", reply_markup=get_admin_main_keyboard())
             user_states.pop(user_id, None)
 
+    # --- TASTI OPERATIVI (ORDINI) CON PULIZIA AUTOMATICA DEI BOTTONI ---
     elif data.startswith("ord_acc_"):
         parts = data.split("_")
         o_id, u_id = parts[2], parts[3]
         db_update_order_status(o_id, "ACCEPTED")
         if u_id and u_id != "0":
-            try:
-                bot.send_message(int(u_id), f"✅ Il tuo ordine #{o_id} è stato confermato dal venditore!")
-            except Exception:
-                pass
+            try: bot.send_message(int(u_id), f"✅ Il tuo ordine #{o_id} è stato confermato dal venditore!")
+            except: pass
         bot.answer_callback_query(call.id, "✅ Ordine Accettato e cliente avvisato!")
+        try: bot.edit_message_reply_markup(user_id, call.message.message_id, reply_markup=None)
+        except: pass
 
     elif data.startswith("ord_cnc_"):
         parts = data.split("_")
         o_id, u_id = parts[2], parts[3]
         db_update_order_status(o_id, "CANCELLED")
         if u_id and u_id != "0":
-            try:
-                bot.send_message(int(u_id), f"❌ Attenzione: Il tuo ordine #{o_id} è stato annullato.")
-            except Exception:
-                pass
+            try: bot.send_message(int(u_id), f"❌ Attenzione: Il tuo ordine #{o_id} è stato annullato.")
+            except: pass
         bot.answer_callback_query(call.id, "❌ Ordine Annullato!")
+        try: bot.edit_message_reply_markup(user_id, call.message.message_id, reply_markup=None)
+        except: pass
+
+    elif data.startswith("ord_meet_"):
+        parts = data.split("_")
+        o_id, u_id = parts[2], parts[3]
+        db_update_order_status(o_id, "ACCEPTED", "Meet Up Confermato 📍")
+        if u_id and u_id != "0":
+            try: bot.send_message(int(u_id), f"📍 Il tuo Meet Up per l'ordine #{o_id} è stato confermato!\n\nUn operatore ti scriverà a breve per i dettagli dell'incontro.")
+            except: pass
+        bot.answer_callback_query(call.id, "📍 Meet Up Confermato e cliente avvisato!")
+        try: bot.edit_message_reply_markup(user_id, call.message.message_id, reply_markup=None)
+        except: pass
 
     elif data.startswith("ord_trk_"):
         parts = data.split("_")
         o_id, u_id = parts[2], parts[3]
         user_states[user_id] = {"step": "WAITING_TRACKING", "target_order": o_id, "target_user": u_id}
         bot.send_message(user_id, f"🚚 Invia ora il Codice di Tracking per l'Ordine #{o_id}:", reply_markup=get_cancel_keyboard())
+        try: bot.edit_message_reply_markup(user_id, call.message.message_id, reply_markup=None)
+        except: pass
 
-
-# ==============================================================
-# GESTIONE INVIO FOTO E VIDEO CON CONTROLLO 20MB E STAMPA ERRORI
-# ==============================================================
 @bot.message_handler(content_types=['photo', 'video'])
 def handle_media(message):
     user_id = message.chat.id
@@ -673,8 +706,6 @@ def handle_media(message):
     except Exception as e:
         bot.edit_message_text(f"❌ Errore scaricamento da Telegram: {e}", user_id, wait_msg.message_id)
 
-
-# --- WIZARD TESTUALE PER L'ADMIN ---
 @bot.message_handler(func=lambda m: m.chat.id == ADMIN_ID)
 def handle_admin_text(message):
     user_id = message.chat.id
@@ -689,29 +720,12 @@ def handle_admin_text(message):
             ok, new_total = db_update_user_points(target_user, qty)
             if ok:
                 bot.reply_to(message, f"✅ Operazione completata! L'utente {target_user} ora ha {new_total} punti.")
-                try: 
-                    bot.send_message(target_user, f"💎 Aggiornamento punti: il tuo saldo attuale è di {new_total} punti.")
-                except Exception: 
-                    pass
+                try: bot.send_message(target_user, f"💎 Aggiornamento punti: il tuo saldo attuale è di {new_total} punti.")
+                except: pass
             else:
-                bot.reply_to(message, "❌ Errore: Utente non trovato.")
+                bot.reply_to(message, "❌ Errore: Utente non trovato nel database.")
         except Exception:
-            bot.reply_to(message, "❌ Formato errato. Usa: /punti ID_UTENTE QUANTITA")
-        return
-
-    if message.text and message.text.startswith("/trofeo"):
-        try:
-            parts = message.text.split(" ", 2)
-            target_user = int(parts[1])
-            trophy_name = parts[2]
-            ok, _ = db_add_user_trophy(target_user, trophy_name)
-            if ok:
-                bot.reply_to(message, f"✅ Trofeo '{trophy_name}' assegnato con successo!")
-                bot.send_message(target_user, f"🥇 NUOVO TROFEO SBLOCCATO: {trophy_name}!\nControlla la bacheca nell'App.")
-            else:
-                bot.reply_to(message, "❌ Errore: Utente non trovato.")
-        except Exception:
-            bot.reply_to(message, "❌ Formato errato. Usa: /trofeo ID_UTENTE NOME_TROFEO")
+            bot.reply_to(message, "❌ Formato errato. Usa: /punti ID_UTENTE QUANTITA (es. /punti 123456789 100)")
         return
 
     if step == "EDIT_NAME":
@@ -724,7 +738,6 @@ def handle_admin_text(message):
         bot.reply_to(message, "✅ Descrizione aggiornata con successo!", reply_markup=get_admin_main_keyboard())
         user_states.pop(user_id, None)
 
-    # --- NUOVO SISTEMA INTELLIGENTE PER I PREZZI IN MODIFICA ---
     elif step == "EDIT_PRICES":
         try:
             clean_text = message.text.replace("–", "-").replace("—", "-").replace("):", "").replace(")", "").strip()
@@ -734,13 +747,10 @@ def handle_admin_text(message):
             for r in raw_variants:
                 r = r.strip()
                 if not r: continue
-                
-                # Se c'è il trattino usalo
                 if "-" in r:
                     parts = r.split("-")
                     qty = "-".join(parts[:-1]).strip()
                     price_str = parts[-1].replace("€", "").strip()
-                # Se NON c'è il trattino, taglia con l'ultimo spazio (es: "10pz 140")
                 else:
                     parts = r.split()
                     if len(parts) >= 2:
@@ -748,43 +758,28 @@ def handle_admin_text(message):
                         price_str = parts[-1].replace("€", "").strip()
                     else:
                         continue
-                        
                 prices.append({"qty": qty, "price": float(price_str)})
                 
             if not prices:
-                raise ValueError("Nessun formato di prezzo valido individuato.")
+                raise ValueError("Nessun formato valido.")
                 
             db_update_product(state["target_product"], {"price_options": prices})
             bot.reply_to(message, "✅ Prezzi aggiornati con successo!", reply_markup=get_admin_main_keyboard())
             user_states.pop(user_id, None)
-            
-        except Exception as e:
-            bot.reply_to(
-                message, 
-                "❌ Formato non riconosciuto.\nEsempi corretti: 10pz 140, oppure 10g - 50", 
-                reply_markup=get_cancel_keyboard()
-            )
+        except:
+            bot.reply_to(message, "❌ Formato non riconosciuto. Esempio: 10pz 140, oppure 10g - 50", reply_markup=get_cancel_keyboard())
             return
 
     elif step == "WAITING_NAME":
         state["name"] = message.text
         state["step"] = "WAITING_DESC"
-        bot.reply_to(
-            message, 
-            "✍️ Nome salvato. Ora invia la DESCRIZIONE del prodotto.\n(Puoi scrivere username come @ilfalsario per renderli cliccabili nell'app):", 
-            reply_markup=get_cancel_keyboard()
-        )
+        bot.reply_to(message, "✍️ Nome salvato. Ora invia la DESCRIZIONE del prodotto:", reply_markup=get_cancel_keyboard())
 
     elif step == "WAITING_DESC":
         state["desc"] = message.text
         state["step"] = "WAITING_PRICES"
-        bot.reply_to(
-            message, 
-            "💰 Ultimo step. Invia i PREZZI e le VARIANTI separate da virgola.\nPuoi scriverli come ti pare (Es: 10pz 140, 20pz 250, oppure 10g - 50):", 
-            reply_markup=get_cancel_keyboard()
-        )
+        bot.reply_to(message, "💰 Ultimo step. Invia i PREZZI (Es: 10pz 140, 25g - 100):", reply_markup=get_cancel_keyboard())
 
-    # --- NUOVO SISTEMA INTELLIGENTE PER I PREZZI IN CREAZIONE ---
     elif step == "WAITING_PRICES":
         try:
             clean_text = message.text.replace("–", "-").replace("—", "-").replace("):", "").replace(")", "").strip()
@@ -794,13 +789,10 @@ def handle_admin_text(message):
             for r in raw_variants:
                 r = r.strip()
                 if not r: continue
-                
-                # Se c'è il trattino usalo
                 if "-" in r:
                     parts = r.split("-")
                     qty = "-".join(parts[:-1]).strip()
                     price_str = parts[-1].replace("€", "").strip()
-                # Se NON c'è il trattino, taglia con l'ultimo spazio (es: "10pz 140")
                 else:
                     parts = r.split()
                     if len(parts) >= 2:
@@ -808,18 +800,12 @@ def handle_admin_text(message):
                         price_str = parts[-1].replace("€", "").strip()
                     else:
                         continue
-                        
                 prices.append({"qty": qty, "price": float(price_str)})
                     
             if not prices:
-                raise ValueError("Nessun formato di prezzo valido individuato.")
-                
-        except Exception as e:
-            bot.reply_to(
-                message, 
-                "❌ Formato non riconosciuto.\nEsempi corretti: 10pz 140, oppure 10g - 50", 
-                reply_markup=get_cancel_keyboard()
-            )
+                raise ValueError("Nessun formato valido.")
+        except:
+            bot.reply_to(message, "❌ Formato non riconosciuto. Esempio: 10pz 140, oppure 10g - 50", reply_markup=get_cancel_keyboard())
             return
 
         media_list = state.get("media_list", [])
@@ -838,19 +824,10 @@ def handle_admin_text(message):
         }
 
         success, err_msg = db_add_product(payload)
-        
         if success:
-            bot.reply_to(
-                message, 
-                f"🎉 PRODOTTO PUBBLICATO IN VETRINA!\n📦 Nome: {state['name']}\n📸 Media caricati: {len(media_list)}", 
-                reply_markup=get_admin_main_keyboard()
-            )
+            bot.reply_to(message, f"🎉 PRODOTTO PUBBLICATO IN VETRINA!\n📦 Nome: {state['name']}", reply_markup=get_admin_main_keyboard())
         else:
-            bot.reply_to(
-                message, 
-                f"❌ ERRORE DATABASE (SUPABASE):\n{err_msg}", 
-                reply_markup=get_admin_main_keyboard()
-            )
+            bot.reply_to(message, f"❌ ERRORE DATABASE:\n{err_msg}", reply_markup=get_admin_main_keyboard())
             
         user_states.pop(user_id, None)
 
@@ -860,22 +837,15 @@ def handle_admin_text(message):
         target_user = state["target_user"]
         
         db_update_order_status(order_id, "SHIPPED", tracking_code)
-        
         if target_user and str(target_user) != "0":
-            try:
-                bot.send_message(int(target_user), f"🚚 IL TUO ORDINE #{order_id} È STATO SPEDITO!\n\nCodice Tracking: {tracking_code}")
-            except Exception:
-                pass
+            try: bot.send_message(int(target_user), f"🚚 IL TUO ORDINE #{order_id} È STATO SPEDITO!\n\nTracking: {tracking_code}")
+            except: pass
                 
-        bot.reply_to(message, f"✅ Codice di Tracking per l'ordine #{order_id} inviato correttamente al cliente!", reply_markup=get_admin_main_keyboard())
+        bot.reply_to(message, f"✅ Tracking inviato al cliente!", reply_markup=get_admin_main_keyboard())
         user_states.pop(user_id, None)
 
-# --- AVVIO BOT E SERVER WEB (STRUTTURA CORRETTA PER RENDER) ---
 if __name__ == '__main__':
-    # 1. Avvia il server web in background per Render
     threading.Thread(target=run_health_server, daemon=True).start()
-    
-    # 2. Mantieni il bot Telegram in primissimo piano
     print("🤖 Avvio Bot Il Falsario in corso...")
     while True:
         try:
@@ -883,6 +853,5 @@ if __name__ == '__main__':
             time.sleep(2)
             bot.infinity_polling(skip_pending=True, timeout=20, long_polling_timeout=20)
         except Exception as e:
-            print(f"Errore di connessione a Telegram: {e}. Riavvio in corso...")
+            print(f"Errore connessione Telegram: {e}. Riavvio in corso...")
             time.sleep(5)
-
