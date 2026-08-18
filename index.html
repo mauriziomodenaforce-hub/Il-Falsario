@@ -1260,7 +1260,7 @@
             }
         }
 
-        // GESTIONE FILTRI ED EFFETTI PLATINO SCURO / ORO E SORTING
+        // GESTIONE FILTRI ED EFFETTI PLATINO SCURO / ORO E SCROLL ORIZZONTALE AUTOMATICO (SLIDE)
         function filterCategory(cat, btn) {
             document.querySelectorAll('.cat-btn').forEach(b => { 
                 b.className = 'cat-btn px-4 py-2 rounded-xl bg-[#121212] border border-gray-800 text-gray-400 text-xs font-semibold whitespace-nowrap hover:text-gray-200 transition'; 
@@ -1284,6 +1284,7 @@
             };
 
             let filtered = [];
+            let targetBtnToScroll = btn;
 
             if (cat === 'SHIP') {
                 document.querySelectorAll('.cat-btn').forEach(b => {
@@ -1292,22 +1293,24 @@
                     }
                 });
                 filtered = allProducts.filter(p => shipCats.includes(p.category));
+                targetBtnToScroll = Array.from(document.querySelectorAll('.cat-btn')).find(b => b.innerText.trim() === 'Documenti falsi');
             } 
             else if (meetCats.includes(cat)) {
-                const targetBtn = Array.from(document.querySelectorAll('.cat-btn')).find(b => b.innerText.trim() === 'Meet up');
-                if(targetBtn) {
-                    targetBtn.className = 'cat-btn px-4 py-2 rounded-xl bg-orange-600 text-white text-xs font-bold whitespace-nowrap transition';
+                targetBtnToScroll = Array.from(document.querySelectorAll('.cat-btn')).find(b => b.innerText.trim() === 'Meet up');
+                if(targetBtnToScroll) {
+                    targetBtnToScroll.className = 'cat-btn px-4 py-2 rounded-xl bg-orange-600 text-white text-xs font-bold whitespace-nowrap transition';
                 }
                 filtered = allProducts.filter(p => p.category && meetCats.includes(p.category));
             } 
             else {
                 if (btn) { 
                     btn.className = 'cat-btn px-4 py-2 rounded-xl bg-amber-600 text-white text-xs font-bold whitespace-nowrap transition'; 
+                    targetBtnToScroll = btn;
                 } else {
                     const targetName = cat === 'ALL' ? 'Tutti' : cat;
-                    const targetBtn = Array.from(document.querySelectorAll('.cat-btn')).find(b => b.innerText.trim() === targetName);
-                    if(targetBtn) {
-                        targetBtn.className = 'cat-btn px-4 py-2 rounded-xl bg-amber-600 text-white text-xs font-bold whitespace-nowrap transition'; 
+                    targetBtnToScroll = Array.from(document.querySelectorAll('.cat-btn')).find(b => b.innerText.trim() === targetName);
+                    if(targetBtnToScroll) {
+                        targetBtnToScroll.className = 'cat-btn px-4 py-2 rounded-xl bg-amber-600 text-white text-xs font-bold whitespace-nowrap transition'; 
                     }
                 }
                 
@@ -1316,6 +1319,11 @@
                 } else {
                     filtered = allProducts.filter(p => p.category && p.category.includes(cat));
                 }
+            }
+
+            // Slide / Centratura automatica orizzontale sul pulsante della categoria selezionata
+            if (targetBtnToScroll) {
+                targetBtnToScroll.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
             }
 
             filtered.sort((a, b) => {
