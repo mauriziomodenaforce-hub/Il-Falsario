@@ -6,19 +6,36 @@
         name="viewport" 
         content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
     >
-    <title>Il Falsario 🎭</title>
+    <title>
+        Il Falsario 🎭
+    </title>
   
-    <!-- Dipendenze esterne ufficiali -->
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- ========================================== -->
+    <!-- DIPENDENZE ESTERNE E LIBRERIE              -->
+    <!-- ========================================== -->
+    <script 
+        src="https://telegram.org/js/telegram-web-app.js"
+    ></script>
+    
+    <script 
+        src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"
+    ></script>
+    
+    <script 
+        src="https://cdn.tailwindcss.com"
+    ></script>
+    
+    <script 
+        src="https://unpkg.com/lucide@latest"
+    ></script>
   
+    <!-- ========================================== -->
+    <!-- STILI CSS PERSONALIZZATI E CORE            -->
+    <!-- ========================================== -->
     <style>
-        /* ========================================================== */
-        /* CONFIGURAZIONE GLOBALE & BLOCCO SWIPE E RIMBALZO iOS       */
-        /* ========================================================== */
-        html, body { 
+        /* BLOCCO SWIPE TELEGRAM E RIMBALZO iOS */
+        html, 
+        body { 
             background-color: #0a0a0a; 
             color: #f3f4f6; 
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
@@ -87,12 +104,34 @@
         .desc-fade.expanded::after {
             opacity: 0;
         }
+
+        /* Animazione per il caricamento */
+        .spinner {
+            border: 4px solid rgba(217, 119, 6, 0.1);
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border-left-color: #d97706;
+            animation: spin 1s ease infinite;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+            100% {
+                transform: rotate(360deg);
+            }
+        }
     </style>
 </head>
-<body class="pb-24">
+
+<body 
+    class="pb-24"
+>
 
     <!-- ========================================================== -->
-    <!-- INIZIALIZZAZIONE SUPABASE & TELEGRAM WEBAPP                -->
+    <!-- INIZIALIZZAZIONE SUPABASE E CORE SYSTEM                    -->
     <!-- ========================================================== -->
     <script>
         const SUPABASE_URL = "https://niyhpvtiefisycxbkjie.supabase.co";
@@ -101,7 +140,10 @@
         let db;
         
         try { 
-            db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY); 
+            db = window.supabase.createClient(
+                SUPABASE_URL, 
+                SUPABASE_KEY
+            ); 
         } catch(e) { 
             console.error("Errore inizializzazione Supabase", e); 
         }
@@ -130,6 +172,7 @@
             }
             
             let newId = Math.floor(Math.random() * 9000000000) + 1000000000;
+            
             localStorage.setItem('falsario_user_id', newId);
 
             if (db) {
@@ -151,28 +194,38 @@
     </script>
 
     <!-- ========================================================== -->
-    <!-- HEADER PRINCIPALE                                          -->
+    <!-- HEADER PRINCIPALE DELL'APPLICAZIONE                        -->
     <!-- ========================================================== -->
     <header 
         class="sticky top-0 z-30 bg-[#121212]/95 backdrop-blur-md px-4 py-3 flex justify-between items-center border-b border-gray-800"
     >
-        <div class="flex items-center space-x-3">
+        <div 
+            class="flex items-center space-x-3"
+        >
             <div 
                 class="w-9 h-9 rounded-full bg-[#1e1e1e] border border-amber-600/50 shadow-[0_0_10px_rgba(217,119,6,0.4)] flex items-center justify-center text-xl pb-0.5"
             >
                 🎭
             </div>
-            <span class="font-bold text-lg tracking-wide text-amber-50">
+            
+            <span 
+                class="font-bold text-lg tracking-wide text-amber-50"
+            >
                 Il Falsario
             </span>
         </div>
         
-        <div class="flex items-center space-x-2">
+        <div 
+            class="flex items-center space-x-2"
+        >
             <button 
                 onclick="openCartModal()" 
                 class="relative p-2 rounded-lg bg-gray-800 hover:bg-gray-700"
             >
-                <i data-lucide="shopping-cart" class="w-5 h-5 text-amber-500"></i>
+                <i 
+                    data-lucide="shopping-cart" 
+                    class="w-5 h-5 text-amber-500"
+                ></i>
                 <span 
                     id="cart-badge" 
                     class="absolute -top-1 -right-1 bg-amber-500 text-black text-xs font-bold w-4 h-4 rounded-full flex items-center justify-center hidden shadow-md"
@@ -180,17 +233,21 @@
                     0
                 </span>
             </button>
+            
             <button 
                 onclick="toggleDrawer()" 
                 class="p-2 rounded-lg bg-gray-800 hover:bg-gray-700"
             >
-                <i data-lucide="menu" class="w-6 h-6 text-gray-200"></i>
+                <i 
+                    data-lucide="menu" 
+                    class="w-6 h-6 text-gray-200"
+                ></i>
             </button>
         </div>
     </header>
 
     <!-- ========================================================== -->
-    <!-- MENU LATERALE (SIDEBAR)                                    -->
+    <!-- MENU LATERALE (SIDEBAR) E OVERLAY                          -->
     <!-- ========================================================== -->
     <div 
         id="drawer-overlay" 
@@ -202,26 +259,41 @@
         id="drawer" 
         class="fixed top-0 right-0 w-72 h-full bg-[#121212] z-50 transform translate-x-full drawer p-5 flex flex-col border-l border-amber-900/30 overflow-y-auto"
     >
-        <div class="flex justify-between items-center mb-8">
-            <span class="text-sm font-semibold text-amber-600 uppercase tracking-widest">
+        <div 
+            class="flex justify-between items-center mb-8"
+        >
+            <span 
+                class="text-sm font-semibold text-amber-600 uppercase tracking-widest"
+            >
                 IL CAVEAU
             </span>
+            
             <button 
                 onclick="toggleDrawer()" 
                 class="p-1 text-gray-500 hover:text-white"
             >
-                <i data-lucide="x" class="w-6 h-6"></i>
+                <i 
+                    data-lucide="x" 
+                    class="w-6 h-6"
+                ></i>
             </button>
         </div>
         
-        <nav class="space-y-2 flex-1">
+        <nav 
+            class="space-y-2 flex-1"
+        >
             <a 
                 href="#" 
                 onclick="toggleDrawer();" 
                 class="flex items-center space-x-3 px-3 py-3 rounded-xl bg-gradient-to-r from-amber-600/20 to-transparent text-amber-500 font-medium border border-amber-500/20"
             >
-                <i data-lucide="key" class="w-5 h-5"></i>
-                <span>Accesso Principale</span>
+                <i 
+                    data-lucide="key" 
+                    class="w-5 h-5"
+                ></i>
+                <span>
+                    Accesso Principale
+                </span>
             </a>
             
             <a 
@@ -229,8 +301,13 @@
                 onclick="scrollToProducts(); toggleDrawer();" 
                 class="flex items-center space-x-3 px-3 py-3 rounded-xl text-gray-400 hover:bg-gray-800/50 hover:text-gray-200 transition"
             >
-                <i data-lucide="folder-lock" class="w-5 h-5"></i>
-                <span>Documenti e File</span>
+                <i 
+                    data-lucide="folder-lock" 
+                    class="w-5 h-5"
+                ></i>
+                <span>
+                    Documenti e File
+                </span>
             </a>
             
             <a 
@@ -238,8 +315,13 @@
                 onclick="openCartModal(); toggleDrawer();" 
                 class="flex items-center space-x-3 px-3 py-3 rounded-xl text-gray-400 hover:bg-gray-800/50 hover:text-gray-200 transition"
             >
-                <i data-lucide="briefcase" class="w-5 h-5"></i>
-                <span>La tua Valigetta</span>
+                <i 
+                    data-lucide="briefcase" 
+                    class="w-5 h-5"
+                ></i>
+                <span>
+                    La tua Valigetta
+                </span>
             </a>
             
             <a 
@@ -247,8 +329,13 @@
                 onclick="openTrophiesModal(); toggleDrawer();" 
                 class="flex items-center space-x-3 px-3 py-3 rounded-xl text-gray-400 hover:bg-gray-800/50 hover:text-gray-200 transition"
             >
-                <i data-lucide="award" class="w-5 h-5"></i>
-                <span>Privilegi Clienti</span>
+                <i 
+                    data-lucide="award" 
+                    class="w-5 h-5"
+                ></i>
+                <span>
+                    Privilegi Clienti
+                </span>
             </a>
             
             <a 
@@ -256,8 +343,13 @@
                 onclick="openTrackingModal(); toggleDrawer();" 
                 class="flex items-center space-x-3 px-3 py-3 rounded-xl text-gray-400 hover:bg-gray-800/50 hover:text-gray-200 transition"
             >
-                <i data-lucide="map" class="w-5 h-5"></i>
-                <span>Stato Lavorazioni</span>
+                <i 
+                    data-lucide="map" 
+                    class="w-5 h-5"
+                ></i>
+                <span>
+                    Stato Lavorazioni
+                </span>
             </a>
             
             <a 
@@ -265,14 +357,23 @@
                 onclick="openSupportModal(); toggleDrawer();" 
                 class="flex items-center space-x-3 px-3 py-3 rounded-xl text-gray-400 hover:bg-gray-800/50 hover:text-gray-200 transition"
             >
-                <i data-lucide="message-square" class="w-5 h-5"></i>
-                <span>Contatto Diretto</span>
+                <i 
+                    data-lucide="message-square" 
+                    class="w-5 h-5"
+                ></i>
+                <span>
+                    Contatto Diretto
+                </span>
             </a>
         </nav>
         
         <!-- SEZIONE ACCOUNT NELLA SIDEBAR -->
-        <div class="mt-6 pt-5 border-t border-gray-800">
-            <span class="text-[10px] font-bold text-gray-500 uppercase tracking-widest pl-3 mb-2 block">
+        <div 
+            class="mt-6 pt-5 border-t border-gray-800"
+        >
+            <span 
+                class="text-[10px] font-bold text-gray-500 uppercase tracking-widest pl-3 mb-2 block"
+            >
                 Il tuo Account
             </span>
             
@@ -280,10 +381,19 @@
                 onclick="copyUserId()" 
                 class="w-full flex items-center justify-between px-3 py-3 rounded-xl bg-[#1a1a1a] border border-gray-800 hover:border-amber-600/50 transition mb-2"
             >
-                <div class="flex items-center space-x-3">
-                    <i data-lucide="fingerprint" class="w-5 h-5 text-amber-500"></i>
-                    <div class="text-left">
-                        <span class="text-[9px] uppercase font-bold text-gray-400 block tracking-widest">
+                <div 
+                    class="flex items-center space-x-3"
+                >
+                    <i 
+                        data-lucide="fingerprint" 
+                        class="w-5 h-5 text-amber-500"
+                    ></i>
+                    <div 
+                        class="text-left"
+                    >
+                        <span 
+                            class="text-[9px] uppercase font-bold text-gray-400 block tracking-widest"
+                        >
                             ID Utente (Tocca x Copia)
                         </span>
                         <span 
@@ -294,15 +404,23 @@
                         </span>
                     </div>
                 </div>
-                <i data-lucide="copy" class="w-4 h-4 text-gray-500"></i>
+                <i 
+                    data-lucide="copy" 
+                    class="w-4 h-4 text-gray-500"
+                ></i>
             </button>
             
             <button 
                 onclick="loginWithId()" 
                 class="w-full flex items-center space-x-3 px-3 py-3 rounded-xl text-gray-400 hover:bg-gray-800/50 hover:text-amber-500 transition"
             >
-                <i data-lucide="log-in" class="w-5 h-5"></i>
-                <span class="text-[13px] font-medium">
+                <i 
+                    data-lucide="log-in" 
+                    class="w-5 h-5"
+                ></i>
+                <span 
+                    class="text-[13px] font-medium"
+                >
                     Accedi tramite il tuo ID
                 </span>
             </button>
@@ -310,8 +428,18 @@
     </aside>
 
     <!-- ========================================================== -->
-    <!-- MODALI APPLICATIVE                                         -->
+    <!-- MODALI APPLICATIVE GLOBALI                                 -->
     <!-- ========================================================== -->
+
+    <!-- OVERLAY CARICAMENTO IN CORSO -->
+    <div 
+        id="loading-overlay" 
+        class="fixed inset-0 bg-black/90 z-[200] hidden flex-col items-center justify-center backdrop-blur-md"
+    >
+        <div class="spinner mb-4"></div>
+        <span class="text-amber-500 font-bold tracking-widest text-sm uppercase">Elaborazione in corso...</span>
+        <span class="text-gray-500 text-xs mt-2">Non chiudere l'applicazione</span>
+    </div>
 
     <!-- MODALE MEDIA FULLSCREEN -->
     <div 
@@ -322,7 +450,10 @@
             onclick="closeFullscreenMedia()" 
             class="absolute top-6 right-6 bg-gray-900/80 p-3 rounded-full z-[110] text-white border border-gray-700/50 shadow-2xl"
         >
-            <i data-lucide="x" class="w-7 h-7"></i>
+            <i 
+                data-lucide="x" 
+                class="w-7 h-7"
+            ></i>
         </button>
         <div 
             id="fs-media-content" 
@@ -330,33 +461,49 @@
         ></div>
     </div>
 
-    <!-- MODALE CARRELLO -->
+    <!-- MODALE CARRELLO INIZIALE -->
     <div 
         id="cart-modal" 
         class="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4 hidden backdrop-blur-md"
     >
-        <div class="bg-[#121212] border border-gray-800 rounded-2xl w-full max-w-sm p-5 space-y-4 shadow-2xl">
-            <div class="flex justify-between items-center border-b border-gray-800 pb-3">
-                <h3 class="font-bold text-lg text-white flex items-center">
-                    <i data-lucide="briefcase" class="w-5 h-5 text-amber-500 mr-2"></i> 
+        <div 
+            class="bg-[#121212] border border-gray-800 rounded-2xl w-full max-w-sm p-5 space-y-4 shadow-2xl flex flex-col max-h-[90vh]"
+        >
+            <div 
+                class="flex justify-between items-center border-b border-gray-800 pb-3"
+            >
+                <h3 
+                    class="font-bold text-lg text-white flex items-center"
+                >
+                    <i 
+                        data-lucide="briefcase" 
+                        class="w-5 h-5 text-amber-500 mr-2"
+                    ></i> 
                     La tua Valigetta
                 </h3>
                 <button 
                     onclick="closeCartModal()" 
                     class="text-gray-500 hover:text-white"
                 >
-                    <i data-lucide="x" class="w-5 h-5"></i>
+                    <i 
+                        data-lucide="x" 
+                        class="w-5 h-5"
+                    ></i>
                 </button>
             </div>
             
             <div 
                 id="cart-items-list" 
-                class="space-y-2 max-h-40 overflow-y-auto pr-1"
+                class="space-y-2 overflow-y-auto pr-1 flex-1"
             ></div>
             
-            <div class="border-t border-gray-800 pt-3 space-y-3">
-                <div class="flex justify-between text-sm font-bold text-white">
-                    <span>Totale da saldare:</span>
+            <div 
+                class="border-t border-gray-800 pt-3 space-y-3"
+            >
+                <div 
+                    class="flex justify-between text-sm font-bold text-white mb-4"
+                >
+                    <span>Totale provvisorio:</span>
                     <span 
                         id="cart-total-price" 
                         class="text-amber-500"
@@ -364,41 +511,362 @@
                         €0
                     </span>
                 </div>
-                <div>
-                    <label class="text-[10px] font-bold text-gray-500 uppercase tracking-widest block mb-1">
-                        Dettagli / Recapito / Note
-                    </label>
-                    <textarea 
-                        id="order-address-input" 
-                        rows="2" 
-                        placeholder="Inserisci dettagli per il lavoro..." 
-                        class="w-full bg-[#1a1a1a] border border-gray-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-amber-600"
-                    ></textarea>
-                </div>
+                
+                <!-- Bivio per Checkout -->
                 <button 
-                    onclick="submitOrderProcess()" 
+                    onclick="openCheckoutMethodModal()" 
                     class="w-full bg-gradient-to-r from-amber-600 to-yellow-600 hover:from-amber-500 text-white font-extrabold py-3.5 rounded-xl text-xs uppercase shadow-[0_0_15px_rgba(217,119,6,0.3)] tracking-wider"
                 >
-                    Conferma Richiesta
+                    Procedi al Checkout
                 </button>
             </div>
         </div>
     </div>
 
-    <!-- MODALE SUCCESSO ORDINE -->
+    <!-- MODALE BIVIO CHECKOUT (SHIP O MEET UP) -->
+    <div 
+        id="checkout-method-modal" 
+        class="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4 hidden backdrop-blur-md"
+    >
+        <div 
+            class="bg-[#121212] border border-gray-800 rounded-2xl w-full max-w-sm p-5 space-y-4 shadow-2xl"
+        >
+            <div 
+                class="flex justify-between items-center border-b border-gray-800 pb-3"
+            >
+                <h3 
+                    class="font-bold text-lg text-white flex items-center"
+                >
+                    <i 
+                        data-lucide="navigation" 
+                        class="w-5 h-5 text-amber-500 mr-2"
+                    ></i> 
+                    Metodo di Consegna
+                </h3>
+                <button 
+                    onclick="closeCheckoutMethodModal()" 
+                    class="text-gray-500 hover:text-white"
+                >
+                    <i 
+                        data-lucide="arrow-left" 
+                        class="w-5 h-5"
+                    ></i>
+                </button>
+            </div>
+            
+            <p class="text-sm text-gray-400 mb-4 text-center">
+                Scegli come desideri ricevere la tua valigetta.
+            </p>
+
+            <div class="space-y-3">
+                <button 
+                    onclick="openCheckoutShipModal()" 
+                    class="w-full bg-[#1a1a1a] border border-gray-700 hover:border-amber-500 rounded-xl p-4 flex flex-col items-center justify-center transition shadow-lg"
+                >
+                    <span class="text-3xl mb-2">🚚</span>
+                    <span class="font-bold text-white tracking-wide text-sm">Spedizione (Ship)</span>
+                    <span class="text-xs text-gray-500 mt-1">Consegna a domicilio o InPost Locker</span>
+                </button>
+
+                <button 
+                    onclick="openCheckoutMeetModal()" 
+                    class="w-full bg-[#1a1a1a] border border-gray-700 hover:border-amber-500 rounded-xl p-4 flex flex-col items-center justify-center transition shadow-lg"
+                >
+                    <span class="text-3xl mb-2">🤝</span>
+                    <span class="font-bold text-white tracking-wide text-sm">Consegna a Mano (Meet Up)</span>
+                    <span class="text-xs text-gray-500 mt-1">Solo su Roma e provincia per ordini grossi</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODALE CHECKOUT SPEDIZIONE (SHIP) -->
+    <div 
+        id="checkout-ship-modal" 
+        class="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4 hidden backdrop-blur-md"
+    >
+        <div 
+            class="bg-[#121212] border border-gray-800 rounded-2xl w-full max-w-md p-5 shadow-2xl flex flex-col max-h-[90vh]"
+        >
+            <div 
+                class="flex justify-between items-center border-b border-gray-800 pb-3 mb-4 shrink-0"
+            >
+                <h3 
+                    class="font-bold text-lg text-white flex items-center"
+                >
+                    <span class="mr-2">🚚</span> 
+                    Dettagli Spedizione
+                </h3>
+                <button 
+                    onclick="closeCheckoutShipModal()" 
+                    class="text-gray-500 hover:text-white"
+                >
+                    <i 
+                        data-lucide="x" 
+                        class="w-5 h-5"
+                    ></i>
+                </button>
+            </div>
+            
+            <div class="overflow-y-auto space-y-5 pr-1 flex-1 hide-scrollbar">
+                
+                <!-- Selezione Tipo Indirizzo -->
+                <div>
+                    <label class="text-[10px] font-bold text-gray-500 uppercase tracking-widest block mb-2">
+                        Tipo di Consegna
+                    </label>
+                    <div class="grid grid-cols-2 gap-2">
+                        <label class="cursor-pointer">
+                            <input type="radio" name="ship_type" value="Indirizzo Privato" class="peer sr-only" checked onchange="updateShipTypeUI()">
+                            <div class="rounded-xl border border-gray-700 bg-[#1a1a1a] p-3 text-center peer-checked:border-amber-500 peer-checked:bg-amber-500/10 transition">
+                                <span class="text-xs font-bold text-gray-300 peer-checked:text-amber-500">Privato</span>
+                            </div>
+                        </label>
+                        <label class="cursor-pointer">
+                            <input type="radio" name="ship_type" value="Locker InPost" class="peer sr-only" onchange="updateShipTypeUI()">
+                            <div class="rounded-xl border border-gray-700 bg-[#1a1a1a] p-3 text-center peer-checked:border-amber-500 peer-checked:bg-amber-500/10 transition">
+                                <span class="text-xs font-bold text-gray-300 peer-checked:text-amber-500">InPost</span>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Input Indirizzo -->
+                <div>
+                    <label id="ship-address-label" class="text-[10px] font-bold text-gray-500 uppercase tracking-widest block mb-1">
+                        Indirizzo Completo (Via, Città, CAP, Nome Citofono)
+                    </label>
+                    <textarea 
+                        id="ship-address-input" 
+                        rows="2" 
+                        class="w-full bg-[#1a1a1a] border border-gray-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-amber-500 transition"
+                    ></textarea>
+                </div>
+
+                <div class="border-t border-gray-800"></div>
+
+                <!-- Metodo di Pagamento -->
+                <div>
+                    <label class="text-[10px] font-bold text-gray-500 uppercase tracking-widest block mb-2">
+                        Metodo di Pagamento
+                    </label>
+                    <select 
+                        id="ship-payment-method" 
+                        onchange="updatePaymentDetails()"
+                        class="w-full bg-[#1a1a1a] border border-gray-700 rounded-xl px-3 py-2.5 text-xs text-white focus:outline-none focus:border-amber-500 appearance-none"
+                    >
+                        <option value="" disabled selected>-- Seleziona un metodo --</option>
+                        <option value="PayPal">PayPal</option>
+                        <option value="Crypto BTC">Crypto (Bitcoin BTC)</option>
+                        <option value="Crypto LTC">Crypto (Litecoin LTC)</option>
+                        <option value="Crypto ETH">Crypto (Ethereum ETH)</option>
+                        <option value="Crypto USDT">Crypto (USDT TRC20)</option>
+                        <option value="Bonifico">Bonifico Bancario</option>
+                        <option value="Postepay">Ricarica Postepay</option>
+                    </select>
+                </div>
+
+                <!-- Box Dettagli Pagamento (Appare Dinamico) -->
+                <div id="payment-details-box" class="hidden bg-[#1a1a1a] border border-amber-600/30 p-4 rounded-xl">
+                    <p class="text-[10px] text-gray-400 uppercase tracking-widest mb-1">Invia il pagamento qui:</p>
+                    <p id="payment-address-text" class="text-sm font-mono text-amber-400 break-all select-all font-bold"></p>
+                </div>
+
+                <!-- Input File Ricevuta -->
+                <div>
+                    <label class="text-[10px] font-bold text-gray-500 uppercase tracking-widest block mb-1">
+                        Ricevuta di Pagamento (Foto/Screen)
+                    </label>
+                    <div class="relative">
+                        <input 
+                            type="file" 
+                            id="ship-receipt-file" 
+                            accept="image/*"
+                            class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                            onchange="updateFileName('ship-receipt-file', 'ship-receipt-name')"
+                        >
+                        <div class="bg-[#1a1a1a] border border-dashed border-gray-600 rounded-xl p-4 flex flex-col items-center justify-center text-center transition hover:border-amber-500">
+                            <i data-lucide="upload-cloud" class="w-6 h-6 text-gray-400 mb-2"></i>
+                            <span id="ship-receipt-name" class="text-xs text-gray-300 font-bold">Tocca per allegare la ricevuta</span>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            
+            <div class="border-t border-gray-800 pt-4 mt-2 shrink-0">
+                <button 
+                    onclick="submitShipOrder()" 
+                    class="w-full bg-gradient-to-r from-amber-600 to-yellow-600 hover:from-amber-500 text-white font-extrabold py-3.5 rounded-xl text-xs uppercase shadow-[0_0_15px_rgba(217,119,6,0.3)] tracking-wider"
+                >
+                    Invia Ordine Spedizione
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODALE CHECKOUT MEET UP (HAND-DELIVERY) -->
+    <div 
+        id="checkout-meet-modal" 
+        class="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4 hidden backdrop-blur-md"
+    >
+        <div 
+            class="bg-[#121212] border border-gray-800 rounded-2xl w-full max-w-md p-5 shadow-2xl flex flex-col max-h-[90vh]"
+        >
+            <div 
+                class="flex justify-between items-center border-b border-gray-800 pb-3 mb-4 shrink-0"
+            >
+                <h3 
+                    class="font-bold text-lg text-white flex items-center"
+                >
+                    <span class="mr-2">🤝</span> 
+                    Dettagli Meet Up
+                </h3>
+                <button 
+                    onclick="closeCheckoutMeetModal()" 
+                    class="text-gray-500 hover:text-white"
+                >
+                    <i 
+                        data-lucide="x" 
+                        class="w-5 h-5"
+                    ></i>
+                </button>
+            </div>
+            
+            <div class="overflow-y-auto space-y-5 pr-1 flex-1 hide-scrollbar">
+                
+                <p class="text-xs text-gray-400 leading-relaxed border-l-2 border-amber-500 pl-3">
+                    Il Meet up richiede una <b>verifica di sicurezza</b> rigida. L'orario e il luogo definitivo saranno confermati dall'admin.
+                </p>
+
+                <!-- Info Appuntamento -->
+                <div class="space-y-3">
+                    <div>
+                        <label class="text-[10px] font-bold text-gray-500 uppercase tracking-widest block mb-1">
+                            Luogo / Posizione Richiesta (Roma e Prov)
+                        </label>
+                        <input 
+                            type="text" 
+                            id="meet-location-input" 
+                            placeholder="Es: Stazione Termini, Via Roma..."
+                            class="w-full bg-[#1a1a1a] border border-gray-700 rounded-xl px-3 py-2.5 text-xs text-white focus:outline-none focus:border-amber-500 transition"
+                        >
+                    </div>
+                    
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="text-[10px] font-bold text-gray-500 uppercase tracking-widest block mb-1">
+                                Data
+                            </label>
+                            <input 
+                                type="date" 
+                                id="meet-date-input" 
+                                class="w-full bg-[#1a1a1a] border border-gray-700 rounded-xl px-3 py-2.5 text-xs text-gray-300 focus:outline-none focus:border-amber-500 transition"
+                            >
+                        </div>
+                        <div>
+                            <label class="text-[10px] font-bold text-gray-500 uppercase tracking-widest block mb-1">
+                                Orario (Indicativo)
+                            </label>
+                            <input 
+                                type="time" 
+                                id="meet-time-input" 
+                                class="w-full bg-[#1a1a1a] border border-gray-700 rounded-xl px-3 py-2.5 text-xs text-gray-300 focus:outline-none focus:border-amber-500 transition"
+                            >
+                        </div>
+                    </div>
+                </div>
+
+                <div class="border-t border-gray-800"></div>
+
+                <!-- Box Verifica Documenti (4 File Uploads) -->
+                <div>
+                    <label class="text-[10px] font-bold text-amber-500 uppercase tracking-widest block mb-2 flex items-center">
+                        <i data-lucide="shield-check" class="w-3 h-3 mr-1"></i> Verifica Identità Obbligatoria
+                    </label>
+                    <div class="grid grid-cols-2 gap-3">
+                        
+                        <!-- Doc Fronte -->
+                        <div class="relative">
+                            <input type="file" id="doc-f-file" accept="image/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" onchange="updateFileName('doc-f-file', 'doc-f-name')">
+                            <div class="bg-[#1a1a1a] border border-dashed border-gray-600 rounded-xl p-3 flex flex-col items-center justify-center text-center transition hover:border-amber-500 h-24">
+                                <i data-lucide="camera" class="w-5 h-5 text-gray-400 mb-1"></i>
+                                <span id="doc-f-name" class="text-[10px] text-gray-300 font-bold">Doc. Fronte</span>
+                            </div>
+                        </div>
+
+                        <!-- Doc Retro -->
+                        <div class="relative">
+                            <input type="file" id="doc-r-file" accept="image/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" onchange="updateFileName('doc-r-file', 'doc-r-name')">
+                            <div class="bg-[#1a1a1a] border border-dashed border-gray-600 rounded-xl p-3 flex flex-col items-center justify-center text-center transition hover:border-amber-500 h-24">
+                                <i data-lucide="camera" class="w-5 h-5 text-gray-400 mb-1"></i>
+                                <span id="doc-r-name" class="text-[10px] text-gray-300 font-bold">Doc. Retro</span>
+                            </div>
+                        </div>
+
+                        <!-- CF Fronte -->
+                        <div class="relative">
+                            <input type="file" id="cf-f-file" accept="image/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" onchange="updateFileName('cf-f-file', 'cf-f-name')">
+                            <div class="bg-[#1a1a1a] border border-dashed border-gray-600 rounded-xl p-3 flex flex-col items-center justify-center text-center transition hover:border-amber-500 h-24">
+                                <i data-lucide="camera" class="w-5 h-5 text-gray-400 mb-1"></i>
+                                <span id="cf-f-name" class="text-[10px] text-gray-300 font-bold">C.F. Fronte</span>
+                            </div>
+                        </div>
+
+                        <!-- CF Retro -->
+                        <div class="relative">
+                            <input type="file" id="cf-r-file" accept="image/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" onchange="updateFileName('cf-r-file', 'cf-r-name')">
+                            <div class="bg-[#1a1a1a] border border-dashed border-gray-600 rounded-xl p-3 flex flex-col items-center justify-center text-center transition hover:border-amber-500 h-24">
+                                <i data-lucide="camera" class="w-5 h-5 text-gray-400 mb-1"></i>
+                                <span id="cf-r-name" class="text-[10px] text-gray-300 font-bold">C.F. Retro</span>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+            </div>
+            
+            <div class="border-t border-gray-800 pt-4 mt-2 shrink-0">
+                <button 
+                    onclick="submitMeetOrder()" 
+                    class="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 text-white font-extrabold py-3.5 rounded-xl text-xs uppercase shadow-[0_0_15px_rgba(79,70,229,0.3)] tracking-wider"
+                >
+                    Invia Richiesta Meet Up
+                </button>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- ========================================================== -->
+    <!-- MODALE SUCCESSO ORDINE                                     -->
+    <!-- ========================================================== -->
     <div 
         id="success-panel-modal" 
         class="fixed inset-0 bg-[#0a0a0a] z-50 flex flex-col items-center justify-center p-6 text-center hidden"
     >
-        <div class="w-20 h-20 bg-gradient-to-tr from-amber-500 to-yellow-700 rounded-2xl flex items-center justify-center mb-6 shadow-[0_0_40px_rgba(245,158,11,0.3)]">
-            <i data-lucide="check" class="w-12 h-12 text-white stroke-[3]"></i>
+        <div 
+            class="w-20 h-20 bg-gradient-to-tr from-amber-500 to-yellow-700 rounded-2xl flex items-center justify-center mb-6 shadow-[0_0_40px_rgba(245,158,11,0.3)]"
+        >
+            <i 
+                data-lucide="check" 
+                class="w-12 h-12 text-white stroke-[3]"
+            ></i>
         </div>
-        <h2 class="text-2xl font-black text-amber-50 mb-2">
+        
+        <h2 
+            class="text-2xl font-black text-amber-50 mb-2"
+        >
             Richiesta Presa in Carico
         </h2>
-        <p class="text-gray-400 text-sm max-w-xs mb-8">
-            Il Falsario elaborerà la tua richiesta a breve. Controlla la chat per aggiornamenti.
+        
+        <p 
+            class="text-gray-400 text-sm max-w-xs mb-8"
+        >
+            Il Falsario elaborerà la tua richiesta a breve. Controlla la chat per aggiornamenti e per ricevere il tracking/conferma.
         </p>
+        
         <button 
             onclick="closeSuccessPanel()" 
             class="w-full max-w-xs bg-[#1a1a1a] border border-gray-800 text-white font-extrabold py-3.5 rounded-xl text-sm hover:bg-gray-900 transition"
@@ -407,32 +875,57 @@
         </button>
     </div>
 
-    <!-- MODALE PRIVILEGI E SCONTI (CON DESCRIZIONI DETTAGLIATE DEI PREMI) -->
+    <!-- ========================================================== -->
+    <!-- MODALE PRIVILEGI E SCONTI                                  -->
+    <!-- ========================================================== -->
     <div 
         id="trophies-modal" 
         class="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4 hidden backdrop-blur-md"
     >
-        <div class="bg-[#121212] border border-amber-600/30 rounded-2xl w-full max-w-sm p-5 space-y-4 shadow-2xl">
-            <div class="flex justify-between items-center border-b border-gray-800 pb-3">
-                <h3 class="font-bold text-lg text-white flex items-center">
-                    <i data-lucide="award" class="w-5 h-5 text-amber-500 mr-2"></i> 
+        <div 
+            class="bg-[#121212] border border-amber-600/30 rounded-2xl w-full max-w-sm p-5 space-y-4 shadow-2xl"
+        >
+            <div 
+                class="flex justify-between items-center border-b border-gray-800 pb-3"
+            >
+                <h3 
+                    class="font-bold text-lg text-white flex items-center"
+                >
+                    <i 
+                        data-lucide="award" 
+                        class="w-5 h-5 text-amber-500 mr-2"
+                    ></i> 
                     Club Esclusivo & Sconti
                 </h3>
                 <button 
                     onclick="closeTrophiesModal()" 
                     class="text-gray-500 hover:text-white"
                 >
-                    <i data-lucide="x" class="w-5 h-5"></i>
+                    <i 
+                        data-lucide="x" 
+                        class="w-5 h-5"
+                    ></i>
                 </button>
             </div>
             
             <!-- Box Status -->
-            <div class="bg-gradient-to-br from-[#1a1a1a] to-[#0a0a0a] border border-amber-600/40 rounded-xl p-4 text-center relative overflow-hidden shadow-lg">
-                <div class="absolute -right-3 -top-3 text-amber-500/10">
-                    <i data-lucide="percent" class="w-20 h-20"></i>
+            <div 
+                class="bg-gradient-to-br from-[#1a1a1a] to-[#0a0a0a] border border-amber-600/40 rounded-xl p-4 text-center relative overflow-hidden shadow-lg"
+            >
+                <div 
+                    class="absolute -right-3 -top-3 text-amber-500/10"
+                >
+                    <i 
+                        data-lucide="percent" 
+                        class="w-20 h-20"
+                    ></i>
                 </div>
-                <div class="flex justify-between items-center mb-1">
-                    <span class="text-[9px] uppercase text-amber-500 font-extrabold tracking-widest">
+                <div 
+                    class="flex justify-between items-center mb-1"
+                >
+                    <span 
+                        class="text-[9px] uppercase text-amber-500 font-extrabold tracking-widest"
+                    >
                         Il tuo Status
                     </span>
                     <span 
@@ -442,15 +935,23 @@
                         Cliente Standard 🥉
                     </span>
                 </div>
-                <div class="text-3xl font-black text-amber-50 mt-1 flex items-center justify-center space-x-2">
-                    <span id="user-points-val">
+                <div 
+                    class="text-3xl font-black text-amber-50 mt-1 flex items-center justify-center space-x-2"
+                >
+                    <span 
+                        id="user-points-val"
+                    >
                         50
                     </span>
-                    <span class="text-xs text-amber-500 font-normal">
+                    <span 
+                        class="text-xs text-amber-500 font-normal"
+                    >
                         punti spesa
                     </span>
                 </div>
-                <div class="mt-3 w-full bg-gray-800 rounded-full h-1.5 overflow-hidden">
+                <div 
+                    class="mt-3 w-full bg-gray-800 rounded-full h-1.5 overflow-hidden"
+                >
                     <div 
                         id="rank-progress-bar" 
                         class="bg-gradient-to-r from-amber-600 to-yellow-400 h-1.5 rounded-full" 
@@ -465,7 +966,7 @@
                 </p>
             </div>
             
-            <!-- Lista Trofei con Descrizione Completa dei Premi -->
+            <!-- Lista Trofei -->
             <div class="space-y-2">
                 <div class="flex justify-between items-center">
                     <span class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
@@ -476,7 +977,10 @@
                     </span>
                 </div>
                 
-                <div id="user-trophies-list" class="space-y-2 max-h-52 overflow-y-auto pr-1">
+                <div 
+                    id="user-trophies-list" 
+                    class="space-y-2 max-h-52 overflow-y-auto pr-1"
+                >
                     
                     <!-- Box Bonus Benvenuto -->
                     <div 
@@ -484,13 +988,17 @@
                         class="bg-[#1a1a1a] border border-amber-600/30 p-3 rounded-xl text-xs text-gray-200 flex items-center justify-between shadow-sm mb-2"
                     >
                         <div class="flex items-center space-x-2.5">
-                            <i id="trophy-1-icon" data-lucide="check-circle-2" class="w-4 h-4 text-amber-500 flex-shrink-0"></i>
+                            <i 
+                                id="trophy-1-icon" 
+                                data-lucide="check-circle-2" 
+                                class="w-4 h-4 text-amber-500 flex-shrink-0"
+                            ></i>
                             <div>
                                 <div class="font-bold text-amber-50">
                                     🎁 Bonus Benvenuto Iniziale
                                 </div>
                                 <div class="text-[10px] text-gray-400 font-light mt-0.5">
-                                    50 punti di benvenuto accreditati automaticamente all'ingresso nel Caveau del Falsario per iniziare la tua scalata nel club esclusivo.
+                                    50 punti di benvenuto accreditati automaticamente all'ingresso nel Caveau del Falsario.
                                 </div>
                             </div>
                         </div>
@@ -508,13 +1016,20 @@
                         class="bg-[#121212] border border-gray-800/80 p-3 rounded-xl text-xs text-gray-500 flex items-center justify-between opacity-80 mb-2 transition-all duration-300"
                     >
                         <div class="flex items-center space-x-2.5">
-                            <i id="trophy-2-icon" data-lucide="lock" class="w-4 h-4 text-gray-500 flex-shrink-0"></i>
+                            <i 
+                                id="trophy-2-icon" 
+                                data-lucide="lock" 
+                                class="w-4 h-4 text-gray-500 flex-shrink-0"
+                            ></i>
                             <div>
-                                <div id="trophy-2-title" class="font-bold text-gray-300">
+                                <div 
+                                    id="trophy-2-title" 
+                                    class="font-bold text-gray-300"
+                                >
                                     🏷️ Sconto 5% Silver Perenne
                                 </div>
                                 <div class="text-[10px] text-gray-500 font-light mt-0.5">
-                                    Sconto fisso del 5% applicato in automatico su qualsiasi tipologia di documento, banconota o servizio futuro. Sbloccato al raggiungimento di 150 punti spesa complessivi.
+                                    Sconto fisso del 5% applicato in automatico. Sbloccato al raggiungimento di 150 punti spesa.
                                 </div>
                             </div>
                         </div>
@@ -532,13 +1047,20 @@
                         class="bg-[#121212] border border-gray-800/80 p-3 rounded-xl text-xs text-gray-500 flex items-center justify-between opacity-80 mb-2 transition-all duration-300"
                     >
                         <div class="flex items-center space-x-2.5">
-                            <i id="trophy-3-icon" data-lucide="lock" class="w-4 h-4 text-gray-500 flex-shrink-0"></i>
+                            <i 
+                                id="trophy-3-icon" 
+                                data-lucide="lock" 
+                                class="w-4 h-4 text-gray-500 flex-shrink-0"
+                            ></i>
                             <div>
-                                <div id="trophy-3-title" class="font-bold text-gray-300">
+                                <div 
+                                    id="trophy-3-title" 
+                                    class="font-bold text-gray-300"
+                                >
                                     🔥 Sconto 10% Gold Perenne
                                 </div>
                                 <div class="text-[10px] text-gray-500 font-light mt-0.5">
-                                    Sconto superiore del 10% valido a vita su ogni ordinazione effettuata nello shop. Accesso prioritario alle lavorazioni urgenti. Sbloccato al raggiungimento di 300 punti spesa.
+                                    Sconto superiore del 10% valido a vita. Sbloccato al raggiungimento di 300 punti spesa.
                                 </div>
                             </div>
                         </div>
@@ -556,13 +1078,20 @@
                         class="bg-[#121212] border border-gray-800/80 p-3 rounded-xl text-xs text-gray-500 flex items-center justify-between opacity-80 mb-2 transition-all duration-300"
                     >
                         <div class="flex items-center space-x-2.5">
-                            <i id="trophy-4-icon" data-lucide="lock" class="w-4 h-4 text-gray-500 flex-shrink-0"></i>
+                            <i 
+                                id="trophy-4-icon" 
+                                data-lucide="lock" 
+                                class="w-4 h-4 text-gray-500 flex-shrink-0"
+                            ></i>
                             <div>
-                                <div id="trophy-4-title" class="font-bold text-gray-300">
+                                <div 
+                                    id="trophy-4-title" 
+                                    class="font-bold text-gray-300"
+                                >
                                     💎 Sconto 15% + Omaggi VIP Inclusi
                                 </div>
                                 <div class="text-[10px] text-gray-500 font-light mt-0.5">
-                                    Il livello definitivo del club: sconto massimo del 15% su tutto il listino e un omaggio segreto di alto valore inserito in omaggio su ogni spedizione. Sbloccato a 500 punti spesa.
+                                    Sconto massimo del 15% su tutto il listino. Sbloccato a 500 punti spesa.
                                 </div>
                             </div>
                         </div>
@@ -586,7 +1115,9 @@
         </div>
     </div>
 
-    <!-- MODALE TRACKING Lavorazioni -->
+    <!-- ========================================================== -->
+    <!-- MODALE TRACKING LAVORAZIONI                                -->
+    <!-- ========================================================== -->
     <div 
         id="tracking-modal" 
         class="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4 hidden backdrop-blur-md"
@@ -604,6 +1135,7 @@
                     <i data-lucide="x" class="w-5 h-5"></i>
                 </button>
             </div>
+            
             <div class="space-y-3">
                 <label class="text-[10px] font-bold text-gray-500 uppercase tracking-widest block">
                     Codice Pratica
@@ -623,10 +1155,12 @@
                     </button>
                 </div>
             </div>
+            
             <div 
                 id="tracking-result" 
                 class="hidden border-t border-gray-800 pt-3 space-y-2"
             ></div>
+            
             <button 
                 onclick="closeTrackingModal()" 
                 class="w-full bg-[#1a1a1a] border border-gray-800 hover:bg-gray-900 text-gray-300 font-bold py-3 rounded-xl text-xs uppercase tracking-wider"
@@ -636,7 +1170,9 @@
         </div>
     </div>
 
-    <!-- MODALE CONTATTO DIRETTO -->
+    <!-- ========================================================== -->
+    <!-- MODALE CONTATTO DIRETTO                                    -->
+    <!-- ========================================================== -->
     <div 
         id="support-modal" 
         class="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4 hidden backdrop-blur-md"
@@ -709,7 +1245,7 @@
                     </div>
                 </a>
 
-                <!-- Session Copy Button -->
+                <!-- Session -->
                 <button 
                     onclick="copySessionId()" 
                     class="w-full text-left bg-[#1a1a1a] border border-gray-800 hover:border-emerald-600/50 rounded-xl p-3.5 flex items-center space-x-3 transition block relative"
@@ -759,7 +1295,9 @@
         </div>
     </div>
 
-    <!-- MODALE DETTAGLIO PRODOTTO -->
+    <!-- ========================================================== -->
+    <!-- MODALE DETTAGLIO PRODOTTO (Apertura a schermo intero)      -->
+    <!-- ========================================================== -->
     <div 
         id="product-detail-modal" 
         class="fixed inset-0 bg-[#0a0a0a] z-[80] hidden flex-col overflow-y-auto hide-scrollbar pb-24 transition-transform duration-300 transform translate-y-full"
@@ -802,6 +1340,7 @@
             <h3 class="text-[10px] font-bold text-gray-500 uppercase tracking-widest mt-6 mb-2">
                 Seleziona Servizio
             </h3>
+            
             <div 
                 id="pd-variants-list" 
                 class="space-y-2.5"
@@ -838,7 +1377,9 @@
         </div>
     </div>
 
-    <!-- MAIN PAGE CONTENT -->
+    <!-- ========================================================== -->
+    <!-- MAIN PAGE CONTENT (BANNER E GRIGLIE)                       -->
+    <!-- ========================================================== -->
     <main class="p-4 space-y-5">
         
         <!-- VIDEO BANNER -->
@@ -883,7 +1424,7 @@
             </div>
         </div>
 
-        <!-- BENVENUTO E TASTI PRINCIPALI SHIP / MEET / SERVIZI -->
+        <!-- BENVENUTO E TASTI RAPIDI INIZIALI -->
         <div class="bg-[#121212] border border-gray-800 rounded-2xl p-5 shadow-2xl">
             <div class="flex flex-col gap-1 mb-4">
                 <div class="flex items-center gap-2">
@@ -935,7 +1476,7 @@
             </div>
         </div>
 
-        <!-- NAVIGAZIONE -->
+        <!-- NAVIGAZIONE CENTRALE (I LAVORI / FIDUCIA / INFO) -->
         <div class="mt-2">
             <div class="grid grid-cols-2 gap-3">
                 <button 
@@ -956,7 +1497,7 @@
                 </button>
             </div>
 
-            <!-- Tasto "Maggiori informazioni" in stile neutro -->
+            <!-- Tasto Maggiori Informazioni -->
             <button 
                 onclick="toggleInfoPanel()" 
                 class="w-full mt-3 bg-[#121212] border border-gray-800 hover:border-gray-700 text-gray-300 font-bold py-3.5 px-4 rounded-xl flex items-center justify-between text-xs uppercase tracking-wider transition shadow-lg"
@@ -999,7 +1540,9 @@
             </div>
         </div>
 
-        <!-- CATEGORIE RIORDINATE COME RICHIESTO -->
+        <!-- ========================================================== -->
+        <!-- CATEGORIE PRODOTTI (FILTRI)                                -->
+        <!-- ========================================================== -->
         <div class="space-y-4 pt-4" id="products-section">
             <div class="flex justify-between items-center">
                 <h2 class="text-lg font-bold text-white tracking-wide">
@@ -1083,7 +1626,9 @@
         </div>
     </main>
 
-    <!-- SCRIPT GLOBALI -->
+    <!-- ========================================================== -->
+    <!-- SCRIPT GLOBALI, LOGICA E INTERFACCIA WEB                   -->
+    <!-- ========================================================== -->
     <script>
         lucide.createIcons();
         
@@ -1093,9 +1638,10 @@
         let selectedVariantIndex = 0;
         let currentQty = 1;
 
-        // --- FUNZIONI ID WEB / LOGIN / SESSION ---
+        // --- GESTIONE ID UTENTE ---
         function copyUserId() {
             const id = localStorage.getItem('falsario_user_id');
+            
             if(!id) {
                 return;
             }
@@ -1167,7 +1713,7 @@
             }, 2000);
         }
 
-        // --- FUNZIONI MODALI GENERALI ---
+        // --- GESTIONE MODALI ---
         function toggleInfoPanel() {
             const panel = document.getElementById('info-panel');
             const chevron = document.getElementById('info-chevron');
@@ -1209,6 +1755,7 @@
                 vid.playsInline = true;
                 
                 let playPromise = vid.play(); 
+                
                 if (playPromise !== undefined) {
                     playPromise.catch(e => {
                         console.error("Autoplay prevent", e);
@@ -1229,6 +1776,7 @@
         function scrollToProducts() { 
             const section = document.getElementById('products-section');
             const y = section.getBoundingClientRect().top + window.scrollY - 90; 
+            
             window.scrollTo({
                 top: y, 
                 behavior: 'smooth'
@@ -1244,6 +1792,7 @@
 
         function toggleDescription(btn, prodId) {
             const descEl = document.getElementById(`desc-${prodId}`);
+            
             if (descEl.classList.contains('expanded')) {
                 descEl.classList.remove('expanded');
                 btn.innerText = "Leggi tutto";
@@ -1259,6 +1808,7 @@
                 if (!db) {
                     throw new Error("DB non inizializzato");
                 }
+                
                 const { data, error } = await db.from('products').select('*').eq('in_showcase', true).order('created_at', { ascending: false });
                 
                 if (error) {
@@ -1272,7 +1822,7 @@
             }
         }
 
-        // GESTIONE FILTRI ED EFFETTI PLATINO SCURO / ORO E SCROLL ORIZZONTALE AUTOMATICO (SLIDE)
+        // --- FILTRI ED EFFETTI PLATINO SCURO / ORO ---
         function filterCategory(cat, btn) {
             document.querySelectorAll('.cat-btn').forEach(b => { 
                 b.className = 'cat-btn px-4 py-2 rounded-xl bg-[#121212] border border-gray-800 text-gray-400 text-xs font-semibold whitespace-nowrap hover:text-gray-200 transition'; 
@@ -1333,7 +1883,7 @@
                 }
             }
 
-            // Slide / Centratura automatica orizzontale sul pulsante della categoria selezionata
+            // Slide automatico categoria
             if (targetBtnToScroll) {
                 targetBtnToScroll.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
             }
@@ -1347,6 +1897,7 @@
             renderProducts(filtered);
         }
 
+        // --- RENDERIZZA PRODOTTI NELLA GRIGLIA ---
         function renderProducts(products) {
             const container = document.getElementById('products-grid');
             
@@ -1392,6 +1943,7 @@
                         mediaSliderHTML += `<video class="w-full h-full object-cover pointer-events-none" autoplay loop muted playsinline webkit-playsinline src="${m.url}" onloadedmetadata="this.muted=true; this.play()"></video>`;
                     } else {
                         let imgClass = "w-full h-full object-cover pointer-events-none";
+                        
                         if (p.category === 'Telefoni Criptati') {
                             imgClass = "w-full h-full object-contain p-2 pointer-events-none";
                         }
@@ -1411,6 +1963,7 @@
                 });
 
                 let scorriBadge = '';
+                
                 if (media.length > 1) {
                     scorriBadge = `<div class="absolute bottom-3 right-3 bg-black/80 backdrop-blur-sm text-gray-300 text-[10px] font-bold px-3 py-1.5 rounded-full z-10 pointer-events-none border border-gray-700 uppercase tracking-widest">1/${media.length} ↔ Scorri</div>`;
                 }
@@ -1490,6 +2043,7 @@
             }, 300);
         }
 
+        // --- GESTIONE MODALE DETTAGLIO PRODOTTO ---
         function openProductModal(prodId) {
             currentProd = allProducts.find(x => x.id === prodId); 
             
@@ -1501,6 +2055,7 @@
             currentQty = 1;
             
             let media = currentProd.media_list; 
+            
             if(typeof media === 'string') { 
                 try { 
                     media = JSON.parse(media); 
@@ -1635,6 +2190,7 @@
             }
         }
 
+        // --- GESTIONE DEL CARRELLO ---
         function addToCartFromModal() { 
             if(!currentProd) {
                 return;
@@ -1709,15 +2265,197 @@
                 openCartModal(); 
             } 
         }
+
+        // ==========================================================
+        // NUOVO SISTEMA CHECKOUT: BIVIO SHIP E MEET UP
+        // ==========================================================
+
+        function showLoading() {
+            document.getElementById('loading-overlay').classList.remove('hidden');
+            document.getElementById('loading-overlay').classList.add('flex');
+        }
+
+        function hideLoading() {
+            document.getElementById('loading-overlay').classList.add('hidden');
+            document.getElementById('loading-overlay').classList.remove('flex');
+        }
+
+        // 1. Apre il bivio (Scegli metodo)
+        function openCheckoutMethodModal() {
+            closeCartModal();
+            document.getElementById('checkout-method-modal').classList.remove('hidden');
+        }
         
-        async function submitOrderProcess() {
-            const addr = document.getElementById('order-address-input').value.trim();
-            
-            if (!addr) { 
-                alert("Inserisci note o dettagli."); 
-                return; 
+        function closeCheckoutMethodModal() {
+            document.getElementById('checkout-method-modal').classList.add('hidden');
+            openCartModal(); // Se annulla torna al carrello
+        }
+
+        // 2. Apre il Checkout SHIP
+        function openCheckoutShipModal() {
+            document.getElementById('checkout-method-modal').classList.add('hidden');
+            document.getElementById('checkout-ship-modal').classList.remove('hidden');
+        }
+        
+        function closeCheckoutShipModal() {
+            document.getElementById('checkout-ship-modal').classList.add('hidden');
+            document.getElementById('checkout-method-modal').classList.remove('hidden');
+        }
+
+        // 3. Apre il Checkout MEET UP
+        function openCheckoutMeetModal() {
+            document.getElementById('checkout-method-modal').classList.add('hidden');
+            document.getElementById('checkout-meet-modal').classList.remove('hidden');
+        }
+        
+        function closeCheckoutMeetModal() {
+            document.getElementById('checkout-meet-modal').classList.add('hidden');
+            document.getElementById('checkout-method-modal').classList.remove('hidden');
+        }
+
+        // Helper UI per File e Metodi
+        function updateShipTypeUI() {
+            const val = document.querySelector('input[name="ship_type"]:checked').value;
+            const label = document.getElementById('ship-address-label');
+            const input = document.getElementById('ship-address-input');
+            if(val === 'Locker InPost') {
+                label.innerText = "Info Locker InPost (Indirizzo e Nome Locker)";
+                input.placeholder = "Es: Locker IT-12345, Via Roma...";
+            } else {
+                label.innerText = "Indirizzo Completo (Via, Città, CAP, Nome Citofono)";
+                input.placeholder = "Es: Via Milano 10, 00100 Roma, Citofono: Falsario";
             }
+        }
+
+        function updateFileName(inputId, textId) {
+            const file = document.getElementById(inputId).files[0];
+            const textSpan = document.getElementById(textId);
+            if (file) {
+                textSpan.innerText = "✅ " + file.name;
+                textSpan.classList.add('text-amber-500');
+            } else {
+                textSpan.innerText = "Tocca per allegare";
+                textSpan.classList.remove('text-amber-500');
+            }
+        }
+
+        function updatePaymentDetails() {
+            const method = document.getElementById('ship-payment-method').value;
+            const box = document.getElementById('payment-details-box');
+            const txt = document.getElementById('payment-address-text');
             
+            box.classList.remove('hidden');
+            
+            if (method === 'PayPal') {
+                txt.innerText = "[INSERIRE_QUI_INDIRIZZO_PAYPAL]";
+            } else if (method === 'Crypto BTC') {
+                txt.innerText = "[INSERIRE_QUI_INDIRIZZO_BTC]";
+            } else if (method === 'Crypto LTC') {
+                txt.innerText = "[INSERIRE_QUI_INDIRIZZO_LTC]";
+            } else if (method === 'Crypto ETH') {
+                txt.innerText = "[INSERIRE_QUI_INDIRIZZO_ETH]";
+            } else if (method === 'Crypto USDT') {
+                txt.innerText = "[INSERIRE_QUI_INDIRIZZO_USDT_TRC20]";
+            } else if (method === 'Bonifico') {
+                txt.innerText = "IBAN: [INSERIRE_QUI_IBAN]";
+            } else if (method === 'Postepay') {
+                txt.innerText = "Carta: [INSERIRE_QUI_POSTEPAY]";
+            } else {
+                box.classList.add('hidden');
+            }
+        }
+
+        // Funzione Globale di Upload verso Supabase da Client (Richiede che il bucket 'prodotti' consenta INSERT)
+        async function uploadFileToSupabase(file) {
+            if (!file) return null;
+            const ext = file.name.split('.').pop();
+            const filename = `order_${Date.now()}_${Math.random().toString(36).substr(2, 5)}.${ext}`;
+            
+            try {
+                const { data, error } = await db.storage.from('prodotti').upload(filename, file);
+                if (error) {
+                    console.log("Errore upload RLS:", error);
+                    throw error;
+                }
+                const { data: { publicUrl } } = db.storage.from('prodotti').getPublicUrl(filename);
+                return publicUrl;
+            } catch (e) {
+                // Fallback di cortesia se Supabase blocca l'upload da frontend
+                return "[Impossibile caricare immagine: permesso negato sul database]";
+            }
+        }
+
+        // SUBMIT SPEDIZIONE
+        async function submitShipOrder() {
+            const shipType = document.querySelector('input[name="ship_type"]:checked').value;
+            const addressInput = document.getElementById('ship-address-input').value.trim();
+            const paymentMethod = document.getElementById('ship-payment-method').value;
+            const receiptFile = document.getElementById('ship-receipt-file').files[0];
+            
+            if (!addressInput) {
+                alert("Compila l'indirizzo / info locker.");
+                return;
+            }
+            if (!paymentMethod) {
+                alert("Seleziona un metodo di pagamento.");
+                return;
+            }
+            if (!receiptFile) {
+                alert("Allega la ricevuta di pagamento.");
+                return;
+            }
+
+            showLoading();
+
+            // 1. Carica Ricevuta
+            const receiptUrl = await uploadFileToSupabase(receiptFile);
+
+            // 2. Formatta Indirizzo per il Bot Python (Mantiene compatibilità retroattiva)
+            const finalAddress = `🚚 TIPO: Spedizione (${shipType})\n📍 DESTINAZIONE: ${addressInput}\n💰 PAGAMENTO: ${paymentMethod}\n📄 RICEVUTA:\n${receiptUrl}`;
+
+            // 3. Esegui Inoltro API
+            await processFinalApiOrder(finalAddress);
+            document.getElementById('checkout-ship-modal').classList.add('hidden');
+        }
+
+        // SUBMIT MEET UP
+        async function submitMeetOrder() {
+            const locInput = document.getElementById('meet-location-input').value.trim();
+            const dateInput = document.getElementById('meet-date-input').value;
+            const timeInput = document.getElementById('meet-time-input').value;
+            
+            const docF = document.getElementById('doc-f-file').files[0];
+            const docR = document.getElementById('doc-r-file').files[0];
+            const cfF = document.getElementById('cf-f-file').files[0];
+            const cfR = document.getElementById('cf-r-file').files[0];
+
+            if (!locInput || !dateInput || !timeInput) {
+                alert("Compila tutti i dettagli dell'appuntamento (Luogo, Data, Ora).");
+                return;
+            }
+            if (!docF || !docR || !cfF || !cfR) {
+                alert("Tutte le 4 foto dei documenti sono obbligatorie per il Meet Up.");
+                return;
+            }
+
+            showLoading();
+
+            // 1. Carica i 4 file
+            const urlDocF = await uploadFileToSupabase(docF);
+            const urlDocR = await uploadFileToSupabase(docR);
+            const urlCfF = await uploadFileToSupabase(cfF);
+            const urlCfR = await uploadFileToSupabase(cfR);
+
+            // 2. Formatta Stringa per il Bot Python
+            const finalAddress = `🤝 TIPO: Meet Up\n📍 LUOGO: ${locInput}\n📅 DATA: ${dateInput}\n⏰ ORA RICHIESTA: ${timeInput}\n\n🛡️ VERIFICA:\n- Doc Fronte: ${urlDocF}\n- Doc Retro: ${urlDocR}\n- CF Fronte: ${urlCfF}\n- CF Retro: ${urlCfR}`;
+
+            // 3. Esegui Inoltro API
+            await processFinalApiOrder(finalAddress);
+            document.getElementById('checkout-meet-modal').classList.add('hidden');
+        }
+
+        // ESECUZIONE REALE ORDINE
+        async function processFinalApiOrder(formattedAddress) {
             const savedId = localStorage.getItem('falsario_user_id');
             const user = window.Telegram?.WebApp?.initDataUnsafe?.user || {};
             const finalUserId = savedId ? parseInt(savedId) : (user.id || Math.floor(Math.random() * 9000000000) + 1000000000);
@@ -1736,20 +2474,21 @@
                         total: tot, 
                         user_id: finalUserId, 
                         username: finalUsername, 
-                        address: addr 
+                        address: formattedAddress 
                     }) 
                 });
                 
+                hideLoading();
+
                 if (res.ok) { 
-                    closeCartModal(); 
                     cart = []; 
                     document.getElementById('cart-badge').classList.add('hidden'); 
-                    document.getElementById('order-address-input').value = ''; 
                     document.getElementById('success-panel-modal').classList.remove('hidden'); 
                 } else {
-                    alert("Errore di invio dell'ordine.");
+                    alert("Errore di invio dell'ordine al server.");
                 }
             } catch (e) { 
+                hideLoading();
                 alert("Errore di connessione col server."); 
             }
         }
@@ -1761,7 +2500,10 @@
             }
         }
 
-        // --- CARICAMENTO PRIVILEGI STRUTTURATO DIRETTAMENTE SUI DIV FISSI ---
+
+        // ==========================================================
+        // CARICAMENTO PRIVILEGI E SCONTI (STATUS UTENTE)
+        // ==========================================================
         async function openTrophiesModal() {
             document.getElementById('trophies-modal').classList.remove('hidden'); 
             
@@ -1876,6 +2618,9 @@
             document.getElementById('trophies-modal').classList.add('hidden'); 
         }
 
+        // ==========================================================
+        // RICERCA TRACKING E STATO LAVORAZIONI
+        // ==========================================================
         function openTrackingModal() { 
             document.getElementById('tracking-modal').classList.remove('hidden'); 
         }
@@ -1893,37 +2638,48 @@
                 return;
             }
             
-            rc.innerHTML = `<div class="text-xs text-gray-500 text-center py-3">Ricerca archivi...</div>`; 
+            rc.innerHTML = `<div class="text-xs text-gray-500 text-center py-3">Ricerca archivi in corso...</div>`; 
             rc.classList.remove('hidden');
             
             try {
                 const { data } = await db.from('orders').select('*').eq('id', oid);
+                
                 if (data && data.length > 0) {
                     const o = data[0];
                     const sMap = { 
                         "PENDING": "⏳ In Analisi", 
                         "ACCEPTED": "✅ Approvato", 
-                        "SHIPPED": "🚚 Consegnato", 
+                        "SHIPPED": "🚚 Completato / Gestito", 
                         "CANCELLED": "❌ Respinto" 
                     };
+                    
+                    // L'indirizzo salvato nel db conteneva tutto il format (Spedizione o Meetup). Lo parsi in modo leggibile.
+                    let noteFormat = o.tracking_code ? `<b>Info dall'Admin:</b><br>${o.tracking_code}` : 'Lavorazione in corso. Nessuna nota aggiuntiva.';
+                    
                     rc.innerHTML = `
-                    <div class="bg-[#1a1a1a] border border-gray-800 p-4 rounded-xl text-xs space-y-2">
-                        <div class="flex justify-between font-bold">
+                    <div class="bg-[#1a1a1a] border border-gray-800 p-4 rounded-xl text-xs space-y-3 shadow-md">
+                        <div class="flex justify-between font-bold border-b border-gray-800 pb-2">
                             <span class="text-white">Pratica #${o.id}</span>
                             <span class="text-amber-500">${sMap[o.status] || o.status}</span>
                         </div>
-                        <div class="text-gray-400 font-mono bg-[#121212] p-3 rounded-lg mt-3">
-                            <b>Info / Link:</b><br>${o.tracking_code || 'Nessun dettaglio aggiuntivo.'}
+                        <div class="text-gray-300 font-mono text-[10px] leading-relaxed whitespace-pre-wrap">
+                            ${o.address}
+                        </div>
+                        <div class="text-amber-500 font-mono bg-[#121212] border border-amber-900/30 p-3 rounded-lg mt-3">
+                            ${noteFormat}
                         </div>
                     </div>`;
                 } else {
-                    rc.innerHTML = `<div class="text-xs text-red-500 text-center py-3">Pratica non trovata.</div>`;
+                    rc.innerHTML = `<div class="text-xs text-red-500 text-center py-3">Pratica non trovata o codice errato.</div>`;
                 }
             } catch(e) { 
-                rc.innerHTML = `<div class="text-xs text-red-500 text-center py-3">Errore di rete.</div>`; 
+                rc.innerHTML = `<div class="text-xs text-red-500 text-center py-3">Errore di connessione ai database.</div>`; 
             }
         }
 
+        // ==========================================================
+        // GESTIONE SUPPORTO DIRETTO
+        // ==========================================================
         function openSupportModal() { 
             document.getElementById('support-modal').classList.remove('hidden'); 
             lucide.createIcons(); 
@@ -1938,6 +2694,7 @@
             
             const uid = await getOrInitUserId();
             const idEl = document.getElementById('sidebar-user-id');
+            
             if(idEl) {
                 idEl.innerText = uid;
             }
