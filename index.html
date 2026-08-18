@@ -8,13 +8,16 @@
     >
     <title>Il Falsario 🎭</title>
   
+    <!-- Dipendenze esterne ufficiali -->
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
   
     <style>
-        /* BLOCCO SWIPE TELEGRAM E RIMBALZO iOS */
+        /* ========================================================== */
+        /* CONFIGURAZIONE GLOBALE & BLOCCO SWIPE E RIMBALZO iOS       */
+        /* ========================================================== */
         html, body { 
             background-color: #0a0a0a; 
             color: #f3f4f6; 
@@ -88,8 +91,10 @@
 </head>
 <body class="pb-24">
 
+    <!-- ========================================================== -->
+    <!-- INIZIALIZZAZIONE SUPABASE & TELEGRAM WEBAPP                -->
+    <!-- ========================================================== -->
     <script>
-        // CHIAVI SUPABASE GIA' INIETTATE E PRONTE
         const SUPABASE_URL = "https://niyhpvtiefisycxbkjie.supabase.co";
         const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5peWhwdnRpZWZpc3ljeGJramllIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY4MjQ2MDUsImV4cCI6MjEwMjQwMDYwNX0.ODucTrP0dzByGNhyyIYv-S-kIH5cTs8X_Url-7jXRMY";
         
@@ -98,7 +103,7 @@
         try { 
             db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY); 
         } catch(e) { 
-            console.error("Errore Supabase", e); 
+            console.error("Errore inizializzazione Supabase", e); 
         }
         
         const tg = window.Telegram?.WebApp;
@@ -110,7 +115,7 @@
             }
         }
 
-        // --- SISTEMA ID UNICO PER UTENTI WEB/APP ---
+        // Sistema ID Unico Utente Web / App Telegram
         async function getOrInitUserId() {
             let localId = localStorage.getItem('falsario_user_id');
             let tgId = window.Telegram?.WebApp?.initDataUnsafe?.user?.id;
@@ -138,14 +143,16 @@
                         }
                     ]);
                 } catch(e) {
-                    console.log("Errore registrazione utente web");
+                    console.log("Errore registrazione utente web su Supabase");
                 }
             }
             return newId;
         }
     </script>
 
-    <!-- HEADER -->
+    <!-- ========================================================== -->
+    <!-- HEADER PRINCIPALE                                          -->
+    <!-- ========================================================== -->
     <header 
         class="sticky top-0 z-30 bg-[#121212]/95 backdrop-blur-md px-4 py-3 flex justify-between items-center border-b border-gray-800"
     >
@@ -182,14 +189,15 @@
         </div>
     </header>
 
-    <!-- MENU LATERALE (SIDEBAR) OVERLAY -->
+    <!-- ========================================================== -->
+    <!-- MENU LATERALE (SIDEBAR)                                    -->
+    <!-- ========================================================== -->
     <div 
         id="drawer-overlay" 
         onclick="toggleDrawer()" 
         class="fixed inset-0 bg-black/70 z-40 hidden backdrop-blur-sm"
     ></div>
     
-    <!-- MENU LATERALE (SIDEBAR) CONTENT -->
     <aside 
         id="drawer" 
         class="fixed top-0 right-0 w-72 h-full bg-[#121212] z-50 transform translate-x-full drawer p-5 flex flex-col border-l border-amber-900/30 overflow-y-auto"
@@ -262,7 +270,7 @@
             </a>
         </nav>
         
-        <!-- SEZIONE IDENTIFICATIVO WEB E LOGIN NELLA SIDEBAR -->
+        <!-- SEZIONE ACCOUNT NELLA SIDEBAR -->
         <div class="mt-6 pt-5 border-t border-gray-800">
             <span class="text-[10px] font-bold text-gray-500 uppercase tracking-widest pl-3 mb-2 block">
                 Il tuo Account
@@ -300,6 +308,10 @@
             </button>
         </div>
     </aside>
+
+    <!-- ========================================================== -->
+    <!-- MODALI APPLICATIVE                                         -->
+    <!-- ========================================================== -->
 
     <!-- MODALE MEDIA FULLSCREEN -->
     <div 
@@ -395,7 +407,7 @@
         </button>
     </div>
 
-    <!-- MODALE PRIVILEGI (STRUTTURA FISSA E SICURA HARDCODED) -->
+    <!-- MODALE PRIVILEGI E SCONTI (CON DESCRIZIONI DETTAGLIATE DEI PREMI) -->
     <div 
         id="trophies-modal" 
         class="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4 hidden backdrop-blur-md"
@@ -453,7 +465,7 @@
                 </p>
             </div>
             
-            <!-- Lista Trofei -->
+            <!-- Lista Trofei con Descrizione Completa dei Premi -->
             <div class="space-y-2">
                 <div class="flex justify-between items-center">
                     <span class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
@@ -475,10 +487,10 @@
                             <i id="trophy-1-icon" data-lucide="check-circle-2" class="w-4 h-4 text-amber-500 flex-shrink-0"></i>
                             <div>
                                 <div class="font-bold text-amber-50">
-                                    🎁 Bonus Benvenuto
+                                    🎁 Bonus Benvenuto Iniziale
                                 </div>
                                 <div class="text-[10px] text-gray-400 font-light mt-0.5">
-                                    50 punti accumulati all'ingresso nel Caveau.
+                                    50 punti di benvenuto accreditati automaticamente all'ingresso nel Caveau del Falsario per iniziare la tua scalata nel club esclusivo.
                                 </div>
                             </div>
                         </div>
@@ -502,7 +514,7 @@
                                     🏷️ Sconto 5% Silver Perenne
                                 </div>
                                 <div class="text-[10px] text-gray-500 font-light mt-0.5">
-                                    Sbloccato a 150 punti spesa.
+                                    Sconto fisso del 5% applicato in automatico su qualsiasi tipologia di documento, banconota o servizio futuro. Sbloccato al raggiungimento di 150 punti spesa complessivi.
                                 </div>
                             </div>
                         </div>
@@ -526,7 +538,7 @@
                                     🔥 Sconto 10% Gold Perenne
                                 </div>
                                 <div class="text-[10px] text-gray-500 font-light mt-0.5">
-                                    Sbloccato a 300 punti spesa.
+                                    Sconto superiore del 10% valido a vita su ogni ordinazione effettuata nello shop. Accesso prioritario alle lavorazioni urgenti. Sbloccato al raggiungimento di 300 punti spesa.
                                 </div>
                             </div>
                         </div>
@@ -550,7 +562,7 @@
                                     💎 Sconto 15% + Omaggi VIP Inclusi
                                 </div>
                                 <div class="text-[10px] text-gray-500 font-light mt-0.5">
-                                    Sbloccato a 500 punti spesa.
+                                    Il livello definitivo del club: sconto massimo del 15% su tutto il listino e un omaggio segreto di alto valore inserito in omaggio su ogni spedizione. Sbloccato a 500 punti spesa.
                                 </div>
                             </div>
                         </div>
