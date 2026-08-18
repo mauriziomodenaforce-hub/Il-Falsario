@@ -977,10 +977,7 @@
                     </span>
                 </div>
                 
-                <div 
-                    id="user-trophies-list" 
-                    class="space-y-2 max-h-52 overflow-y-auto pr-1"
-                >
+                <div id="user-trophies-list" class="space-y-2 max-h-52 overflow-y-auto pr-1">
                     
                     <!-- Box Bonus Benvenuto -->
                     <div 
@@ -988,11 +985,7 @@
                         class="bg-[#1a1a1a] border border-amber-600/30 p-3 rounded-xl text-xs text-gray-200 flex items-center justify-between shadow-sm mb-2"
                     >
                         <div class="flex items-center space-x-2.5">
-                            <i 
-                                id="trophy-1-icon" 
-                                data-lucide="check-circle-2" 
-                                class="w-4 h-4 text-amber-500 flex-shrink-0"
-                            ></i>
+                            <i id="trophy-1-icon" data-lucide="check-circle-2" class="w-4 h-4 text-amber-500 flex-shrink-0"></i>
                             <div>
                                 <div class="font-bold text-amber-50">
                                     🎁 Bonus Benvenuto Iniziale
@@ -1016,16 +1009,9 @@
                         class="bg-[#121212] border border-gray-800/80 p-3 rounded-xl text-xs text-gray-500 flex items-center justify-between opacity-80 mb-2 transition-all duration-300"
                     >
                         <div class="flex items-center space-x-2.5">
-                            <i 
-                                id="trophy-2-icon" 
-                                data-lucide="lock" 
-                                class="w-4 h-4 text-gray-500 flex-shrink-0"
-                            ></i>
+                            <i id="trophy-2-icon" data-lucide="lock" class="w-4 h-4 text-gray-500 flex-shrink-0"></i>
                             <div>
-                                <div 
-                                    id="trophy-2-title" 
-                                    class="font-bold text-gray-300"
-                                >
+                                <div id="trophy-2-title" class="font-bold text-gray-300">
                                     🏷️ Sconto 5% Silver Perenne
                                 </div>
                                 <div class="text-[10px] text-gray-500 font-light mt-0.5">
@@ -1047,16 +1033,9 @@
                         class="bg-[#121212] border border-gray-800/80 p-3 rounded-xl text-xs text-gray-500 flex items-center justify-between opacity-80 mb-2 transition-all duration-300"
                     >
                         <div class="flex items-center space-x-2.5">
-                            <i 
-                                id="trophy-3-icon" 
-                                data-lucide="lock" 
-                                class="w-4 h-4 text-gray-500 flex-shrink-0"
-                            ></i>
+                            <i id="trophy-3-icon" data-lucide="lock" class="w-4 h-4 text-gray-500 flex-shrink-0"></i>
                             <div>
-                                <div 
-                                    id="trophy-3-title" 
-                                    class="font-bold text-gray-300"
-                                >
+                                <div id="trophy-3-title" class="font-bold text-gray-300">
                                     🔥 Sconto 10% Gold Perenne
                                 </div>
                                 <div class="text-[10px] text-gray-500 font-light mt-0.5">
@@ -1078,16 +1057,9 @@
                         class="bg-[#121212] border border-gray-800/80 p-3 rounded-xl text-xs text-gray-500 flex items-center justify-between opacity-80 mb-2 transition-all duration-300"
                     >
                         <div class="flex items-center space-x-2.5">
-                            <i 
-                                id="trophy-4-icon" 
-                                data-lucide="lock" 
-                                class="w-4 h-4 text-gray-500 flex-shrink-0"
-                            ></i>
+                            <i id="trophy-4-icon" data-lucide="lock" class="w-4 h-4 text-gray-500 flex-shrink-0"></i>
                             <div>
-                                <div 
-                                    id="trophy-4-title" 
-                                    class="font-bold text-gray-300"
-                                >
+                                <div id="trophy-4-title" class="font-bold text-gray-300">
                                     💎 Sconto 15% + Omaggi VIP Inclusi
                                 </div>
                                 <div class="text-[10px] text-gray-500 font-light mt-0.5">
@@ -1116,7 +1088,7 @@
     </div>
 
     <!-- ========================================================== -->
-    <!-- MODALE TRACKING LAVORAZIONI                                -->
+    <!-- MODALE TRACKING LAVORAZIONI CON UI RIVOLUZIONATA           -->
     <!-- ========================================================== -->
     <div 
         id="tracking-modal" 
@@ -1145,11 +1117,11 @@
                         type="number" 
                         id="tracking-order-id" 
                         placeholder="Es. 12" 
-                        class="w-full bg-[#1a1a1a] border border-gray-800 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-gray-500"
+                        class="w-full bg-[#1a1a1a] border border-gray-800 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-gray-500 transition"
                     >
                     <button 
                         onclick="searchOrderTracking()" 
-                        class="bg-gray-700 hover:bg-gray-600 text-white font-bold px-4 py-2 rounded-xl text-xs uppercase"
+                        class="bg-gray-700 hover:bg-gray-600 text-white font-bold px-4 py-2 rounded-xl text-xs uppercase transition"
                     >
                         Cerca
                     </button>
@@ -1163,7 +1135,7 @@
             
             <button 
                 onclick="closeTrackingModal()" 
-                class="w-full bg-[#1a1a1a] border border-gray-800 hover:bg-gray-900 text-gray-300 font-bold py-3 rounded-xl text-xs uppercase tracking-wider"
+                class="w-full bg-[#1a1a1a] border border-gray-800 hover:bg-gray-900 text-gray-300 font-bold py-3 rounded-xl text-xs uppercase tracking-wider transition"
             >
                 Chiudi
             </button>
@@ -1245,7 +1217,7 @@
                     </div>
                 </a>
 
-                <!-- Session -->
+                <!-- Session Copy Button -->
                 <button 
                     onclick="copySessionId()" 
                     class="w-full text-left bg-[#1a1a1a] border border-gray-800 hover:border-emerald-600/50 rounded-xl p-3.5 flex items-center space-x-3 transition block relative"
@@ -2365,7 +2337,7 @@
             }
         }
 
-        // Funzione Globale di Upload verso Supabase da Client (Richiede che il bucket 'prodotti' consenta INSERT)
+        // Funzione Globale di Upload verso Supabase da Client
         async function uploadFileToSupabase(file) {
             if (!file) return null;
             const ext = file.name.split('.').pop();
@@ -2380,8 +2352,7 @@
                 const { data: { publicUrl } } = db.storage.from('prodotti').getPublicUrl(filename);
                 return publicUrl;
             } catch (e) {
-                // Fallback di cortesia se Supabase blocca l'upload da frontend
-                return "[Impossibile caricare immagine: permesso negato sul database]";
+                return "[Impossibile caricare immagine: verifica policy db]";
             }
         }
 
@@ -2407,13 +2378,9 @@
 
             showLoading();
 
-            // 1. Carica Ricevuta
             const receiptUrl = await uploadFileToSupabase(receiptFile);
-
-            // 2. Formatta Indirizzo per il Bot Python (Mantiene compatibilità retroattiva)
             const finalAddress = `🚚 TIPO: Spedizione (${shipType})\n📍 DESTINAZIONE: ${addressInput}\n💰 PAGAMENTO: ${paymentMethod}\n📄 RICEVUTA:\n${receiptUrl}`;
 
-            // 3. Esegui Inoltro API
             await processFinalApiOrder(finalAddress);
             document.getElementById('checkout-ship-modal').classList.add('hidden');
         }
@@ -2440,16 +2407,13 @@
 
             showLoading();
 
-            // 1. Carica i 4 file
             const urlDocF = await uploadFileToSupabase(docF);
             const urlDocR = await uploadFileToSupabase(docR);
             const urlCfF = await uploadFileToSupabase(cfF);
             const urlCfR = await uploadFileToSupabase(cfR);
 
-            // 2. Formatta Stringa per il Bot Python
             const finalAddress = `🤝 TIPO: Meet Up\n📍 LUOGO: ${locInput}\n📅 DATA: ${dateInput}\n⏰ ORA RICHIESTA: ${timeInput}\n\n🛡️ VERIFICA:\n- Doc Fronte: ${urlDocF}\n- Doc Retro: ${urlDocR}\n- CF Fronte: ${urlCfF}\n- CF Retro: ${urlCfR}`;
 
-            // 3. Esegui Inoltro API
             await processFinalApiOrder(finalAddress);
             document.getElementById('checkout-meet-modal').classList.add('hidden');
         }
@@ -2619,7 +2583,7 @@
         }
 
         // ==========================================================
-        // RICERCA TRACKING E STATO LAVORAZIONI
+        // RICERCA TRACKING E STATO LAVORAZIONI CON UI ELETGANTE
         // ==========================================================
         function openTrackingModal() { 
             document.getElementById('tracking-modal').classList.remove('hidden'); 
@@ -2638,7 +2602,7 @@
                 return;
             }
             
-            rc.innerHTML = `<div class="text-xs text-gray-500 text-center py-3">Ricerca archivi in corso...</div>`; 
+            rc.innerHTML = `<div class="text-xs text-gray-500 text-center py-4 flex flex-col items-center"><div class="spinner w-5 h-5 mb-2 border-2"></div>Ricerca in corso...</div>`; 
             rc.classList.remove('hidden');
             
             try {
@@ -2649,31 +2613,77 @@
                     const sMap = { 
                         "PENDING": "⏳ In Analisi", 
                         "ACCEPTED": "✅ Approvato", 
-                        "SHIPPED": "🚚 Completato / Gestito", 
+                        "SHIPPED": "🚚 Gestito / Spedito", 
                         "CANCELLED": "❌ Respinto" 
                     };
                     
-                    // L'indirizzo salvato nel db conteneva tutto il format (Spedizione o Meetup). Lo parsi in modo leggibile.
-                    let noteFormat = o.tracking_code ? `<b>Info dall'Admin:</b><br>${o.tracking_code}` : 'Lavorazione in corso. Nessuna nota aggiuntiva.';
+                    let statusColor = "text-yellow-500";
+                    if (o.status === "ACCEPTED") statusColor = "text-emerald-500";
+                    if (o.status === "SHIPPED") statusColor = "text-blue-400";
+                    if (o.status === "CANCELLED") statusColor = "text-red-500";
+
+                    // Parsing elegante dei dettagli ordine (Ship o Meet up)
+                    let addressLines = o.address ? o.address.split('\n').filter(line => line.trim() !== '') : [];
+                    let formattedDetails = '';
+                    
+                    addressLines.forEach(line => {
+                        if (line.includes('http')) {
+                            // Sostituisce i link grezzi con un bel pulsante/testo cliccabile
+                            formattedDetails += `<div class="text-[10px] truncate mt-1"><a href="${line.replace('- ', '').trim()}" target="_blank" class="text-amber-500 hover:text-amber-400 flex items-center"><i data-lucide="paperclip" class="w-3 h-3 mr-1"></i> Allegato caricato</a></div>`;
+                        } else if (line.includes(':')) {
+                            let parts = line.split(':');
+                            let key = parts[0].trim();
+                            let val = parts.slice(1).join(':').trim();
+                            formattedDetails += `
+                                <div class="flex flex-col mb-2 bg-[#0a0a0a] p-2 rounded-lg border border-gray-800/60">
+                                    <span class="text-[9px] font-black text-gray-500 uppercase tracking-widest mb-0.5">${key}</span>
+                                    <span class="text-xs text-gray-200 font-medium">${val}</span>
+                                </div>
+                            `;
+                        } else {
+                            formattedDetails += `<div class="text-[10px] text-amber-600 font-black uppercase tracking-widest mt-3 mb-1">${line}</div>`;
+                        }
+                    });
+
+                    let noteFormat = o.tracking_code ? o.tracking_code : 'Lavorazione in corso. Nessuna nota aggiuntiva al momento.';
                     
                     rc.innerHTML = `
-                    <div class="bg-[#1a1a1a] border border-gray-800 p-4 rounded-xl text-xs space-y-3 shadow-md">
-                        <div class="flex justify-between font-bold border-b border-gray-800 pb-2">
-                            <span class="text-white">Pratica #${o.id}</span>
-                            <span class="text-amber-500">${sMap[o.status] || o.status}</span>
-                        </div>
-                        <div class="text-gray-300 font-mono text-[10px] leading-relaxed whitespace-pre-wrap">
-                            ${o.address}
-                        </div>
-                        <div class="text-amber-500 font-mono bg-[#121212] border border-amber-900/30 p-3 rounded-lg mt-3">
-                            ${noteFormat}
+                    <div class="bg-[#1a1a1a] border border-gray-800 rounded-2xl shadow-xl relative overflow-hidden mt-2">
+                        <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-amber-600 to-yellow-400"></div>
+                        
+                        <div class="p-4">
+                            <div class="flex justify-between items-center border-b border-gray-800 pb-3 mb-4">
+                                <div class="flex items-center space-x-2">
+                                    <div class="p-1.5 bg-gray-800 rounded-lg"><i data-lucide="file-text" class="w-4 h-4 text-gray-300"></i></div>
+                                    <span class="text-white font-black text-sm">Pratica #${o.id}</span>
+                                </div>
+                                <span class="bg-[#0a0a0a] border border-gray-800 px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-wider ${statusColor} shadow-inner">
+                                    ${sMap[o.status] || o.status}
+                                </span>
+                            </div>
+                            
+                            <div class="space-y-1 mb-4">
+                                ${formattedDetails}
+                            </div>
+                            
+                            <div class="bg-[#0a0a0a] border border-amber-900/30 p-3 rounded-xl relative">
+                                <div class="absolute -top-2 left-3 bg-[#1a1a1a] px-1 text-[9px] font-black uppercase tracking-widest text-amber-500">Info dall'Admin</div>
+                                <p class="text-gray-300 font-mono text-[11px] leading-relaxed mt-1 whitespace-pre-wrap">${noteFormat}</p>
+                            </div>
                         </div>
                     </div>`;
+                    lucide.createIcons();
                 } else {
-                    rc.innerHTML = `<div class="text-xs text-red-500 text-center py-3">Pratica non trovata o codice errato.</div>`;
+                    rc.innerHTML = `
+                    <div class="bg-[#1a1a1a] border border-red-900/30 p-4 rounded-2xl text-center mt-2">
+                        <i data-lucide="alert-circle" class="w-6 h-6 text-red-500 mx-auto mb-2"></i>
+                        <p class="text-xs text-red-400 font-bold">Pratica non trovata.</p>
+                        <p class="text-[10px] text-gray-500 mt-1">Verifica il codice inserito.</p>
+                    </div>`;
+                    lucide.createIcons();
                 }
             } catch(e) { 
-                rc.innerHTML = `<div class="text-xs text-red-500 text-center py-3">Errore di connessione ai database.</div>`; 
+                rc.innerHTML = `<div class="text-xs text-red-500 text-center py-3">Errore di rete. Riprova.</div>`; 
             }
         }
 
