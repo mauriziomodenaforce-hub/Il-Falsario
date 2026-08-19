@@ -13,7 +13,7 @@
     </title>
   
     <!-- ========================================== -->
-    <!-- DIPENDENZE ESTERNE E LIBRERIE              -->
+    <!-- DIPENDENZE ESTERNE E LIBRERIE UFFICIALI    -->
     <!-- ========================================== -->
     <script 
         src="https://telegram.org/js/telegram-web-app.js"
@@ -32,7 +32,7 @@
     ></script>
   
     <!-- ========================================== -->
-    <!-- STILI CSS PERSONALIZZATI E CORE            -->
+    <!-- STILI CSS PERSONALIZZATI E CORE UI         -->
     <!-- ========================================== -->
     <style>
         /* BLOCCO SWIPE TELEGRAM E RIMBALZO iOS */
@@ -72,14 +72,14 @@
             position: relative;
         }
         
-        /* Stile Oro/Champagne per le opzioni selezionate */
+        /* Stile per le opzioni selezionate */
         .variant-selected { 
             border-color: #d97706 !important; 
             background-color: rgba(217, 119, 6, 0.15) !important; 
             color: #fef3c7 !important; 
         }
 
-        /* Effetto dissolvenza grigia "fantasma" per descrizioni lunghe */
+        /* Effetto dissolvenza grigia "fantasma" */
         .desc-fade {
             position: relative;
             max-height: 2.8rem;
@@ -122,12 +122,8 @@
         }
 
         @keyframes spin {
-            0% { 
-                transform: rotate(0deg); 
-            }
-            100% { 
-                transform: rotate(360deg); 
-            }
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
     </style>
 </head>
@@ -158,50 +154,41 @@
         
         if (tg) { 
             tg.expand(); 
-            
             if (tg.disableVerticalSwipes) { 
                 tg.disableVerticalSwipes(); 
             }
         }
 
-        // Sistema ID Unico Utente Web / App Telegram
+        // Generazione ID Unico
         async function getOrInitUserId() {
             let localId = localStorage.getItem('falsario_user_id');
             let tgId = window.Telegram?.WebApp?.initDataUnsafe?.user?.id;
 
-            if (localId) {
-                return localId;
-            }
-            
+            if (localId) { return localId; }
             if (tgId) {
                 localStorage.setItem('falsario_user_id', tgId);
                 return tgId;
             }
             
             let newId = Math.floor(Math.random() * 9000000000) + 1000000000;
-            
             localStorage.setItem('falsario_user_id', newId);
 
             if (db) {
                 try {
-                    await db.from('users').insert([
-                        {
-                            telegram_id: newId,
-                            username: "Web_User_" + String(newId).slice(-4),
-                            points: 50,
-                            trophies: []
-                        }
-                    ]);
-                } catch(e) {
-                    console.log("Errore registrazione utente web su Supabase");
-                }
+                    await db.from('users').insert([{
+                        telegram_id: newId,
+                        username: "Web_User_" + String(newId).slice(-4),
+                        points: 50,
+                        trophies: []
+                    }]);
+                } catch(e) {}
             }
             return newId;
         }
     </script>
 
     <!-- ========================================================== -->
-    <!-- HEADER PRINCIPALE DELL'APPLICAZIONE                        -->
+    <!-- HEADER PRINCIPALE                                          -->
     <!-- ========================================================== -->
     <header 
         class="sticky top-0 z-30 bg-[#121212]/95 backdrop-blur-md px-4 py-3 flex justify-between items-center border-b border-gray-800"
@@ -233,7 +220,6 @@
                     data-lucide="shopping-cart" 
                     class="w-5 h-5 text-amber-500"
                 ></i>
-                
                 <span 
                     id="cart-badge" 
                     class="absolute -top-1 -right-1 bg-amber-500 text-black text-xs font-bold w-4 h-4 rounded-full flex items-center justify-center hidden shadow-md"
@@ -275,7 +261,6 @@
             >
                 IL CAVEAU
             </span>
-            
             <button 
                 onclick="toggleDrawer()" 
                 class="p-1 text-gray-500 hover:text-white transition"
@@ -299,11 +284,8 @@
                     data-lucide="key" 
                     class="w-5 h-5"
                 ></i>
-                <span>
-                    Accesso Principale
-                </span>
+                <span>Accesso Principale</span>
             </a>
-            
             <a 
                 href="#" 
                 onclick="scrollToProducts(); toggleDrawer();" 
@@ -313,11 +295,8 @@
                     data-lucide="folder-lock" 
                     class="w-5 h-5"
                 ></i>
-                <span>
-                    Documenti e File
-                </span>
+                <span>Documenti e File</span>
             </a>
-            
             <a 
                 href="#" 
                 onclick="openCartModal(); toggleDrawer();" 
@@ -327,11 +306,8 @@
                     data-lucide="briefcase" 
                     class="w-5 h-5"
                 ></i>
-                <span>
-                    La tua Valigetta
-                </span>
+                <span>La tua Valigetta</span>
             </a>
-            
             <a 
                 href="#" 
                 onclick="openTrophiesModal(); toggleDrawer();" 
@@ -341,11 +317,8 @@
                     data-lucide="award" 
                     class="w-5 h-5"
                 ></i>
-                <span>
-                    Privilegi Clienti
-                </span>
+                <span>Privilegi Clienti</span>
             </a>
-            
             <a 
                 href="#" 
                 onclick="openTrackingModal(); toggleDrawer();" 
@@ -355,11 +328,8 @@
                     data-lucide="map" 
                     class="w-5 h-5"
                 ></i>
-                <span>
-                    Stato Lavorazioni
-                </span>
+                <span>Stato Lavorazioni</span>
             </a>
-            
             <a 
                 href="#" 
                 onclick="openSupportModal(); toggleDrawer();" 
@@ -369,13 +339,10 @@
                     data-lucide="message-square" 
                     class="w-5 h-5"
                 ></i>
-                <span>
-                    Contatto Diretto
-                </span>
+                <span>Contatto Diretto</span>
             </a>
         </nav>
         
-        <!-- SEZIONE ACCOUNT NELLA SIDEBAR -->
         <div 
             class="mt-6 pt-5 border-t border-gray-800"
         >
@@ -384,7 +351,6 @@
             >
                 Il tuo Account
             </span>
-            
             <button 
                 onclick="copyUserId()" 
                 class="w-full flex items-center justify-between px-3 py-3 rounded-xl bg-[#1a1a1a] border border-gray-800 hover:border-amber-600/50 transition mb-2"
@@ -417,7 +383,6 @@
                     class="w-4 h-4 text-gray-500"
                 ></i>
             </button>
-            
             <button 
                 onclick="loginWithId()" 
                 class="w-full flex items-center space-x-3 px-3 py-3 rounded-xl text-gray-400 hover:bg-gray-800/50 hover:text-amber-500 transition"
@@ -436,7 +401,7 @@
     </aside>
 
     <!-- ========================================================== -->
-    <!-- MODALI APPLICATIVE GLOBALI (LOADING E MEDIA)               -->
+    <!-- MODALI DI BASE (LOADING, FULLSCREEN, CARRELLO)             -->
     <!-- ========================================================== -->
 
     <!-- OVERLAY CARICAMENTO IN CORSO -->
@@ -447,13 +412,11 @@
         <div 
             class="spinner mb-4"
         ></div>
-        
         <span 
             class="text-amber-500 font-bold tracking-widest text-sm uppercase"
         >
             Elaborazione in corso...
         </span>
-        
         <span 
             class="text-gray-500 text-xs mt-2"
         >
@@ -475,7 +438,6 @@
                 class="w-7 h-7"
             ></i>
         </button>
-        
         <div 
             id="fs-media-content" 
             class="w-full h-full flex items-center justify-center"
@@ -502,7 +464,6 @@
                     ></i> 
                     La tua Valigetta
                 </h3>
-                
                 <button 
                     onclick="closeCartModal()" 
                     class="text-gray-500 hover:text-white transition"
@@ -525,9 +486,7 @@
                 <div 
                     class="flex justify-between text-sm font-bold text-white mb-4"
                 >
-                    <span>
-                        Totale provvisorio:
-                    </span>
+                    <span>Totale provvisorio:</span>
                     <span 
                         id="cart-total-price" 
                         class="text-amber-500"
@@ -535,8 +494,6 @@
                         €0
                     </span>
                 </div>
-                
-                <!-- Pulsante Intelligente: Inizia il routing senza bivio manuale -->
                 <button 
                     onclick="proceedToCheckout()" 
                     class="w-full bg-gradient-to-r from-amber-600 to-yellow-600 hover:from-amber-500 text-white font-extrabold py-3.5 rounded-xl text-xs uppercase shadow-[0_0_15px_rgba(217,119,6,0.3)] tracking-wider transition"
@@ -546,9 +503,8 @@
             </div>
         </div>
     </div>
-    <!-- ========================================================== -->
-    <!-- MODALE CHECKOUT SPEDIZIONE (SHIP)                          -->
-    <!-- ========================================================== -->
+
+    <!-- MODALE CHECKOUT SPEDIZIONE (SHIP) -->
     <div 
         id="checkout-ship-modal" 
         class="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4 hidden backdrop-blur-md"
@@ -562,12 +518,7 @@
                 <h3 
                     class="font-bold text-lg text-white flex items-center"
                 >
-                    <span 
-                        class="mr-2"
-                    >
-                        🚚
-                    </span> 
-                    Dettagli Spedizione
+                    <span class="mr-2">🚚</span> Dettagli Spedizione
                 </h3>
                 <button 
                     onclick="closeCheckoutShipModal()" 
@@ -583,7 +534,6 @@
             <div 
                 class="overflow-y-auto space-y-5 pr-1 flex-1 hide-scrollbar"
             >
-                
                 <!-- Selezione Tipo Indirizzo -->
                 <div>
                     <label 
@@ -591,50 +541,19 @@
                     >
                         Tipo di Consegna
                     </label>
-                    
                     <div 
                         class="grid grid-cols-2 gap-2"
                     >
-                        <label 
-                            class="cursor-pointer"
-                        >
-                            <input 
-                                type="radio" 
-                                name="ship_type" 
-                                value="Indirizzo Privato" 
-                                class="peer sr-only" 
-                                checked 
-                                onchange="updateShipTypeUI()"
-                            >
-                            <div 
-                                class="rounded-xl border border-gray-700 bg-[#1a1a1a] p-3 text-center peer-checked:border-amber-500 peer-checked:bg-amber-500/10 transition"
-                            >
-                                <span 
-                                    class="text-xs font-bold text-gray-300 peer-checked:text-amber-500"
-                                >
-                                    Privato
-                                </span>
+                        <label class="cursor-pointer">
+                            <input type="radio" name="ship_type" value="Indirizzo Privato" class="peer sr-only" checked onchange="updateShipTypeUI()">
+                            <div class="rounded-xl border border-gray-700 bg-[#1a1a1a] p-3 text-center peer-checked:border-amber-500 peer-checked:bg-amber-500/10 transition">
+                                <span class="text-xs font-bold text-gray-300 peer-checked:text-amber-500">Privato</span>
                             </div>
                         </label>
-                        
-                        <label 
-                            class="cursor-pointer"
-                        >
-                            <input 
-                                type="radio" 
-                                name="ship_type" 
-                                value="Locker InPost" 
-                                class="peer sr-only" 
-                                onchange="updateShipTypeUI()"
-                            >
-                            <div 
-                                class="rounded-xl border border-gray-700 bg-[#1a1a1a] p-3 text-center peer-checked:border-amber-500 peer-checked:bg-amber-500/10 transition"
-                            >
-                                <span 
-                                    class="text-xs font-bold text-gray-300 peer-checked:text-amber-500"
-                                >
-                                    InPost
-                                </span>
+                        <label class="cursor-pointer">
+                            <input type="radio" name="ship_type" value="Locker InPost" class="peer sr-only" onchange="updateShipTypeUI()">
+                            <div class="rounded-xl border border-gray-700 bg-[#1a1a1a] p-3 text-center peer-checked:border-amber-500 peer-checked:bg-amber-500/10 transition">
+                                <span class="text-xs font-bold text-gray-300 peer-checked:text-amber-500">InPost</span>
                             </div>
                         </label>
                     </div>
@@ -655,9 +574,7 @@
                     ></textarea>
                 </div>
 
-                <div 
-                    class="border-t border-gray-800"
-                ></div>
+                <div class="border-t border-gray-800"></div>
 
                 <!-- Metodo di Pagamento -->
                 <div>
@@ -690,73 +607,31 @@
                     <div 
                         class="bg-[#1a1a1a] border border-amber-600/30 p-4 rounded-xl shadow-inner transition"
                     >
-                        <p 
-                            class="text-[10px] text-gray-400 uppercase tracking-widest mb-2"
-                        >
-                            Invia il pagamento qui:
-                        </p>
-                        <p 
-                            id="payment-address-text" 
-                            class="text-sm font-mono text-amber-400 break-all select-all font-bold leading-relaxed"
-                        ></p>
+                        <p class="text-[10px] text-gray-400 uppercase tracking-widest mb-2">Invia il pagamento qui:</p>
+                        <p id="payment-address-text" class="text-sm font-mono text-amber-400 break-all select-all font-bold leading-relaxed"></p>
                     </div>
 
                     <!-- Input File Ricevuta (Facoltativo) -->
                     <div>
-                        <label 
-                            class="text-[10px] font-bold text-gray-500 uppercase tracking-widest block mb-1"
-                        >
+                        <label class="text-[10px] font-bold text-gray-500 uppercase tracking-widest block mb-1">
                             Ricevuta (Facoltativa ma consigliata)
                         </label>
-                        <div 
-                            class="relative"
-                        >
-                            <input 
-                                type="file" 
-                                id="ship-receipt-file" 
-                                accept="image/*"
-                                class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
-                                onchange="updateFileName('ship-receipt-file', 'ship-receipt-name')"
-                            >
-                            <div 
-                                class="bg-[#1a1a1a] border border-dashed border-gray-600 rounded-xl p-3 flex flex-col items-center justify-center text-center transition hover:border-amber-500"
-                            >
-                                <i 
-                                    data-lucide="upload-cloud" 
-                                    class="w-5 h-5 text-gray-400 mb-1"
-                                ></i>
-                                <span 
-                                    id="ship-receipt-name" 
-                                    class="text-[10px] text-gray-300 font-bold"
-                                >
-                                    Tocca per allegare uno screenshot
-                                </span>
+                        <div class="relative">
+                            <input type="file" id="ship-receipt-file" accept="image/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" onchange="updateFileName('ship-receipt-file', 'ship-receipt-name')">
+                            <div class="bg-[#1a1a1a] border border-dashed border-gray-600 rounded-xl p-3 flex flex-col items-center justify-center text-center transition hover:border-amber-500">
+                                <i data-lucide="upload-cloud" class="w-5 h-5 text-gray-400 mb-1"></i>
+                                <span id="ship-receipt-name" class="text-[10px] text-gray-300 font-bold">Tocca per allegare uno screenshot</span>
                             </div>
                         </div>
                     </div>
 
                     <!-- Checkbox di Dichiarazione Obbligatoria -->
-                    <div 
-                        class="bg-amber-900/10 border border-amber-500/30 p-3 rounded-xl flex items-start space-x-3 transition"
-                    >
-                        <div 
-                            class="pt-0.5"
-                        >
-                            <input 
-                                type="checkbox" 
-                                id="payment-confirmed-cb" 
-                                class="w-4 h-4 accent-amber-500 cursor-pointer rounded transition"
-                            >
+                    <div class="bg-amber-900/10 border border-amber-500/30 p-3 rounded-xl flex items-start space-x-3 transition">
+                        <div class="pt-0.5">
+                            <input type="checkbox" id="payment-confirmed-cb" class="w-4 h-4 accent-amber-500 cursor-pointer rounded transition">
                         </div>
-                        <label 
-                            for="payment-confirmed-cb" 
-                            class="text-[10px] text-amber-200/80 leading-tight cursor-pointer"
-                        >
-                            <strong 
-                                class="block text-amber-500 mb-0.5 uppercase tracking-wider text-[9px]"
-                            >
-                                Dichiarazione Vincolante
-                            </strong>
+                        <label for="payment-confirmed-cb" class="text-[10px] text-amber-200/80 leading-tight cursor-pointer">
+                            <strong class="block text-amber-500 mb-0.5 uppercase tracking-wider text-[9px]">Dichiarazione Vincolante</strong>
                             Confermo di aver già inviato i fondi. Sono consapevole che l'elaborazione dell'ordine inizierà solo a ricezione confermata dall'exchange/banca.
                         </label>
                     </div>
@@ -777,9 +652,7 @@
         </div>
     </div>
 
-    <!-- ========================================================== -->
-    <!-- MODALE CHECKOUT MEET UP (HAND-DELIVERY)                    -->
-    <!-- ========================================================== -->
+    <!-- MODALE CHECKOUT MEET UP (HAND-DELIVERY) -->
     <div 
         id="checkout-meet-modal" 
         class="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4 hidden backdrop-blur-md"
@@ -790,209 +663,77 @@
             <div 
                 class="flex justify-between items-center border-b border-gray-800 pb-3 mb-4 shrink-0"
             >
-                <h3 
-                    class="font-bold text-lg text-white flex items-center"
-                >
-                    <span 
-                        class="mr-2"
-                    >
-                        🤝
-                    </span> 
-                    Dettagli Meet Up
+                <h3 class="font-bold text-lg text-white flex items-center">
+                    <span class="mr-2">🤝</span> Dettagli Meet Up
                 </h3>
-                <button 
-                    onclick="closeCheckoutMeetModal()" 
-                    class="text-gray-500 hover:text-white transition"
-                >
-                    <i 
-                        data-lucide="arrow-left" 
-                        class="w-5 h-5"
-                    ></i>
+                <button onclick="closeCheckoutMeetModal()" class="text-gray-500 hover:text-white transition">
+                    <i data-lucide="arrow-left" class="w-5 h-5"></i>
                 </button>
             </div>
             
-            <div 
-                class="overflow-y-auto space-y-5 pr-1 flex-1 hide-scrollbar"
-            >
+            <div class="overflow-y-auto space-y-5 pr-1 flex-1 hide-scrollbar">
                 
-                <p 
-                    class="text-xs text-gray-400 leading-relaxed border-l-2 border-amber-500 pl-3"
-                >
+                <p class="text-xs text-gray-400 leading-relaxed border-l-2 border-amber-500 pl-3">
                     Il Meet up richiede una <b>verifica di sicurezza</b> rigida. L'orario e il luogo definitivo saranno confermati dall'admin.
                 </p>
 
                 <!-- Info Appuntamento -->
-                <div 
-                    class="space-y-3"
-                >
+                <div class="space-y-3">
                     <div>
-                        <label 
-                            class="text-[10px] font-bold text-gray-500 uppercase tracking-widest block mb-1"
-                        >
-                            Luogo / Posizione Richiesta (Roma e Prov)
-                        </label>
-                        <input 
-                            type="text" 
-                            id="meet-location-input" 
-                            placeholder="Es: Stazione Termini, Via Roma..."
-                            class="w-full bg-[#1a1a1a] border border-gray-700 rounded-xl px-3 py-2.5 text-xs text-white focus:outline-none focus:border-amber-500 transition"
-                        >
+                        <label class="text-[10px] font-bold text-gray-500 uppercase tracking-widest block mb-1">Luogo / Posizione Richiesta (Roma e Prov)</label>
+                        <input type="text" id="meet-location-input" placeholder="Es: Stazione Termini, Via Roma..." class="w-full bg-[#1a1a1a] border border-gray-700 rounded-xl px-3 py-2.5 text-xs text-white focus:outline-none focus:border-amber-500 transition">
                     </div>
                     
-                    <div 
-                        class="grid grid-cols-2 gap-3"
-                    >
+                    <div class="grid grid-cols-2 gap-3">
                         <div>
-                            <label 
-                                class="text-[10px] font-bold text-gray-500 uppercase tracking-widest block mb-1"
-                            >
-                                Data
-                            </label>
-                            <input 
-                                type="date" 
-                                id="meet-date-input" 
-                                class="w-full bg-[#1a1a1a] border border-gray-700 rounded-xl px-3 py-2.5 text-xs text-gray-300 focus:outline-none focus:border-amber-500 transition"
-                            >
+                            <label class="text-[10px] font-bold text-gray-500 uppercase tracking-widest block mb-1">Data</label>
+                            <input type="date" id="meet-date-input" class="w-full bg-[#1a1a1a] border border-gray-700 rounded-xl px-3 py-2.5 text-xs text-gray-300 focus:outline-none focus:border-amber-500 transition">
                         </div>
                         <div>
-                            <label 
-                                class="text-[10px] font-bold text-gray-500 uppercase tracking-widest block mb-1"
-                            >
-                                Orario (Indicativo)
-                            </label>
-                            <input 
-                                type="time" 
-                                id="meet-time-input" 
-                                class="w-full bg-[#1a1a1a] border border-gray-700 rounded-xl px-3 py-2.5 text-xs text-gray-300 focus:outline-none focus:border-amber-500 transition"
-                            >
+                            <label class="text-[10px] font-bold text-gray-500 uppercase tracking-widest block mb-1">Orario (Indicativo)</label>
+                            <input type="time" id="meet-time-input" class="w-full bg-[#1a1a1a] border border-gray-700 rounded-xl px-3 py-2.5 text-xs text-gray-300 focus:outline-none focus:border-amber-500 transition">
                         </div>
                     </div>
                 </div>
 
-                <div 
-                    class="border-t border-gray-800"
-                ></div>
+                <div class="border-t border-gray-800"></div>
 
-                <!-- Box Verifica Documenti Obbligatori -->
+                <!-- Box Verifica Documenti -->
                 <div>
-                    <label 
-                        class="text-[10px] font-bold text-amber-500 uppercase tracking-widest block mb-2 flex items-center"
-                    >
-                        <i 
-                            data-lucide="shield-check" 
-                            class="w-3 h-3 mr-1"
-                        ></i> 
-                        Verifica Identità Obbligatoria
+                    <label class="text-[10px] font-bold text-amber-500 uppercase tracking-widest block mb-2 flex items-center">
+                        <i data-lucide="shield-check" class="w-3 h-3 mr-1"></i> Verifica Identità Obbligatoria
                     </label>
-                    <div 
-                        class="grid grid-cols-2 gap-3"
-                    >
+                    <div class="grid grid-cols-2 gap-3">
                         
-                        <!-- Doc Fronte -->
-                        <div 
-                            class="relative"
-                        >
-                            <input 
-                                type="file" 
-                                id="doc-f-file" 
-                                accept="image/*" 
-                                class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" 
-                                onchange="updateFileName('doc-f-file', 'doc-f-name')"
-                            >
-                            <div 
-                                class="bg-[#1a1a1a] border border-dashed border-gray-600 rounded-xl p-3 flex flex-col items-center justify-center text-center transition hover:border-amber-500 h-24"
-                            >
-                                <i 
-                                    data-lucide="camera" 
-                                    class="w-5 h-5 text-gray-400 mb-1"
-                                ></i>
-                                <span 
-                                    id="doc-f-name" 
-                                    class="text-[10px] text-gray-300 font-bold"
-                                >
-                                    Doc. Fronte
-                                </span>
+                        <div class="relative">
+                            <input type="file" id="doc-f-file" accept="image/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" onchange="updateFileName('doc-f-file', 'doc-f-name')">
+                            <div class="bg-[#1a1a1a] border border-dashed border-gray-600 rounded-xl p-3 flex flex-col items-center justify-center text-center transition hover:border-amber-500 h-24">
+                                <i data-lucide="camera" class="w-5 h-5 text-gray-400 mb-1"></i>
+                                <span id="doc-f-name" class="text-[10px] text-gray-300 font-bold">Doc. Fronte</span>
                             </div>
                         </div>
 
-                        <!-- Doc Retro -->
-                        <div 
-                            class="relative"
-                        >
-                            <input 
-                                type="file" 
-                                id="doc-r-file" 
-                                accept="image/*" 
-                                class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" 
-                                onchange="updateFileName('doc-r-file', 'doc-r-name')"
-                            >
-                            <div 
-                                class="bg-[#1a1a1a] border border-dashed border-gray-600 rounded-xl p-3 flex flex-col items-center justify-center text-center transition hover:border-amber-500 h-24"
-                            >
-                                <i 
-                                    data-lucide="camera" 
-                                    class="w-5 h-5 text-gray-400 mb-1"
-                                ></i>
-                                <span 
-                                    id="doc-r-name" 
-                                    class="text-[10px] text-gray-300 font-bold"
-                                >
-                                    Doc. Retro
-                                </span>
+                        <div class="relative">
+                            <input type="file" id="doc-r-file" accept="image/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" onchange="updateFileName('doc-r-file', 'doc-r-name')">
+                            <div class="bg-[#1a1a1a] border border-dashed border-gray-600 rounded-xl p-3 flex flex-col items-center justify-center text-center transition hover:border-amber-500 h-24">
+                                <i data-lucide="camera" class="w-5 h-5 text-gray-400 mb-1"></i>
+                                <span id="doc-r-name" class="text-[10px] text-gray-300 font-bold">Doc. Retro</span>
                             </div>
                         </div>
 
-                        <!-- CF Fronte -->
-                        <div 
-                            class="relative"
-                        >
-                            <input 
-                                type="file" 
-                                id="cf-f-file" 
-                                accept="image/*" 
-                                class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" 
-                                onchange="updateFileName('cf-f-file', 'cf-f-name')"
-                            >
-                            <div 
-                                class="bg-[#1a1a1a] border border-dashed border-gray-600 rounded-xl p-3 flex flex-col items-center justify-center text-center transition hover:border-amber-500 h-24"
-                            >
-                                <i 
-                                    data-lucide="camera" 
-                                    class="w-5 h-5 text-gray-400 mb-1"
-                                ></i>
-                                <span 
-                                    id="cf-f-name" 
-                                    class="text-[10px] text-gray-300 font-bold"
-                                >
-                                    C.F. Fronte
-                                </span>
+                        <div class="relative">
+                            <input type="file" id="cf-f-file" accept="image/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" onchange="updateFileName('cf-f-file', 'cf-f-name')">
+                            <div class="bg-[#1a1a1a] border border-dashed border-gray-600 rounded-xl p-3 flex flex-col items-center justify-center text-center transition hover:border-amber-500 h-24">
+                                <i data-lucide="camera" class="w-5 h-5 text-gray-400 mb-1"></i>
+                                <span id="cf-f-name" class="text-[10px] text-gray-300 font-bold">C.F. Fronte</span>
                             </div>
                         </div>
 
-                        <!-- CF Retro -->
-                        <div 
-                            class="relative"
-                        >
-                            <input 
-                                type="file" 
-                                id="cf-r-file" 
-                                accept="image/*" 
-                                class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" 
-                                onchange="updateFileName('cf-r-file', 'cf-r-name')"
-                            >
-                            <div 
-                                class="bg-[#1a1a1a] border border-dashed border-gray-600 rounded-xl p-3 flex flex-col items-center justify-center text-center transition hover:border-amber-500 h-24"
-                            >
-                                <i 
-                                    data-lucide="camera" 
-                                    class="w-5 h-5 text-gray-400 mb-1"
-                                ></i>
-                                <span 
-                                    id="cf-r-name" 
-                                    class="text-[10px] text-gray-300 font-bold"
-                                >
-                                    C.F. Retro
-                                </span>
+                        <div class="relative">
+                            <input type="file" id="cf-r-file" accept="image/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" onchange="updateFileName('cf-r-file', 'cf-r-name')">
+                            <div class="bg-[#1a1a1a] border border-dashed border-gray-600 rounded-xl p-3 flex flex-col items-center justify-center text-center transition hover:border-amber-500 h-24">
+                                <i data-lucide="camera" class="w-5 h-5 text-gray-400 mb-1"></i>
+                                <span id="cf-r-name" class="text-[10px] text-gray-300 font-bold">C.F. Retro</span>
                             </div>
                         </div>
 
@@ -1001,9 +742,7 @@
 
             </div>
             
-            <div 
-                class="border-t border-gray-800 pt-4 mt-2 shrink-0"
-            >
+            <div class="border-t border-gray-800 pt-4 mt-2 shrink-0">
                 <button 
                     onclick="submitMeetOrder()" 
                     class="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 text-white font-extrabold py-3.5 rounded-xl text-xs uppercase shadow-[0_0_15px_rgba(79,70,229,0.3)] tracking-wider transition"
@@ -1013,13 +752,12 @@
             </div>
         </div>
     </div>
-
     <!-- ========================================================== -->
     <!-- NUOVO MODALE EXCHANGE RAPIDO (DENTRO SERVIZI)              -->
     <!-- ========================================================== -->
     <div 
         id="exchange-modal" 
-        class="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4 hidden backdrop-blur-md"
+        class="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4 hidden backdrop-blur-md transition-all"
     >
         <div 
             class="bg-[#121212] border border-indigo-500/30 rounded-2xl w-full max-w-md p-5 shadow-[0_0_30px_rgba(99,102,241,0.15)] flex flex-col max-h-[90vh]"
@@ -1166,7 +904,6 @@
 
                     <div>
                         <label 
-                            id="exc-dest-label" 
                             class="text-[10px] font-bold text-gray-500 uppercase tracking-widest block mb-1"
                         >
                             2. Il tuo indirizzo/dati per ricevere:
@@ -1235,7 +972,7 @@
                             >
                                 Dichiarazione Vincolante
                             </strong>
-                            Confermo di aver inviato i fondi. Sono consapevole che l'elaborazione inizierà solo a ricezione confermata dall'exchange/banca.
+                            Confermo di aver inviato i fondi. Sono consapevole che l'elaborazione inizierà solo a ricezione confermata.
                         </label>
                     </div>
                 </div>
@@ -1250,6 +987,434 @@
                     class="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 text-white font-extrabold py-3.5 rounded-xl text-xs uppercase shadow-[0_0_15px_rgba(79,70,229,0.3)] tracking-wider transition"
                 >
                     Invia Richiesta Exchange
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========================================================== -->
+    <!-- NUOVO MODALE BUONI AMAZON AL 50% (DENTRO SERVIZI)          -->
+    <!-- ========================================================== -->
+    <div 
+        id="amazon-modal" 
+        class="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4 hidden backdrop-blur-md transition-all"
+    >
+        <div 
+            class="bg-[#121212] border border-orange-500/30 rounded-2xl w-full max-w-md p-5 shadow-[0_0_30px_rgba(249,115,22,0.15)] flex flex-col max-h-[90vh]"
+        >
+            <div 
+                class="flex justify-between items-center border-b border-gray-800 pb-3 mb-4 shrink-0"
+            >
+                <h3 
+                    class="font-bold text-lg text-white flex items-center"
+                >
+                    <i 
+                        data-lucide="shopping-bag" 
+                        class="w-5 h-5 text-orange-500 mr-2"
+                    ></i> 
+                    Buoni Amazon (-50%)
+                </h3>
+                <button 
+                    onclick="closeAmazonModal()" 
+                    class="text-gray-500 hover:text-white transition"
+                >
+                    <i 
+                        data-lucide="x" 
+                        class="w-5 h-5"
+                    ></i>
+                </button>
+            </div>
+            
+            <div 
+                class="overflow-y-auto space-y-5 pr-1 flex-1 hide-scrollbar"
+            >
+                <p 
+                    class="text-[11px] text-gray-400 leading-relaxed text-center px-2"
+                >
+                    Acquista gift card Amazon pagandole la metà del loro valore reale. Evasione rapida in 24h.
+                </p>
+
+                <!-- Input Taglio -->
+                <div>
+                    <label 
+                        class="text-[9px] font-bold text-gray-500 uppercase tracking-widest block mb-1"
+                    >
+                        Seleziona Taglio Desiderato
+                    </label>
+                    <select 
+                        id="amz-cut" 
+                        onchange="updateAmazonUI()" 
+                        class="w-full bg-[#1a1a1a] border border-gray-700 rounded-xl px-3 py-3 text-sm text-white focus:outline-none focus:border-orange-500 appearance-none transition"
+                    >
+                        <option value="" disabled selected>-- Scegli l'importo della Gift Card --</option>
+                        <option value="50">Buono Amazon da 50€</option>
+                        <option value="100">Buono Amazon da 100€</option>
+                        <option value="150">Buono Amazon da 150€</option>
+                        <option value="200">Buono Amazon da 200€</option>
+                        <option value="250">Buono Amazon da 250€</option>
+                    </select>
+                    
+                    <div 
+                        class="mt-3 bg-orange-900/10 border border-orange-500/30 rounded-xl p-3 flex justify-between items-center transition"
+                    >
+                        <span 
+                            class="text-[10px] font-bold text-gray-400 uppercase tracking-widest"
+                        >
+                            Prezzo da pagare (50%):
+                        </span>
+                        <span 
+                            id="amz-pay-amount" 
+                            class="text-lg font-black text-orange-500"
+                        >
+                            0.00 €
+                        </span>
+                    </div>
+                </div>
+
+                <div 
+                    class="border-t border-gray-800"
+                ></div>
+
+                <!-- Istruzioni Pagamento -->
+                <div 
+                    id="amz-payment-section" 
+                    class="hidden space-y-4"
+                >
+                    <div>
+                        <label 
+                            class="text-[10px] font-bold text-gray-500 uppercase tracking-widest block mb-2"
+                        >
+                            1. Metodo di Pagamento
+                        </label>
+                        <select 
+                            id="amz-payment-method" 
+                            onchange="updateAmazonPaymentDetails()"
+                            class="w-full bg-[#1a1a1a] border border-gray-700 rounded-xl px-3 py-2.5 text-xs text-white focus:outline-none focus:border-orange-500 appearance-none transition"
+                        >
+                            <option value="" disabled selected>-- Seleziona un metodo --</option>
+                            <option value="PayPal">PayPal</option>
+                            <option value="Crypto BTC">Crypto (Bitcoin BTC)</option>
+                            <option value="Crypto LTC">Crypto (Litecoin LTC)</option>
+                            <option value="Crypto ETH">Crypto (Ethereum ETH)</option>
+                            <option value="Crypto USDT">Crypto (USDT TRC20)</option>
+                            <option value="Bonifico">Bonifico Bancario</option>
+                            <option value="Postepay">Ricarica Postepay</option>
+                        </select>
+                    </div>
+
+                    <div 
+                        id="amz-payment-details-box" 
+                        class="hidden bg-[#1a1a1a] border border-gray-700 p-4 rounded-xl shadow-inner transition"
+                    >
+                        <p 
+                            class="text-[9px] text-gray-400 uppercase tracking-widest mb-2"
+                        >
+                            Invia l'importo scontato qui:
+                        </p>
+                        <p 
+                            id="amz-our-wallet" 
+                            class="text-xs font-mono text-orange-300 break-all select-all font-bold leading-relaxed"
+                        ></p>
+                    </div>
+
+                    <div>
+                        <label 
+                            class="text-[10px] font-bold text-gray-500 uppercase tracking-widest block mb-1"
+                        >
+                            2. La tua Email (dove ricevere il codice)
+                        </label>
+                        <input 
+                            type="email" 
+                            id="amz-dest-email" 
+                            placeholder="Es: la.tua.email@gmail.com" 
+                            class="w-full bg-[#1a1a1a] border border-gray-700 rounded-xl px-3 py-2.5 text-xs text-white focus:outline-none focus:border-orange-500 transition"
+                        >
+                    </div>
+
+                    <!-- Ricevuta e Conferma -->
+                    <div>
+                        <label 
+                            class="text-[10px] font-bold text-gray-500 uppercase tracking-widest block mb-1"
+                        >
+                            3. Ricevuta (Facoltativa ma consigliata)
+                        </label>
+                        <div 
+                            class="relative"
+                        >
+                            <input 
+                                type="file" 
+                                id="amz-receipt-file" 
+                                accept="image/*" 
+                                class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" 
+                                onchange="updateFileName('amz-receipt-file', 'amz-receipt-name', 'orange')"
+                            >
+                            <div 
+                                class="bg-[#1a1a1a] border border-dashed border-gray-600 rounded-xl p-3 flex flex-col items-center justify-center text-center transition hover:border-orange-500"
+                            >
+                                <i 
+                                    data-lucide="upload-cloud" 
+                                    class="w-5 h-5 text-gray-400 mb-1"
+                                ></i>
+                                <span 
+                                    id="amz-receipt-name" 
+                                    class="text-[10px] text-gray-300 font-bold"
+                                >
+                                    Tocca per allegare uno screenshot
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div 
+                        class="bg-orange-900/10 border border-orange-500/30 p-3 rounded-xl flex items-start space-x-3 transition"
+                    >
+                        <div 
+                            class="pt-0.5"
+                        >
+                            <input 
+                                type="checkbox" 
+                                id="amz-confirmed-cb" 
+                                class="w-4 h-4 accent-orange-500 cursor-pointer rounded"
+                            >
+                        </div>
+                        <label 
+                            for="amz-confirmed-cb" 
+                            class="text-[10px] text-orange-200/80 leading-tight cursor-pointer"
+                        >
+                            <strong 
+                                class="block text-orange-400 mb-0.5 uppercase tracking-wider text-[9px]"
+                            >
+                                Dichiarazione Vincolante
+                            </strong>
+                            Confermo di aver inviato i fondi. Sono consapevole che il codice Amazon verrà generato solo a ricezione confermata.
+                        </label>
+                    </div>
+                </div>
+
+            </div>
+            
+            <div 
+                class="border-t border-gray-800 pt-4 mt-2 shrink-0"
+            >
+                <button 
+                    onclick="submitAmazonOrder()" 
+                    class="w-full bg-gradient-to-r from-orange-500 to-yellow-500 hover:from-orange-400 text-white font-extrabold py-3.5 rounded-xl text-xs uppercase shadow-[0_0_15px_rgba(249,115,22,0.3)] tracking-wider transition"
+                >
+                    Invia Richiesta Amazon
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========================================================== -->
+    <!-- NUOVO MODALE BUONI Q8 AL 50% (DENTRO SERVIZI)              -->
+    <!-- ========================================================== -->
+    <div 
+        id="q8-modal" 
+        class="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4 hidden backdrop-blur-md transition-all"
+    >
+        <div 
+            class="bg-[#121212] border border-blue-500/30 rounded-2xl w-full max-w-md p-5 shadow-[0_0_30px_rgba(59,130,246,0.15)] flex flex-col max-h-[90vh]"
+        >
+            <div 
+                class="flex justify-between items-center border-b border-gray-800 pb-3 mb-4 shrink-0"
+            >
+                <h3 
+                    class="font-bold text-lg text-white flex items-center"
+                >
+                    <i 
+                        data-lucide="fuel" 
+                        class="w-5 h-5 text-blue-500 mr-2"
+                    ></i> 
+                    Buoni Benzina Q8 (-50%)
+                </h3>
+                <button 
+                    onclick="closeQ8Modal()" 
+                    class="text-gray-500 hover:text-white transition"
+                >
+                    <i 
+                        data-lucide="x" 
+                        class="w-5 h-5"
+                    ></i>
+                </button>
+            </div>
+            
+            <div 
+                class="overflow-y-auto space-y-5 pr-1 flex-1 hide-scrollbar"
+            >
+                <p 
+                    class="text-[11px] text-gray-400 leading-relaxed text-center px-2"
+                >
+                    Acquista buoni carburante Q8 pagandoli la metà. Utilizzabili in tutte le stazioni abilitate.
+                </p>
+
+                <!-- Input Taglio -->
+                <div>
+                    <label 
+                        class="text-[9px] font-bold text-gray-500 uppercase tracking-widest block mb-1"
+                    >
+                        Seleziona Taglio Desiderato
+                    </label>
+                    <select 
+                        id="q8-cut" 
+                        onchange="updateQ8UI()" 
+                        class="w-full bg-[#1a1a1a] border border-gray-700 rounded-xl px-3 py-3 text-sm text-white focus:outline-none focus:border-blue-500 appearance-none transition"
+                    >
+                        <option value="" disabled selected>-- Scegli l'importo del Buono --</option>
+                        <option value="50">Buono Q8 da 50€</option>
+                        <option value="100">Buono Q8 da 100€</option>
+                        <option value="150">Buono Q8 da 150€</option>
+                        <option value="200">Buono Q8 da 200€</option>
+                        <option value="250">Buono Q8 da 250€</option>
+                    </select>
+                    
+                    <div 
+                        class="mt-3 bg-blue-900/10 border border-blue-500/30 rounded-xl p-3 flex justify-between items-center transition"
+                    >
+                        <span 
+                            class="text-[10px] font-bold text-gray-400 uppercase tracking-widest"
+                        >
+                            Prezzo da pagare (50%):
+                        </span>
+                        <span 
+                            id="q8-pay-amount" 
+                            class="text-lg font-black text-blue-500"
+                        >
+                            0.00 €
+                        </span>
+                    </div>
+                </div>
+
+                <div 
+                    class="border-t border-gray-800"
+                ></div>
+
+                <!-- Istruzioni Pagamento -->
+                <div 
+                    id="q8-payment-section" 
+                    class="hidden space-y-4"
+                >
+                    <div>
+                        <label 
+                            class="text-[10px] font-bold text-gray-500 uppercase tracking-widest block mb-2"
+                        >
+                            1. Metodo di Pagamento
+                        </label>
+                        <select 
+                            id="q8-payment-method" 
+                            onchange="updateQ8PaymentDetails()"
+                            class="w-full bg-[#1a1a1a] border border-gray-700 rounded-xl px-3 py-2.5 text-xs text-white focus:outline-none focus:border-blue-500 appearance-none transition"
+                        >
+                            <option value="" disabled selected>-- Seleziona un metodo --</option>
+                            <option value="PayPal">PayPal</option>
+                            <option value="Crypto BTC">Crypto (Bitcoin BTC)</option>
+                            <option value="Crypto LTC">Crypto (Litecoin LTC)</option>
+                            <option value="Crypto ETH">Crypto (Ethereum ETH)</option>
+                            <option value="Crypto USDT">Crypto (USDT TRC20)</option>
+                            <option value="Bonifico">Bonifico Bancario</option>
+                            <option value="Postepay">Ricarica Postepay</option>
+                        </select>
+                    </div>
+
+                    <div 
+                        id="q8-payment-details-box" 
+                        class="hidden bg-[#1a1a1a] border border-gray-700 p-4 rounded-xl shadow-inner transition"
+                    >
+                        <p 
+                            class="text-[9px] text-gray-400 uppercase tracking-widest mb-2"
+                        >
+                            Invia l'importo scontato qui:
+                        </p>
+                        <p 
+                            id="q8-our-wallet" 
+                            class="text-xs font-mono text-blue-300 break-all select-all font-bold leading-relaxed"
+                        ></p>
+                    </div>
+
+                    <div>
+                        <label 
+                            class="text-[10px] font-bold text-gray-500 uppercase tracking-widest block mb-1"
+                        >
+                            2. La tua Email (dove ricevere il codice Q8)
+                        </label>
+                        <input 
+                            type="email" 
+                            id="q8-dest-email" 
+                            placeholder="Es: la.tua.email@gmail.com" 
+                            class="w-full bg-[#1a1a1a] border border-gray-700 rounded-xl px-3 py-2.5 text-xs text-white focus:outline-none focus:border-blue-500 transition"
+                        >
+                    </div>
+
+                    <!-- Ricevuta e Conferma -->
+                    <div>
+                        <label 
+                            class="text-[10px] font-bold text-gray-500 uppercase tracking-widest block mb-1"
+                        >
+                            3. Ricevuta (Facoltativa ma consigliata)
+                        </label>
+                        <div 
+                            class="relative"
+                        >
+                            <input 
+                                type="file" 
+                                id="q8-receipt-file" 
+                                accept="image/*" 
+                                class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" 
+                                onchange="updateFileName('q8-receipt-file', 'q8-receipt-name', 'blue')"
+                            >
+                            <div 
+                                class="bg-[#1a1a1a] border border-dashed border-gray-600 rounded-xl p-3 flex flex-col items-center justify-center text-center transition hover:border-blue-500"
+                            >
+                                <i 
+                                    data-lucide="upload-cloud" 
+                                    class="w-5 h-5 text-gray-400 mb-1"
+                                ></i>
+                                <span 
+                                    id="q8-receipt-name" 
+                                    class="text-[10px] text-gray-300 font-bold"
+                                >
+                                    Tocca per allegare uno screenshot
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div 
+                        class="bg-blue-900/10 border border-blue-500/30 p-3 rounded-xl flex items-start space-x-3 transition"
+                    >
+                        <div 
+                            class="pt-0.5"
+                        >
+                            <input 
+                                type="checkbox" 
+                                id="q8-confirmed-cb" 
+                                class="w-4 h-4 accent-blue-500 cursor-pointer rounded"
+                            >
+                        </div>
+                        <label 
+                            for="q8-confirmed-cb" 
+                            class="text-[10px] text-blue-200/80 leading-tight cursor-pointer"
+                        >
+                            <strong 
+                                class="block text-blue-400 mb-0.5 uppercase tracking-wider text-[9px]"
+                            >
+                                Dichiarazione Vincolante
+                            </strong>
+                            Confermo di aver inviato i fondi. Sono consapevole che il codice Q8 verrà generato solo a ricezione confermata.
+                        </label>
+                    </div>
+                </div>
+
+            </div>
+            
+            <div 
+                class="border-t border-gray-800 pt-4 mt-2 shrink-0"
+            >
+                <button 
+                    onclick="submitQ8Order()" 
+                    class="w-full bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-500 text-white font-extrabold py-3.5 rounded-xl text-xs uppercase shadow-[0_0_15px_rgba(59,130,246,0.3)] tracking-wider transition"
+                >
+                    Invia Richiesta Buono Q8
                 </button>
             </div>
         </div>
@@ -1944,396 +2109,8 @@
             </button>
         </div>
     </div>
-
     <!-- ========================================================== -->
-    <!-- MAIN PAGE CONTENT (BANNER E GRIGLIE)                       -->
-    <!-- ========================================================== -->
-    <main 
-        class="p-4 space-y-5"
-    >
-        
-        <!-- VIDEO BANNER -->
-        <div 
-            class="relative rounded-2xl overflow-hidden border border-gray-800 bg-[#121212] shadow-2xl h-64 transition"
-        >
-            <video 
-                id="banner-video" 
-                class="w-full h-full object-cover opacity-60" 
-                autoplay 
-                loop 
-                muted 
-                playsinline 
-                webkit-playsinline 
-                onloadedmetadata="this.muted=true; this.play()" 
-                src="https://files.catbox.moe/cvaalo.mov"
-            ></video>
-                
-            <div 
-                class="absolute inset-0 bg-gradient-to-t from-[#0a0a0a] via-black/40 to-transparent pointer-events-none"
-            ></div>
-            
-            <div 
-                class="absolute bottom-4 left-5 right-5 pointer-events-none"
-            >
-                <h1 
-                    class="text-3xl font-black text-amber-50 tracking-wide drop-shadow-md transition"
-                >
-                    Il Falsario 🎭
-                </h1>
-                
-                <div 
-                    class="flex flex-col gap-1.5 mt-2 text-[11px] font-bold tracking-wide"
-                >
-                    <div 
-                        class="flex items-center gap-4"
-                    >
-                        <span 
-                            class="flex items-center text-amber-300 drop-shadow-[0_0_8px_rgba(252,211,77,0.8)]"
-                        >
-                            <i 
-                                data-lucide="star" 
-                                class="w-3.5 h-3.5 mr-1.5 fill-amber-400 text-amber-400"
-                            ></i> 
-                            +300 Feed
-                        </span>
-                        <span 
-                            class="flex items-center text-cyan-300 drop-shadow-[0_0_8px_rgba(103,232,249,0.8)]"
-                        >
-                            <i 
-                                data-lucide="gem" 
-                                class="w-3.5 h-3.5 mr-1.5 text-cyan-200"
-                            ></i> 
-                            Qualità Top
-                        </span>
-                    </div>
-                    <div>
-                        <span 
-                            class="inline-flex items-center text-slate-200 drop-shadow-[0_0_8px_rgba(203,213,225,0.8)]"
-                        >
-                            <i 
-                                data-lucide="lock" 
-                                class="w-3.5 h-3.5 mr-1.5 text-slate-100"
-                            ></i> 
-                            Massima Sicurezza
-                        </span>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- BENVENUTO E TASTI RAPIDI INIZIALI -->
-        <div 
-            class="bg-[#121212] border border-gray-800 rounded-2xl p-5 shadow-2xl transition"
-        >
-            <div 
-                class="flex flex-col gap-1 mb-4"
-            >
-                <div 
-                    class="flex items-center gap-2"
-                >
-                    <span 
-                        class="text-[20px]"
-                    >
-                        🤗
-                    </span>
-                    <h2 
-                        class="text-[17px] font-bold text-white leading-tight transition"
-                    >
-                        Benvenuto nello shop del Falsario!
-                    </h2>
-                </div>
-            </div>
-            
-            <p 
-                class="text-[13px] text-gray-300 leading-relaxed mb-4 flex items-start transition"
-            >
-                <span 
-                    class="mr-2 text-base"
-                >
-                    📦
-                </span> 
-                <span>
-                    Tutti i prodotti in pronta consegna con spedizioni riservate o ritrovo sul posto.
-                </span>
-            </p>
-
-            <div 
-                class="flex flex-col space-y-3 mb-3"
-            >
-                <button 
-                    onclick="filterCategory('SHIP'); scrollToProducts();" 
-                    class="bg-[#1a1a1a] w-fit hover:bg-gray-800 rounded-xl px-5 py-3 flex items-center text-[#34d399] text-sm font-semibold transition shadow-sm border border-gray-800/50"
-                >
-                    <span 
-                        class="mr-3 text-lg"
-                    >
-                        🚚
-                    </span> 
-                    Spedizioni (Ship)
-                </button>
-                
-                <button 
-                    onclick="filterCategory('Meet up Roma'); scrollToProducts();" 
-                    class="bg-[#1a1a1a] w-fit hover:bg-gray-800 rounded-xl px-5 py-3 flex items-center text-[#fbbf24] text-sm font-semibold transition shadow-sm border border-gray-800/50"
-                >
-                    <span 
-                        class="mr-3 text-lg"
-                    >
-                        🤝
-                    </span> 
-                    Consegne a Mano (Meet Up)
-                </button>
-            </div>
-
-            <!-- RIQUADRO SERVIZI DEDICATI -->
-            <div 
-                class="border-t border-gray-800/80 pt-4 mt-3 transition"
-            >
-                <p 
-                    class="text-[12px] text-gray-400 leading-relaxed mb-3 flex items-start"
-                >
-                    <span 
-                        class="mr-2 text-base"
-                    >
-                        ⚙️
-                    </span> 
-                    <span>
-                        Richiedi servizi dedicati o elaborazioni personalizzate su misura.
-                    </span>
-                </p>
-                <button 
-                    onclick="filterCategory('Servizi'); scrollToProducts();" 
-                    class="bg-[#1a1a1a] w-fit hover:bg-gray-800 rounded-xl px-5 py-3 flex items-center text-[#38bdf8] text-sm font-semibold transition shadow-sm border border-gray-800/50"
-                >
-                    <span 
-                        class="mr-3 text-lg"
-                    >
-                        🛠️
-                    </span> 
-                    Servizi Dedicati
-                </button>
-            </div>
-        </div>
-
-        <!-- NAVIGAZIONE CENTRALE (I LAVORI / FIDUCIA / INFO) -->
-        <div 
-            class="mt-2"
-        >
-            <div 
-                class="grid grid-cols-2 gap-3"
-            >
-                <button 
-                    onclick="scrollToProducts()" 
-                    class="bg-[#121212] border border-amber-600/30 hover:border-amber-500 text-amber-500 font-bold py-3.5 px-3 rounded-xl flex items-center justify-center space-x-2 text-xs uppercase tracking-wider transition shadow-lg"
-                >
-                    <i 
-                        data-lucide="folder-open" 
-                        class="w-4 h-4"
-                    ></i>
-                    <span>
-                        I Lavori
-                    </span>
-                </button>
-                
-                <button 
-                    onclick="openTrophiesModal()" 
-                    class="bg-[#121212] border border-slate-300/40 hover:border-slate-200 text-slate-100 font-bold py-3.5 px-3 rounded-xl flex items-center justify-center space-x-2 text-xs uppercase tracking-wider transition shadow-[0_0_12px_rgba(203,213,225,0.15)]"
-                >
-                    <i 
-                        data-lucide="shield" 
-                        class="w-4 h-4 text-slate-200"
-                    ></i>
-                    <span>
-                        Fiducia
-                    </span>
-                </button>
-            </div>
-
-            <!-- Tasto Maggiori Informazioni -->
-            <button 
-                onclick="toggleInfoPanel()" 
-                class="w-full mt-3 bg-[#121212] border border-gray-800 hover:border-gray-700 text-gray-300 font-bold py-3.5 px-4 rounded-xl flex items-center justify-between text-xs uppercase tracking-wider transition shadow-lg"
-            >
-                <div 
-                    class="flex items-center space-x-2"
-                >
-                    <i 
-                        data-lucide="info" 
-                        class="w-4 h-4 text-gray-400"
-                    ></i>
-                    <span>
-                        Maggiori informazioni
-                    </span>
-                </div>
-                <i 
-                    data-lucide="chevron-down" 
-                    id="info-chevron" 
-                    class="w-4 h-4 text-gray-500 transition-transform duration-300"
-                ></i>
-            </button>
-
-            <!-- INFO PANEL -->
-            <div 
-                id="info-panel" 
-                class="overflow-hidden transition-all duration-300 max-h-0"
-            >
-                <div 
-                    class="bg-[#121212] border border-gray-800 rounded-xl p-5 mt-3 shadow-inner transition"
-                >
-                    <h3 
-                        class="font-bold text-white mb-4 text-sm flex items-center transition"
-                    >
-                        Ulteriori informazioni 
-                        <span 
-                            class="ml-2 text-lg"
-                        >
-                            ℹ️
-                        </span>
-                    </h3>
-                    <div 
-                        id="info-text-content" 
-                        class="text-[13px] text-gray-300 leading-relaxed font-light space-y-5 transition"
-                    >
-                        
-                        <div>
-                            <span 
-                                class="font-bold text-white tracking-wide"
-                            >
-                                • Spedizioni (Ship) 🚚 :
-                            </span>
-                            <div 
-                                class="mt-2 space-y-2 ml-2 text-gray-400"
-                            >
-                                <p>- Tutte le spedizioni verranno effettuate il giorno lavorativo successivo al pagamento;</p>
-                                <p>- Le spedizioni vengono spedite tutti i giorni alle 8:30 del mattino dal lunedì al venerdì;</p>
-                                <p>- Tutte le spedizioni sono incluse nel prezzo e sono in 24/48h con track disponibile entro 24h dalla conferma del pagamento;</p>
-                                <p>- Le spedizioni verranno effettuate tramite inpost o indirizzo privato a scelta del cliente;</p>
-                                <p>- Tutte le spedizioni che siano tramite InPost Locker o indirizzo privato sono preparate con la massima cura per la sicurezza nostra e del cliente, in qualsiasi caso di perdita comprovata verrà effettuata nuovamente la spedizione o elargito il rimborso immediato.</p>
-                            </div>
-                        </div>
-                        
-                        <div>
-                            <span 
-                                class="font-bold text-white tracking-wide"
-                            >
-                                • Meet Up 📍
-                            </span>
-                            <div 
-                                class="mt-2 space-y-2 ml-2 text-gray-400"
-                            >
-                                <p>- Tutti i meet e le varie consegne sono disponibili su tutta Roma e provincia solo per i prodotti presenti nella categoria e previa verifica;</p>
-                                <p>- Disponibili tutti i giorni da Lunedì a Sabato, dalle ore 8:00 alle ore 0:00.</p>
-                            </div>
-                        </div>
-                        
-                    </div>
-                </div>
-            </div>
-            
-        </div>
-
-        <!-- ========================================================== -->
-        <!-- CATEGORIE PRODOTTI E GRIGLIA                               -->
-        <!-- ========================================================== -->
-        <div 
-            class="space-y-4 pt-4 transition" 
-            id="products-section"
-        >
-            <div 
-                class="flex justify-between items-center"
-            >
-                <h2 
-                    class="text-lg font-bold text-white tracking-wide transition"
-                >
-                    Archivio File
-                </h2>
-            </div>
-            
-            <div 
-                class="flex space-x-2 overflow-x-auto hide-scrollbar pb-1"
-            >
-                <button 
-                    onclick="filterCategory('ALL', this)" 
-                    class="cat-btn px-4 py-2 rounded-xl bg-amber-600 text-white text-xs font-bold whitespace-nowrap shadow-[0_0_10px_rgba(217,119,6,0.3)] transition"
-                >
-                    Tutti
-                </button>
-                <button 
-                    onclick="filterCategory('Meet up Roma', this)" 
-                    class="cat-btn px-4 py-2 rounded-xl bg-[#121212] border border-gray-800 text-gray-400 text-xs font-semibold whitespace-nowrap hover:text-gray-200 transition"
-                >
-                    Meet up
-                </button>
-                <button 
-                    onclick="filterCategory('Documenti falsi', this)" 
-                    class="cat-btn px-4 py-2 rounded-xl bg-[#121212] border border-gray-800 text-gray-400 text-xs font-semibold whitespace-nowrap hover:text-gray-200 transition"
-                >
-                    Documenti falsi
-                </button>
-                <button 
-                    onclick="filterCategory('Banconote false', this)" 
-                    class="cat-btn px-4 py-2 rounded-xl bg-[#121212] border border-gray-800 text-gray-400 text-xs font-semibold whitespace-nowrap hover:text-gray-200 transition"
-                >
-                    Banconote false
-                </button>
-                <button 
-                    onclick="filterCategory('Monete false', this)" 
-                    class="cat-btn px-4 py-2 rounded-xl bg-[#121212] border border-gray-800 text-gray-400 text-xs font-semibold whitespace-nowrap hover:text-gray-200 transition"
-                >
-                    Monete false
-                </button>
-                <button 
-                    onclick="filterCategory('Coca', this)" 
-                    class="cat-btn px-4 py-2 rounded-xl bg-[#121212] border border-gray-800 text-gray-400 text-xs font-semibold whitespace-nowrap hover:text-gray-200 transition"
-                >
-                    Coca
-                </button>
-                <button 
-                    onclick="filterCategory('Weed', this)" 
-                    class="cat-btn px-4 py-2 rounded-xl bg-[#121212] border border-gray-800 text-gray-400 text-xs font-semibold whitespace-nowrap hover:text-gray-200 transition"
-                >
-                    Weed
-                </button>
-                <button 
-                    onclick="filterCategory('Hash', this)" 
-                    class="cat-btn px-4 py-2 rounded-xl bg-[#121212] border border-gray-800 text-gray-400 text-xs font-semibold whitespace-nowrap hover:text-gray-200 transition"
-                >
-                    Hash
-                </button>
-                <button 
-                    onclick="filterCategory('Telefoni Criptati', this)" 
-                    class="cat-btn px-4 py-2 rounded-xl bg-[#121212] border border-gray-800 text-gray-400 text-xs font-semibold whitespace-nowrap hover:text-gray-200 transition"
-                >
-                    Telefoni Criptati
-                </button>
-                <button 
-                    onclick="filterCategory('Servizi', this)" 
-                    class="cat-btn px-4 py-2 rounded-xl bg-[#121212] border border-gray-800 text-gray-400 text-xs font-semibold whitespace-nowrap hover:text-gray-200 transition"
-                >
-                    Servizi
-                </button>
-                <button 
-                    onclick="filterCategory('Altro', this)" 
-                    class="cat-btn px-4 py-2 rounded-xl bg-[#121212] border border-gray-800 text-gray-400 text-xs font-semibold whitespace-nowrap hover:text-gray-200 transition"
-                >
-                    Altro
-                </button>
-            </div>
-        </div>
-
-        <div 
-            id="products-grid" 
-            class="grid grid-cols-1 gap-5 transition"
-        >
-            <div 
-                class="text-center py-12 text-gray-600 text-sm transition"
-            >
-                Apertura cassaforte in corso...
-            </div>
-        </div>
-    </main>
-    <!-- ========================================================== -->
-    <!-- SCRIPT GLOBALI, LOGICA E INTERFACCIA WEB                   -->
+    <!-- SCRIPT GLOBALI E MOTORE LOGICO FRONTEND (INIZIO)           -->
     <!-- ========================================================== -->
     <script>
         // Inizializzazione icone
@@ -2346,28 +2123,40 @@
         let currentQty = 1;
         let currentCategoryFilter = 'ALL';
 
-        // --- GESTIONE ID UTENTE ---
+        // ==========================================================
+        // GESTIONE ID UTENTE E SESSIONI
+        // ==========================================================
         function copyUserId() {
             const id = localStorage.getItem('falsario_user_id');
             if(!id) return;
+            
             const ta = document.createElement('textarea');
             ta.value = id;
             document.body.appendChild(ta);
             ta.select();
+            
             try {
                 document.execCommand('copy');
                 const textEl = document.getElementById('sidebar-user-id');
                 textEl.innerText = "Copiato! ✅";
+                
                 if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.HapticFeedback) {
                     window.Telegram.WebApp.HapticFeedback.notificationOccurred('success');
                 }
-                setTimeout(() => { textEl.innerText = id; }, 2000);
-            } catch (err) {}
+                
+                setTimeout(() => { 
+                    textEl.innerText = id; 
+                }, 2000);
+            } catch (err) {
+                console.error("Copia fallita", err);
+            }
+            
             document.body.removeChild(ta);
         }
 
         function loginWithId() {
             const newId = prompt("Inserisci il tuo ID Utente per recuperare il tuo account, i tuoi punti e i tuoi sconti:");
+            
             if(newId && newId.trim() !== "" && !isNaN(newId)) {
                 localStorage.setItem('falsario_user_id', newId.trim());
                 alert("Accesso effettuato! Ricaricamento del Caveau...");
@@ -2380,20 +2169,27 @@
         function copySessionId() {
             const sessionId = "05495e45a9c1ced74358dcedaad80c99956e1405fbbccf4f8e85f0ca873946a515";
             const textEl = document.getElementById('session-id-text');
+            
             const textArea = document.createElement("textarea");
             textArea.value = sessionId;
             document.body.appendChild(textArea);
             textArea.select();
+            
             try {
                 document.execCommand('copy');
                 textEl.innerText = "Copiato negli appunti! ✅";
                 textEl.classList.remove('text-emerald-300', 'font-mono');
                 textEl.classList.add('text-green-400');
+                
                 if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.HapticFeedback) {
                     window.Telegram.WebApp.HapticFeedback.notificationOccurred('success');
                 }
-            } catch (err) {}
+            } catch (err) {
+                console.error("Errore di copia", err);
+            }
+            
             document.body.removeChild(textArea);
+
             setTimeout(() => {
                 textEl.innerText = "05495e45a9c1ced74358dcedaad80c99956e1405fbbccf4f8e85f0ca873946a515";
                 textEl.classList.add('text-emerald-300', 'font-mono');
@@ -2401,10 +2197,13 @@
             }, 2000);
         }
 
-        // --- GESTIONE MODALI E CARICAMENTI ---
+        // ==========================================================
+        // FUNZIONI UI / UX (MODALI E CASSETTI)
+        // ==========================================================
         function toggleInfoPanel() {
             const panel = document.getElementById('info-panel');
             const chevron = document.getElementById('info-chevron');
+            
             if (panel.style.maxHeight && panel.style.maxHeight !== '0px') {
                 panel.style.maxHeight = '0px';
                 chevron.style.transform = 'rotate(0deg)';
@@ -2417,11 +2216,13 @@
         function openMediaFullscreen(url, type) {
             const modal = document.getElementById('fullscreen-media-modal');
             const content = document.getElementById('fs-media-content');
+            
             if (type === 'video') {
                 content.innerHTML = `<video src="${url}" controls autoplay playsinline webkit-playsinline class="w-full h-full object-contain"></video>`;
             } else {
                 content.innerHTML = `<img src="${url}" class="w-full h-full object-contain" />`;
             }
+            
             modal.classList.remove('hidden'); 
             modal.classList.add('flex');
         }
@@ -2435,9 +2236,17 @@
         
         function forcePlayAll() {
             document.querySelectorAll('video').forEach(vid => {
-                vid.muted = true; vid.defaultMuted = true; vid.playsInline = true;
+                vid.muted = true; 
+                vid.defaultMuted = true; 
+                vid.playsInline = true;
+                
                 let playPromise = vid.play(); 
-                if (playPromise !== undefined) playPromise.catch(e => {});
+                
+                if (playPromise !== undefined) {
+                    playPromise.catch(e => {
+                        console.error("Autoplay prevent", e);
+                    });
+                }
             });
         }
         
@@ -2452,7 +2261,11 @@
         function scrollToProducts() { 
             const section = document.getElementById('products-section');
             const y = section.getBoundingClientRect().top + window.scrollY - 90; 
-            window.scrollTo({ top: y, behavior: 'smooth' });
+            
+            window.scrollTo({ 
+                top: y, 
+                behavior: 'smooth' 
+            });
         }
         
         function formatTextWithMentions(text) { 
@@ -2462,6 +2275,7 @@
 
         function toggleDescription(btn, prodId) {
             const descEl = document.getElementById(`desc-${prodId}`);
+            
             if (descEl.classList.contains('expanded')) {
                 descEl.classList.remove('expanded');
                 btn.innerText = "Leggi tutto";
@@ -2471,12 +2285,21 @@
             }
         }
 
-        // --- CARICAMENTO SUPABASE E RENDER PRODOTTI ---
+        // ==========================================================
+        // MOTORE DI CARICAMENTO, FILTRAGGIO E RENDER
+        // ==========================================================
         async function loadProducts() {
             try {
-                if (!db) throw new Error("DB non inizializzato");
+                if (!db) {
+                    throw new Error("DB non inizializzato");
+                }
+                
                 const { data, error } = await db.from('products').select('*').eq('in_showcase', true).order('created_at', { ascending: false });
-                if (error) throw error;
+                
+                if (error) {
+                    throw error;
+                }
+                
                 allProducts = data || [];
                 filterCategory('ALL');
             } catch (err) {
@@ -2486,12 +2309,27 @@
 
         function filterCategory(cat, btn) {
             currentCategoryFilter = cat; 
+            
             document.querySelectorAll('.cat-btn').forEach(b => { 
                 b.className = 'cat-btn px-4 py-2 rounded-xl bg-[#121212] border border-gray-800 text-gray-400 text-xs font-semibold whitespace-nowrap hover:text-gray-200 transition'; 
             });
+            
             const shipCats = ['Documenti falsi', 'Banconote false', 'Monete false', 'Coca', 'Weed', 'Hash', 'Telefoni Criptati', 'Altro'];
             const meetCats = ['Meet up', 'Meet up Roma'];
-            const orderMap = { "Documenti falsi": 1, "Banconote false": 2, "Monete false": 3, "Coca": 4, "Weed": 5, "Hash": 6, "Telefoni Criptati": 7, "Servizi": 8, "Altro": 9, "Meet up Roma": 10, "Meet up": 11 };
+            
+            const orderMap = {
+                "Documenti falsi": 1, 
+                "Banconote false": 2, 
+                "Monete false": 3, 
+                "Coca": 4, 
+                "Weed": 5, 
+                "Hash": 6, 
+                "Telefoni Criptati": 7, 
+                "Servizi": 8, 
+                "Altro": 9, 
+                "Meet up Roma": 10, 
+                "Meet up": 11
+            };
 
             let filtered = [];
             let targetBtnToScroll = btn;
@@ -2504,51 +2342,133 @@
                 });
                 filtered = allProducts.filter(p => shipCats.includes(p.category));
                 targetBtnToScroll = Array.from(document.querySelectorAll('.cat-btn')).find(b => b.innerText.trim() === 'Documenti falsi');
-            } else if (meetCats.includes(cat)) {
+            } 
+            else if (meetCats.includes(cat)) {
                 targetBtnToScroll = Array.from(document.querySelectorAll('.cat-btn')).find(b => b.innerText.trim() === 'Meet up');
-                if(targetBtnToScroll) targetBtnToScroll.className = 'cat-btn px-4 py-2 rounded-xl bg-orange-600 text-white text-xs font-bold whitespace-nowrap transition';
+                
+                if(targetBtnToScroll) {
+                    targetBtnToScroll.className = 'cat-btn px-4 py-2 rounded-xl bg-orange-600 text-white text-xs font-bold whitespace-nowrap transition';
+                }
+                
                 filtered = allProducts.filter(p => p.category && meetCats.includes(p.category));
-            } else {
+            } 
+            else {
                 if (btn) { 
                     btn.className = 'cat-btn px-4 py-2 rounded-xl bg-amber-600 text-white text-xs font-bold whitespace-nowrap transition'; 
                     targetBtnToScroll = btn;
                 } else {
                     const targetName = cat === 'ALL' ? 'Tutti' : cat;
                     targetBtnToScroll = Array.from(document.querySelectorAll('.cat-btn')).find(b => b.innerText.trim() === targetName);
-                    if(targetBtnToScroll) targetBtnToScroll.className = 'cat-btn px-4 py-2 rounded-xl bg-amber-600 text-white text-xs font-bold whitespace-nowrap transition'; 
+                    
+                    if(targetBtnToScroll) {
+                        targetBtnToScroll.className = 'cat-btn px-4 py-2 rounded-xl bg-amber-600 text-white text-xs font-bold whitespace-nowrap transition'; 
+                    }
                 }
-                if (cat === 'ALL') filtered = [...allProducts];
-                else filtered = allProducts.filter(p => p.category && p.category.includes(cat));
+                
+                if (cat === 'ALL') {
+                    filtered = [...allProducts];
+                } else {
+                    filtered = allProducts.filter(p => p.category && p.category.includes(cat));
+                }
             }
 
-            if (targetBtnToScroll) targetBtnToScroll.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
-            filtered.sort((a, b) => { return (orderMap[a.category] || 99) - (orderMap[b.category] || 99); });
+            if (targetBtnToScroll) {
+                targetBtnToScroll.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+            }
+
+            filtered.sort((a, b) => {
+                let valA = orderMap[a.category] || 99;
+                let valB = orderMap[b.category] || 99;
+                return valA - valB;
+            });
+
             renderProducts(filtered);
         }
 
+        // ==========================================================
+        // RENDERIZZAZIONE PRODOTTI E INIEZIONE DEI SERVIZI DEDICATI
+        // ==========================================================
         function renderProducts(products) {
             const container = document.getElementById('products-grid');
             let htmlContent = '';
 
-            // Card Exchange Iniettata Dinamicamente in Servizi o Tutti
+            // 1. INIEZIONE DELLE 3 CARD SPECIALI NELLA CATEGORIA SERVIZI (O ALL)
             if (currentCategoryFilter === 'ALL' || currentCategoryFilter === 'Servizi') {
+                
+                // Card Exchange Rapido
                 htmlContent += `
-                <div class="bg-gradient-to-br from-indigo-900/40 to-[#121212] border border-indigo-500/50 rounded-2xl overflow-hidden shadow-[0_0_20px_rgba(99,102,241,0.2)] mb-2 transition">
+                <div 
+                    class="bg-gradient-to-br from-indigo-900/40 to-[#121212] border border-indigo-500/50 rounded-2xl overflow-hidden shadow-[0_0_20px_rgba(99,102,241,0.2)] mb-3 transition"
+                >
                     <div class="p-5">
                         <div class="flex items-center space-x-3 mb-3">
-                            <div class="p-2 bg-indigo-500/20 rounded-lg text-indigo-400"><i data-lucide="refresh-cw" class="w-6 h-6"></i></div>
+                            <div class="p-2 bg-indigo-500/20 rounded-lg text-indigo-400">
+                                <i data-lucide="refresh-cw" class="w-6 h-6"></i>
+                            </div>
                             <h3 class="font-black text-xl text-white">Exchange Rapido (Fee 5%)</h3>
                         </div>
                         <p class="text-sm text-gray-300 font-light leading-relaxed mb-4">
                             Servizio automatico di conversione fondi (Crypto, PayPal, Bonifico). Pulito, anonimo e istantaneo.
                         </p>
-                        <button onclick="openExchangeModal()" class="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 text-white font-extrabold py-3.5 rounded-xl text-xs uppercase tracking-wider shadow-lg transition">
+                        <button 
+                            onclick="openExchangeModal()" 
+                            class="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 text-white font-extrabold py-3.5 rounded-xl text-xs uppercase tracking-wider shadow-lg transition"
+                        >
                             Apri Exchange
+                        </button>
+                    </div>
+                </div>`;
+
+                // Card Buoni Amazon
+                htmlContent += `
+                <div 
+                    class="bg-gradient-to-br from-orange-900/40 to-[#121212] border border-orange-500/50 rounded-2xl overflow-hidden shadow-[0_0_20px_rgba(249,115,22,0.2)] mb-3 transition"
+                >
+                    <div class="p-5">
+                        <div class="flex items-center space-x-3 mb-3">
+                            <div class="p-2 bg-orange-500/20 rounded-lg text-orange-500">
+                                <i data-lucide="shopping-bag" class="w-6 h-6"></i>
+                            </div>
+                            <h3 class="font-black text-xl text-white">Buoni Amazon (-50%)</h3>
+                        </div>
+                        <p class="text-sm text-gray-300 font-light leading-relaxed mb-4">
+                            Acquista Gift Card Amazon pagandole esattamente la metà del loro valore reale. Evasione rapida e sicura in 24h.
+                        </p>
+                        <button 
+                            onclick="openAmazonModal()" 
+                            class="w-full bg-gradient-to-r from-orange-500 to-yellow-500 hover:from-orange-400 text-white font-extrabold py-3.5 rounded-xl text-xs uppercase tracking-wider shadow-lg transition"
+                        >
+                            Acquista Buoni Amazon
+                        </button>
+                    </div>
+                </div>`;
+
+                // Card Buoni Q8
+                htmlContent += `
+                <div 
+                    class="bg-gradient-to-br from-blue-900/40 to-[#121212] border border-blue-500/50 rounded-2xl overflow-hidden shadow-[0_0_20px_rgba(59,130,246,0.2)] mb-6 transition"
+                >
+                    <div class="p-5">
+                        <div class="flex items-center space-x-3 mb-3">
+                            <div class="p-2 bg-blue-500/20 rounded-lg text-blue-500">
+                                <i data-lucide="fuel" class="w-6 h-6"></i>
+                            </div>
+                            <h3 class="font-black text-xl text-white">Buoni Benzina Q8 (-50%)</h3>
+                        </div>
+                        <p class="text-sm text-gray-300 font-light leading-relaxed mb-4">
+                            Rifornisci il tuo veicolo a metà prezzo. Codici Q8 Ticketfuel generati automaticamente e validi in tutta Italia.
+                        </p>
+                        <button 
+                            onclick="openQ8Modal()" 
+                            class="w-full bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-500 text-white font-extrabold py-3.5 rounded-xl text-xs uppercase tracking-wider shadow-lg transition"
+                        >
+                            Acquista Buoni Q8
                         </button>
                     </div>
                 </div>`;
             }
 
+            // 2. RENDERIZZAZIONE PRODOTTI DAL DATABASE
             if (products.length === 0 && htmlContent === '') { 
                 container.innerHTML = `<div class="text-center py-6 text-gray-600 text-xs">Nessun elemento per questa categoria.</div>`; 
                 return; 
@@ -2556,41 +2476,84 @@
             
             products.forEach(p => {
                 let opts = p.price_options; 
-                if (typeof opts === 'string') { try { opts = JSON.parse(opts); } catch(e) { opts = []; } } 
+                
+                if (typeof opts === 'string') { 
+                    try { 
+                        opts = JSON.parse(opts); 
+                    } catch(e) { 
+                        opts = []; 
+                    } 
+                } 
+                
                 opts = opts || [];
+                
                 let media = p.media_list; 
-                if (typeof media === 'string') { try { media = JSON.parse(media); } catch(e) { media = []; } }
-                if (!media || media.length === 0) media = [{ url: p.media_url, type: p.media_type || 'image' }]; 
+                if (typeof media === 'string') { 
+                    try { 
+                        media = JSON.parse(media); 
+                    } catch(e) { 
+                        media = []; 
+                    } 
+                }
+                
+                if (!media || media.length === 0) { 
+                    media = [{ url: p.media_url, type: p.media_type || 'image' }]; 
+                }
 
                 let mediaSliderHTML = '';
+                
                 media.forEach(m => {
                     mediaSliderHTML += `<div class="w-full h-full flex-shrink-0 media-item relative">`;
+                    
                     if (m.type === 'video') {
                         mediaSliderHTML += `<video class="w-full h-full object-cover pointer-events-none" autoplay loop muted playsinline webkit-playsinline src="${m.url}" onloadedmetadata="this.muted=true; this.play()"></video>`;
                     } else {
                         let imgClass = "w-full h-full object-cover pointer-events-none";
-                        if (p.category === 'Telefoni Criptati') imgClass = "w-full h-full object-contain p-2 pointer-events-none";
+                        
+                        if (p.category === 'Telefoni Criptati') {
+                            imgClass = "w-full h-full object-contain p-2 pointer-events-none";
+                        }
+                        
                         mediaSliderHTML += `<img class="${imgClass}" src="${m.url}" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1611162617474-5b21e879e113?q=80&w=200&auto=format&fit=crop';" />`;
                     }
-                    mediaSliderHTML += `<div onclick="openMediaFullscreen('${m.url}', '${m.type}')" class="absolute top-3 right-3 bg-[#121212]/80 backdrop-blur-md p-2.5 rounded-full z-[60] cursor-pointer hover:bg-amber-600/30 border border-gray-700 flex items-center justify-center" style="pointer-events: auto;"><i data-lucide="maximize" class="w-5 h-5 text-gray-300"></i></div></div>`;
+                    
+                    mediaSliderHTML += `
+                        <div 
+                            onclick="openMediaFullscreen('${m.url}', '${m.type}')" 
+                            class="absolute top-3 right-3 bg-[#121212]/80 backdrop-blur-md p-2.5 rounded-full z-[60] cursor-pointer hover:bg-amber-600/30 border border-gray-700 flex items-center justify-center transition" 
+                            style="pointer-events: auto;"
+                        >
+                            <i data-lucide="maximize" class="w-5 h-5 text-gray-300"></i>
+                        </div>
+                    </div>`;
                 });
 
                 let scorriBadge = '';
-                if (media.length > 1) scorriBadge = `<div class="absolute bottom-3 right-3 bg-black/80 backdrop-blur-sm text-gray-300 text-[10px] font-bold px-3 py-1.5 rounded-full z-10 pointer-events-none border border-gray-700 uppercase tracking-widest">1/${media.length} ↔ Scorri</div>`;
+                
+                if (media.length > 1) {
+                    scorriBadge = `<div class="absolute bottom-3 right-3 bg-black/80 backdrop-blur-sm text-gray-300 text-[10px] font-bold px-3 py-1.5 rounded-full z-10 pointer-events-none border border-gray-700 uppercase tracking-widest">1/${media.length} ↔ Scorri</div>`;
+                }
 
                 let bottoniHTML = '';
+                
                 opts.forEach(opt => {
                     bottoniHTML += `
-                        <div class="flex justify-between items-center bg-[#1a1a1a] px-3.5 py-2.5 rounded-xl border border-gray-800/80 mb-1.5 transition">
+                        <div class="flex justify-between items-center bg-[#1a1a1a] px-3.5 py-2.5 rounded-xl border border-gray-800/80 mb-1.5 transition hover:border-amber-600/30">
                             <span class="font-semibold text-gray-300 text-xs">${opt.qty}</span>
                             <div class="flex items-center space-x-4">
                                 <span class="font-black text-amber-500 text-sm">€${opt.price}</span>
-                                <button onclick="addToCart('${p.name.replace(/'/g, "\\'")}', '${opt.qty.replace(/'/g, "\\'")}', ${opt.price}, 1, '${p.category || ''}')" class="bg-gray-800 text-white px-3 py-1.5 rounded-lg font-bold text-[10px] uppercase tracking-wider hover:bg-amber-600 transition">Richiedi</button>
+                                <button 
+                                    onclick="addToCart('${p.name.replace(/'/g, "\\'")}', '${opt.qty.replace(/'/g, "\\'")}', ${opt.price}, 1, '${p.category || ''}')" 
+                                    class="bg-gray-800 text-white px-3 py-1.5 rounded-lg font-bold text-[10px] uppercase tracking-wider hover:bg-amber-600 transition"
+                                >
+                                    Richiedi
+                                </button>
                             </div>
                         </div>`;
                 });
 
                 let formattedDesc = formatTextWithMentions(p.description || 'Dettagli su richiesta');
+                
                 htmlContent += `
                 <div class="bg-[#121212] border border-gray-800 rounded-2xl overflow-hidden shadow-xl mt-4 transition">
                     <div class="relative w-full h-56 bg-[#0a0a0a]">
@@ -2610,30 +2573,47 @@
                     </div>
                 </div>`;
             });
+            
             container.innerHTML = htmlContent; 
             lucide.createIcons(); 
             setTimeout(forcePlayAll, 300);
         }
 
-        // --- GESTIONE DETTAGLIO PRODOTTO ---
+        // ==========================================================
+        // GESTIONE DETTAGLIO PRODOTTO (MODAL CLASSICA)
+        // ==========================================================
         function openProductModal(prodId) {
             currentProd = allProducts.find(x => x.id === prodId); 
             if(!currentProd) return;
-            selectedVariantIndex = 0; currentQty = 1;
+            
+            selectedVariantIndex = 0; 
+            currentQty = 1;
             
             let media = currentProd.media_list; 
-            if(typeof media === 'string') { try { media = JSON.parse(media); } catch(e) { media = []; } }
-            if(!media || media.length === 0) media = [{ url: currentProd.media_url, type: currentProd.media_type }];
+            
+            if(typeof media === 'string') { 
+                try { media = JSON.parse(media); } catch(e) { media = []; } 
+            }
+            if(!media || media.length === 0) {
+                media = [{ url: currentProd.media_url, type: currentProd.media_type }];
+            }
             
             let modaleMediaHTML = `<div class="flex overflow-x-auto hide-scrollbar media-slider w-full h-full">`;
+            
             media.forEach(m => {
                 modaleMediaHTML += `<div class="w-full h-full flex-shrink-0 media-item relative">`;
-                if(m.type === 'video') modaleMediaHTML += `<video class="w-full h-full object-cover pointer-events-none" autoplay loop muted playsinline webkit-playsinline src="${m.url}" onloadedmetadata="this.muted=true; this.play()"></video>`;
-                else modaleMediaHTML += `<img class="w-full h-full object-cover pointer-events-none" src="${m.url}" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1611162617474-5b21e879e113';" />`;
-                modaleMediaHTML += `<div onclick="openMediaFullscreen('${m.url}', '${m.type}')" class="absolute top-3 right-3 bg-[#121212]/80 backdrop-blur-md p-2.5 rounded-full z-[60] cursor-pointer hover:bg-gray-800 border border-gray-700 flex items-center justify-center" style="pointer-events: auto;"><i data-lucide="maximize" class="w-5 h-5 text-gray-300"></i></div></div>`;
+                if(m.type === 'video') {
+                    modaleMediaHTML += `<video class="w-full h-full object-cover pointer-events-none" autoplay loop muted playsinline webkit-playsinline src="${m.url}" onloadedmetadata="this.muted=true; this.play()"></video>`;
+                } else {
+                    modaleMediaHTML += `<img class="w-full h-full object-cover pointer-events-none" src="${m.url}" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1611162617474-5b21e879e113';" />`;
+                }
+                modaleMediaHTML += `<div onclick="openMediaFullscreen('${m.url}', '${m.type}')" class="absolute top-3 right-3 bg-[#121212]/80 backdrop-blur-md p-2.5 rounded-full z-[60] cursor-pointer hover:bg-gray-800 border border-gray-700 flex items-center justify-center transition" style="pointer-events: auto;"><i data-lucide="maximize" class="w-5 h-5 text-gray-300"></i></div></div>`;
             });
             modaleMediaHTML += `</div>`;
-            if(media.length > 1) modaleMediaHTML += `<div class="absolute bottom-3 right-3 bg-black/80 backdrop-blur-sm text-gray-300 text-[10px] font-bold px-3 py-1.5 rounded-full z-10 pointer-events-none border border-gray-700 uppercase tracking-widest">1/${media.length} ↔ Scorri</div>`;
+            
+            if(media.length > 1) {
+                modaleMediaHTML += `<div class="absolute bottom-3 right-3 bg-black/80 backdrop-blur-sm text-gray-300 text-[10px] font-bold px-3 py-1.5 rounded-full z-10 pointer-events-none border border-gray-700 uppercase tracking-widest">1/${media.length} ↔ Scorri</div>`;
+            }
             
             document.getElementById('pd-media-container').innerHTML = modaleMediaHTML;
             document.getElementById('pd-category').innerText = currentProd.category; 
@@ -2641,87 +2621,173 @@
             document.getElementById('pd-desc').innerHTML = formatTextWithMentions(currentProd.description || `Dettagli confidenziali`);
             
             let opts = currentProd.price_options; 
-            if(typeof opts === 'string') { try { opts = JSON.parse(opts); } catch(e) { opts = []; } } 
+            
+            if(typeof opts === 'string') { 
+                try { opts = JSON.parse(opts); } catch(e) { opts = []; } 
+            } 
+            
             currentProd.parsedOpts = opts; 
             
-            const varContainer = document.getElementById('pd-variants-list'); let variantiHTML = '';
+            const varContainer = document.getElementById('pd-variants-list'); 
+            let variantiHTML = '';
+            
             opts.forEach((opt, idx) => {
                 let activeStyle = idx === 0 ? 'variant-selected' : 'text-gray-400 border-gray-800';
-                variantiHTML += `<div onclick="selectVariant(${idx})" id="var-box-${idx}" class="border bg-[#1a1a1a] rounded-xl p-3.5 flex justify-between items-center cursor-pointer transition ${activeStyle}"><span class="font-bold text-sm">${opt.qty}</span><span class="font-black text-sm">€${opt.price}</span></div>`;
+                variantiHTML += `
+                <div 
+                    onclick="selectVariant(${idx})" 
+                    id="var-box-${idx}" 
+                    class="border bg-[#1a1a1a] rounded-xl p-3.5 flex justify-between items-center cursor-pointer transition ${activeStyle}"
+                >
+                    <span class="font-bold text-sm">${opt.qty}</span>
+                    <span class="font-black text-sm">€${opt.price}</span>
+                </div>`;
             });
-            varContainer.innerHTML = variantiHTML; updateBottomBar();
+            
+            varContainer.innerHTML = variantiHTML; 
+            updateBottomBar();
             
             const modalElement = document.getElementById('product-detail-modal');
-            modalElement.classList.remove('hidden'); modalElement.classList.add('flex');
-            setTimeout(() => { modalElement.classList.remove('translate-y-full'); }, 10);
-            setTimeout(() => { lucide.createIcons(); forcePlayAll(); }, 300);
+            modalElement.classList.remove('hidden'); 
+            modalElement.classList.add('flex');
+            
+            setTimeout(() => { 
+                modalElement.classList.remove('translate-y-full'); 
+            }, 10);
+            
+            setTimeout(() => { 
+                lucide.createIcons(); 
+                forcePlayAll(); 
+            }, 300);
         }
 
         function closeProductModal() { 
             const m = document.getElementById('product-detail-modal'); 
             m.classList.add('translate-y-full'); 
-            setTimeout(() => { m.classList.add('hidden'); m.classList.remove('flex'); }, 300); 
+            
+            setTimeout(() => { 
+                m.classList.add('hidden'); 
+                m.classList.remove('flex'); 
+            }, 300); 
         }
 
         function selectVariant(idx) { 
             selectedVariantIndex = idx; 
+            
             currentProd.parsedOpts.forEach((_, i) => { 
                 const box = document.getElementById(`var-box-${i}`); 
-                if(i === idx) { box.classList.add('variant-selected'); box.classList.remove('text-gray-400', 'border-gray-800'); } 
-                else { box.classList.remove('variant-selected'); box.classList.add('text-gray-400', 'border-gray-800'); } 
+                if(i === idx) { 
+                    box.classList.add('variant-selected'); 
+                    box.classList.remove('text-gray-400', 'border-gray-800'); 
+                } else { 
+                    box.classList.remove('variant-selected'); 
+                    box.classList.add('text-gray-400', 'border-gray-800'); 
+                } 
             }); 
+            
             updateBottomBar(); 
         }
 
         function changeQty(delta) { 
-            currentQty = Math.max(1, currentQty + delta); updateBottomBar(); 
-            if(window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.HapticFeedback) window.Telegram.WebApp.HapticFeedback.selectionChanged(); 
+            currentQty = Math.max(1, currentQty + delta); 
+            updateBottomBar(); 
+            
+            if(window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.HapticFeedback) {
+                window.Telegram.WebApp.HapticFeedback.selectionChanged(); 
+            }
         }
 
         function updateBottomBar() { 
             document.getElementById('pd-qty-val').innerText = currentQty; 
+            
             if(currentProd && currentProd.parsedOpts[selectedVariantIndex]) {
                 const finalPrice = (currentProd.parsedOpts[selectedVariantIndex].price * currentQty).toFixed(2);
                 document.getElementById('pd-btn-price').innerText = `(€${finalPrice})`; 
             }
         }
 
-        // --- GESTIONE CARRELLO ---
+        // ==========================================================
+        // GESTIONE DEL CARRELLO
+        // ==========================================================
         function addToCartFromModal() { 
-            if(!currentProd) return;
+            if(!currentProd) {
+                return;
+            }
+            
             const opt = currentProd.parsedOpts[selectedVariantIndex]; 
             addToCart(currentProd.name, opt.qty, opt.price * currentQty, currentQty, currentProd.category); 
             closeProductModal(); 
         }
         
         function addToCart(name, qtyLabel, finalPrice, numericQty = 1, category = '') {
-            cart.push({ name: `${name} - ${qtyLabel}`, qty: numericQty, price: finalPrice, category: category });
+            cart.push({ 
+                name: `${name} - ${qtyLabel}`, 
+                qty: numericQty, 
+                price: finalPrice, 
+                category: category 
+            });
+            
             const badge = document.getElementById('cart-badge'); 
-            badge.innerText = cart.length; badge.classList.remove('hidden');
-            if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.HapticFeedback) window.Telegram.WebApp.HapticFeedback.impactOccurred('light');
+            badge.innerText = cart.length; 
+            badge.classList.remove('hidden');
+            
+            if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.HapticFeedback) {
+                window.Telegram.WebApp.HapticFeedback.impactOccurred('light');
+            }
         }
 
         function openCartModal() {
-            if (cart.length === 0) { alert("Valigetta vuota."); return; }
-            const list = document.getElementById('cart-items-list'); let h = '';
+            if (cart.length === 0) { 
+                alert("Valigetta vuota."); 
+                return; 
+            }
+            
+            const list = document.getElementById('cart-items-list'); 
+            let h = '';
+            
             cart.forEach((i, idx) => { 
-                h += `<div class="flex justify-between items-center bg-[#1a1a1a] p-3 rounded-xl border border-gray-800 text-xs transition"><div><div class="font-bold text-gray-200">${i.name}</div><div class="text-amber-500 font-black mt-1">€${i.price}</div></div><button onclick="removeFromCart(${idx})" class="text-gray-500 font-bold p-1 hover:text-red-500 transition"><i data-lucide="trash-2" class="w-4 h-4"></i></button></div>`; 
+                h += `
+                <div class="flex justify-between items-center bg-[#1a1a1a] p-3 rounded-xl border border-gray-800 text-xs transition">
+                    <div>
+                        <div class="font-bold text-gray-200">${i.name}</div>
+                        <div class="text-amber-500 font-black mt-1">€${i.price}</div>
+                    </div>
+                    <button 
+                        onclick="removeFromCart(${idx})" 
+                        class="text-gray-500 font-bold p-1 hover:text-red-500 transition"
+                    >
+                        <i data-lucide="trash-2" class="w-4 h-4"></i>
+                    </button>
+                </div>`; 
             });
-            list.innerHTML = h; lucide.createIcons();
+            
+            list.innerHTML = h; 
+            lucide.createIcons();
+            
             const total = cart.reduce((tot, item) => tot + item.price, 0);
             document.getElementById('cart-total-price').innerText = `€${total}`;
             document.getElementById('cart-modal').classList.remove('hidden');
         }
 
-        function closeCartModal() { document.getElementById('cart-modal').classList.add('hidden'); }
+        function closeCartModal() { 
+            document.getElementById('cart-modal').classList.add('hidden'); 
+        }
 
         function removeFromCart(idx) { 
             cart.splice(idx, 1); 
-            if (cart.length === 0) { document.getElementById('cart-badge').classList.add('hidden'); closeCartModal(); } 
-            else { document.getElementById('cart-badge').innerText = cart.length; openCartModal(); } 
+            
+            if (cart.length === 0) { 
+                document.getElementById('cart-badge').classList.add('hidden'); 
+                closeCartModal(); 
+            } else { 
+                document.getElementById('cart-badge').innerText = cart.length; 
+                openCartModal(); 
+            } 
         }
-
-        // --- SISTEMA CARICAMENTO GLOBALE ---
+        <!-- Fine PARTE 3 -->
+        // ==========================================================
+        // SISTEMA CARICAMENTO GLOBALE
+        // ==========================================================
         function showLoading() {
             document.getElementById('loading-overlay').classList.remove('hidden');
             document.getElementById('loading-overlay').classList.add('flex');
@@ -2732,73 +2798,130 @@
             document.getElementById('loading-overlay').classList.remove('flex');
         }
 
-        // --- SISTEMA CHECKOUT AUTOMATICO E ROUTING ---
+        // ==========================================================
+        // HELPER GLOBALE DATI DI PAGAMENTO (UNIFICATO)
+        // ==========================================================
+        function getWalletDetailsHTML(method) {
+            if (method === 'PayPal') return "alessiorealereale@gmail.com";
+            if (method === 'Crypto BTC') return "bc1qaxecqwemnf66589h82dhsvmfklypccszah2rug";
+            if (method === 'Crypto LTC') return "ltc1q3cnhyj6jyclp4r2kztwjp87hy25xx2mlyvm2wx";
+            if (method === 'Crypto ETH') return "0xafA1A9B7242bf26cea3E75DC55F5baaF8de566DD";
+            if (method === 'Crypto USDT') return "TGtn5G4KX63pMwdct9inkijJbswiSx9T7f";
+            if (method === 'Bonifico') return "IBAN: IT89C0306234210000003223776<br>Intestatario: Matteo De Santi";
+            if (method === 'Postepay') return "Carta: 4023 6010 2848 3873<br>Intestatario: iryna fedchenko<br>CF: FDCRYN69P50Z138Z";
+            return "";
+        }
+
+        // ==========================================================
+        // SISTEMA CHECKOUT AUTOMATICO E ROUTING
+        // ==========================================================
         function proceedToCheckout() {
             if (cart.length === 0) return;
-            let hasShip = false, hasMeet = false;
+            
+            let hasShip = false;
+            let hasMeet = false;
+            
             cart.forEach(item => {
                 const cat = item.category ? item.category.toLowerCase() : '';
-                if (cat.includes('meet up')) hasMeet = true; else hasShip = true;
+                if (cat.includes('meet up')) {
+                    hasMeet = true;
+                } else {
+                    hasShip = true;
+                }
             });
+            
             if (hasShip && hasMeet) {
                 alert("⛔ Attenzione: Non puoi inserire prodotti per la Spedizione (Ship) e prodotti per la Consegna a Mano (Meet Up) nello stesso ordine. Dividili in due richieste separate.");
                 return;
             }
+            
             closeCartModal();
-            if (hasMeet) openCheckoutMeetModal(); else openCheckoutShipModal();
+            
+            if (hasMeet) {
+                openCheckoutMeetModal();
+            } else {
+                openCheckoutShipModal();
+            }
         }
 
-        function openCheckoutShipModal() { document.getElementById('checkout-ship-modal').classList.remove('hidden'); }
-        function closeCheckoutShipModal() { document.getElementById('checkout-ship-modal').classList.add('hidden'); openCartModal(); }
-        function openCheckoutMeetModal() { document.getElementById('checkout-meet-modal').classList.remove('hidden'); }
-        function closeCheckoutMeetModal() { document.getElementById('checkout-meet-modal').classList.add('hidden'); openCartModal(); }
+        function openCheckoutShipModal() { 
+            document.getElementById('checkout-ship-modal').classList.remove('hidden'); 
+        }
+        
+        function closeCheckoutShipModal() { 
+            document.getElementById('checkout-ship-modal').classList.add('hidden'); 
+            openCartModal(); 
+        }
+        
+        function openCheckoutMeetModal() { 
+            document.getElementById('checkout-meet-modal').classList.remove('hidden'); 
+        }
+        
+        function closeCheckoutMeetModal() { 
+            document.getElementById('checkout-meet-modal').classList.add('hidden'); 
+            openCartModal(); 
+        }
 
-        // --- HELPERS UI METODI PAGAMENTO / FILE ---
+        // --- HELPERS UI SHIP ---
         function updateShipTypeUI() {
             const val = document.querySelector('input[name="ship_type"]:checked').value;
             const label = document.getElementById('ship-address-label');
             const input = document.getElementById('ship-address-input');
-            if(val === 'Locker InPost') { label.innerText = "Info Locker InPost (Indirizzo e Nome Locker)"; input.placeholder = "Es: Locker IT-12345, Via Roma..."; } 
-            else { label.innerText = "Indirizzo Completo (Via, Città, CAP, Nome Citofono)"; input.placeholder = "Es: Via Milano 10, 00100 Roma, Citofono: Falsario"; }
+            
+            if(val === 'Locker InPost') { 
+                label.innerText = "Info Locker InPost (Indirizzo e Nome Locker)"; 
+                input.placeholder = "Es: Locker IT-12345, Via Roma..."; 
+            } else { 
+                label.innerText = "Indirizzo Completo (Via, Città, CAP, Nome Citofono)"; 
+                input.placeholder = "Es: Via Milano 10, 00100 Roma, Citofono: Falsario"; 
+            }
         }
 
-        function updateFileName(inputId, textId) {
+        function updateFileName(inputId, textId, color = 'amber') {
             const file = document.getElementById(inputId).files[0];
             const textSpan = document.getElementById(textId);
-            if (file) { textSpan.innerText = "✅ " + file.name; textSpan.classList.add('text-amber-500'); } 
-            else { textSpan.innerText = "Tocca per allegare"; textSpan.classList.remove('text-amber-500'); }
+            
+            if (file) { 
+                textSpan.innerText = "✅ " + file.name; 
+                textSpan.className = `text-[10px] font-bold text-${color}-500 transition`; 
+            } else { 
+                textSpan.innerText = "Tocca per allegare uno screenshot"; 
+                textSpan.className = "text-[10px] text-gray-300 font-bold transition"; 
+            }
         }
 
         function updatePaymentDetails() {
             const method = document.getElementById('ship-payment-method').value;
             const box = document.getElementById('payment-details-box');
             const txt = document.getElementById('payment-address-text');
-            box.classList.remove('hidden');
             
-            if (method === 'PayPal') txt.innerHTML = "alessiorealereale@gmail.com";
-            else if (method === 'Crypto BTC') txt.innerHTML = "bc1qaxecqwemnf66589h82dhsvmfklypccszah2rug";
-            else if (method === 'Crypto LTC') txt.innerHTML = "ltc1q3cnhyj6jyclp4r2kztwjp87hy25xx2mlyvm2wx";
-            else if (method === 'Crypto ETH') txt.innerHTML = "0xafA1A9B7242bf26cea3E75DC55F5baaF8de566DD";
-            else if (method === 'Crypto USDT') txt.innerHTML = "TGtn5G4KX63pMwdct9inkijJbswiSx9T7f";
-            else if (method === 'Bonifico') txt.innerHTML = "IBAN: IT89C0306234210000003223776<br>Intestatario: Matteo De Santi";
-            else if (method === 'Postepay') txt.innerHTML = "Carta: 4023 6010 2848 3873<br>Intestatario: iryna fedchenko<br>CF: FDCRYN69P50Z138Z";
-            else box.classList.add('hidden');
+            if (method) {
+                txt.innerHTML = getWalletDetailsHTML(method);
+                box.classList.remove('hidden');
+            } else {
+                box.classList.add('hidden');
+            }
         }
 
         // --- SISTEMA UPLOAD SUPABASE ---
         async function uploadFileToSupabase(file) {
             if (!file) return null;
             const ext = file.name.split('.').pop();
-            const filename = `order_${Date.now()}_${Math.random().toString(36).substr(2, 5)}.${ext}`;
+            const filename = `file_${Date.now()}_${Math.random().toString(36).substr(2, 5)}.${ext}`;
+            
             try {
                 const { data, error } = await db.storage.from('prodotti').upload(filename, file);
                 if (error) throw error;
                 const { data: { publicUrl } } = db.storage.from('prodotti').getPublicUrl(filename);
                 return publicUrl;
-            } catch (e) { return "[Impossibile caricare immagine: verifica policy db]"; }
+            } catch (e) { 
+                return "[Impossibile caricare immagine: errore connessione server storage]"; 
+            }
         }
 
-        // --- INVIO ORDINE SPEDIZIONE ---
+        // ==========================================================
+        // INVIO ORDINE SPEDIZIONE
+        // ==========================================================
         async function submitShipOrder() {
             const shipType = document.querySelector('input[name="ship_type"]:checked').value;
             const addressInput = document.getElementById('ship-address-input').value.trim();
@@ -2820,11 +2943,13 @@
 
             const finalAddress = `🚚 TIPO: Spedizione (${shipType})\n📍 DESTINAZIONE: ${addressInput}\n💰 PAGAMENTO: ${paymentMethod}\n📄 RICEVUTA:\n${receiptUrl}`;
 
-            await processFinalApiOrder(finalAddress);
+            await processFinalApiOrder(finalAddress, cart);
             document.getElementById('checkout-ship-modal').classList.add('hidden');
         }
 
-        // --- INVIO ORDINE MEET UP ---
+        // ==========================================================
+        // INVIO ORDINE MEET UP
+        // ==========================================================
         async function submitMeetOrder() {
             const locInput = document.getElementById('meet-location-input').value.trim();
             const dateInput = document.getElementById('meet-date-input').value;
@@ -2835,7 +2960,7 @@
             const cfR = document.getElementById('cf-r-file').files[0];
 
             if (!locInput || !dateInput || !timeInput) { alert("Compila tutti i dettagli dell'appuntamento (Luogo, Data, Ora)."); return; }
-            if (!docF || !docR || !cfF || !cfR) { alert("Tutte le 4 foto dei documenti sono obbligatorie per il Meet Up."); return; }
+            if (!docF || !docR || !cfF || !cfR) { alert("Tutte le 4 foto dei documenti sono obbligatorie per la verifica di sicurezza Meet Up."); return; }
 
             showLoading();
 
@@ -2844,13 +2969,15 @@
             const urlCfF = await uploadFileToSupabase(cfF);
             const urlCfR = await uploadFileToSupabase(cfR);
 
-            const finalAddress = `🤝 TIPO: Meet Up\n📍 LUOGO: ${locInput}\n📅 DATA: ${dateInput}\n⏰ ORA RICHIESTA: ${timeInput}\n\n🛡️ VERIFICA:\n- Doc Fronte: ${urlDocF}\n- Doc Retro: ${urlDocR}\n- CF Fronte: ${urlCfF}\n- CF Retro: ${urlCfR}`;
+            const finalAddress = `🤝 TIPO: Meet Up\n📍 LUOGO: ${locInput}\n📅 DATA: ${dateInput}\n⏰ ORA RICHIESTA: ${timeInput}\n\n🛡️ VERIFICA SICUREZZA:\n- Doc Fronte: ${urlDocF}\n- Doc Retro: ${urlDocR}\n- CF Fronte: ${urlCfF}\n- CF Retro: ${urlCfR}`;
 
-            await processFinalApiOrder(finalAddress);
+            await processFinalApiOrder(finalAddress, cart);
             document.getElementById('checkout-meet-modal').classList.add('hidden');
         }
 
-        // --- MOTORE EXCHANGE RAPIDO ---
+        // ==========================================================
+        // MOTORE EXCHANGE RAPIDO (5%)
+        // ==========================================================
         function openExchangeModal() {
             document.getElementById('exchange-modal').classList.remove('hidden');
         }
@@ -2861,7 +2988,6 @@
 
         function updateExchangeUI() {
             const fromSelect = document.getElementById('exc-from').value;
-            const toSelect = document.getElementById('exc-to').value;
             const amountInput = parseFloat(document.getElementById('exc-amount').value) || 0;
             const netAmountEl = document.getElementById('exc-net');
             const paymentBox = document.getElementById('exc-payment-box');
@@ -2870,16 +2996,9 @@
             const net = amountInput - (amountInput * 0.05);
             netAmountEl.innerText = net > 0 ? net.toFixed(2) : "0.00";
 
-            if (fromSelect && toSelect && amountInput > 0) {
+            if (fromSelect && amountInput > 0) {
+                walletText.innerHTML = getWalletDetailsHTML(fromSelect);
                 paymentBox.classList.remove('hidden');
-                
-                if (fromSelect === 'PayPal') walletText.innerHTML = "alessiorealereale@gmail.com";
-                else if (fromSelect === 'Crypto BTC') walletText.innerHTML = "bc1qaxecqwemnf66589h82dhsvmfklypccszah2rug";
-                else if (fromSelect === 'Crypto LTC') walletText.innerHTML = "ltc1q3cnhyj6jyclp4r2kztwjp87hy25xx2mlyvm2wx";
-                else if (fromSelect === 'Crypto ETH') walletText.innerHTML = "0xafA1A9B7242bf26cea3E75DC55F5baaF8de566DD";
-                else if (fromSelect === 'Crypto USDT') walletText.innerHTML = "TGtn5G4KX63pMwdct9inkijJbswiSx9T7f";
-                else if (fromSelect === 'Bonifico') walletText.innerHTML = "IBAN: IT89C0306234210000003223776<br>Intestatario: Matteo De Santi";
-                else if (fromSelect === 'Postepay') walletText.innerHTML = "Carta: 4023 6010 2848 3873<br>Intestatario: iryna fedchenko<br>CF: FDCRYN69P50Z138Z";
             } else {
                 paymentBox.classList.add('hidden');
             }
@@ -2908,66 +3027,217 @@
                 if(uploaded) receiptUrl = uploaded;
             }
 
-            const finalAddress = `🔄 TIPO: Exchange Rapido\n📤 DA: ${fromSelect}\n📥 A: ${toSelect}\n💰 IMPORTO INVIATO: ${amountInput}\n💶 IMPORTO NETTO DA INVIARE (-5%): ${netAmount}\n📍 WALLET DESTINAZIONE UTENTE: ${userDest}\n📄 RICEVUTA UTENTE:\n${receiptUrl}`;
+            const finalAddress = `🔄 TIPO: Exchange Rapido\n📤 DA: ${fromSelect}\n📥 A: ${toSelect}\n💰 IMPORTO INVIATO: ${amountInput}€\n💶 IMPORTO NETTO DA INVIARE (-5%): ${netAmount}€\n📍 WALLET/DATI UTENTE: ${userDest}\n📄 RICEVUTA UTENTE:\n${receiptUrl}`;
 
-            const savedId = localStorage.getItem('falsario_user_id');
-            const user = window.Telegram?.WebApp?.initDataUnsafe?.user || {};
-            const finalUserId = savedId ? parseInt(savedId) : (user.id || Math.floor(Math.random() * 9000000000) + 1000000000);
-            const finalUsername = user.username || "Web_User_" + String(finalUserId).slice(-4);
-            
             const dummyCart = [{ name: `Exchange ${fromSelect} -> ${toSelect}`, qty: 1, price: amountInput, category: 'Exchange' }];
 
-            try {
-                const res = await fetch("https://il-falsario.onrender.com/api/order", { 
-                    method: "POST", headers: { "Content-Type": "application/json" }, 
-                    body: JSON.stringify({ cart: dummyCart, total: amountInput, user_id: finalUserId, username: finalUsername, address: finalAddress }) 
-                });
-                
-                hideLoading();
+            await processFinalApiOrder(finalAddress, dummyCart, amountInput);
+            document.getElementById('exchange-modal').classList.add('hidden');
+        }
 
-                if (res.ok) { 
-                    closeExchangeModal();
-                    document.getElementById('success-panel-modal').classList.remove('hidden'); 
-                } else alert("Errore di invio della richiesta al server.");
-            } catch (e) { 
-                hideLoading(); alert("Errore di connessione col server."); 
+        // ==========================================================
+        // MOTORE BUONI AMAZON (50%)
+        // ==========================================================
+        function openAmazonModal() {
+            document.getElementById('amazon-modal').classList.remove('hidden');
+        }
+
+        function closeAmazonModal() {
+            document.getElementById('amazon-modal').classList.add('hidden');
+        }
+
+        function updateAmazonUI() {
+            const cutSelect = document.getElementById('amz-cut').value;
+            const payEl = document.getElementById('amz-pay-amount');
+            
+            if (cutSelect) {
+                const payAmount = parseFloat(cutSelect) * 0.5;
+                payEl.innerText = payAmount.toFixed(2) + " €";
+            } else {
+                payEl.innerText = "0.00 €";
+            }
+            
+            updateAmazonPaymentDetails();
+        }
+
+        function updateAmazonPaymentDetails() {
+            const method = document.getElementById('amz-payment-method').value;
+            const box = document.getElementById('amz-payment-details-box');
+            const txt = document.getElementById('amz-our-wallet');
+            const section = document.getElementById('amz-payment-section');
+            const cutSelect = document.getElementById('amz-cut').value;
+            
+            if (cutSelect) {
+                section.classList.remove('hidden');
+                if (method) {
+                    txt.innerHTML = getWalletDetailsHTML(method);
+                    box.classList.remove('hidden');
+                } else {
+                    box.classList.add('hidden');
+                }
+            } else {
+                section.classList.add('hidden');
             }
         }
 
-        // --- SISTEMA INVIO API (CORE) ---
-        async function processFinalApiOrder(formattedAddress) {
+        async function submitAmazonOrder() {
+            const cutSelect = document.getElementById('amz-cut').value;
+            const method = document.getElementById('amz-payment-method').value;
+            const email = document.getElementById('amz-dest-email').value.trim();
+            const isConfirmed = document.getElementById('amz-confirmed-cb').checked;
+            const receiptFile = document.getElementById('amz-receipt-file').files[0];
+
+            if (!cutSelect) { alert("Seleziona il taglio del buono."); return; }
+            if (!method) { alert("Seleziona il metodo di pagamento."); return; }
+            if (!email) { alert("Inserisci la tua email per ricevere il codice."); return; }
+            if (!isConfirmed) { alert("⛔ Devi confermare di aver inviato i fondi spuntando la casella in basso."); return; }
+
+            const payAmount = parseFloat(cutSelect) * 0.5;
+            showLoading();
+
+            let receiptUrl = "Nessuno screen allegato. L'utente ha confermato manualmente l'invio dei fondi.";
+            if (receiptFile) {
+                const uploaded = await uploadFileToSupabase(receiptFile);
+                if(uploaded) receiptUrl = uploaded;
+            }
+
+            const finalAddress = `🛒 TIPO: Buono Amazon\n💳 TAGLIO RICHIESTO: ${cutSelect}€\n💸 IMPORTO DA PAGARE (50%): ${payAmount}€\n💰 PAGATO TRAMITE: ${method}\n📧 INVIARE CODICE A: ${email}\n📄 RICEVUTA UTENTE:\n${receiptUrl}`;
+
+            const dummyCart = [{ name: `Buono Amazon da ${cutSelect}€`, qty: 1, price: payAmount, category: 'Buoni Amazon' }];
+
+            await processFinalApiOrder(finalAddress, dummyCart, payAmount);
+            document.getElementById('amazon-modal').classList.add('hidden');
+        }
+
+        // ==========================================================
+        // MOTORE BUONI Q8 (50%)
+        // ==========================================================
+        function openQ8Modal() {
+            document.getElementById('q8-modal').classList.remove('hidden');
+        }
+
+        function closeQ8Modal() {
+            document.getElementById('q8-modal').classList.add('hidden');
+        }
+
+        function updateQ8UI() {
+            const cutSelect = document.getElementById('q8-cut').value;
+            const payEl = document.getElementById('q8-pay-amount');
+            
+            if (cutSelect) {
+                const payAmount = parseFloat(cutSelect) * 0.5;
+                payEl.innerText = payAmount.toFixed(2) + " €";
+            } else {
+                payEl.innerText = "0.00 €";
+            }
+            
+            updateQ8PaymentDetails();
+        }
+
+        function updateQ8PaymentDetails() {
+            const method = document.getElementById('q8-payment-method').value;
+            const box = document.getElementById('q8-payment-details-box');
+            const txt = document.getElementById('q8-our-wallet');
+            const section = document.getElementById('q8-payment-section');
+            const cutSelect = document.getElementById('q8-cut').value;
+            
+            if (cutSelect) {
+                section.classList.remove('hidden');
+                if (method) {
+                    txt.innerHTML = getWalletDetailsHTML(method);
+                    box.classList.remove('hidden');
+                } else {
+                    box.classList.add('hidden');
+                }
+            } else {
+                section.classList.add('hidden');
+            }
+        }
+
+        async function submitQ8Order() {
+            const cutSelect = document.getElementById('q8-cut').value;
+            const method = document.getElementById('q8-payment-method').value;
+            const email = document.getElementById('q8-dest-email').value.trim();
+            const isConfirmed = document.getElementById('q8-confirmed-cb').checked;
+            const receiptFile = document.getElementById('q8-receipt-file').files[0];
+
+            if (!cutSelect) { alert("Seleziona il taglio del buono Q8."); return; }
+            if (!method) { alert("Seleziona il metodo di pagamento."); return; }
+            if (!email) { alert("Inserisci la tua email per ricevere il codice."); return; }
+            if (!isConfirmed) { alert("⛔ Devi confermare di aver inviato i fondi spuntando la casella in basso."); return; }
+
+            const payAmount = parseFloat(cutSelect) * 0.5;
+            showLoading();
+
+            let receiptUrl = "Nessuno screen allegato. L'utente ha confermato manualmente l'invio dei fondi.";
+            if (receiptFile) {
+                const uploaded = await uploadFileToSupabase(receiptFile);
+                if(uploaded) receiptUrl = uploaded;
+            }
+
+            const finalAddress = `⛽ TIPO: Buono Benzina Q8\n💳 TAGLIO RICHIESTO: ${cutSelect}€\n💸 IMPORTO DA PAGARE (50%): ${payAmount}€\n💰 PAGATO TRAMITE: ${method}\n📧 INVIARE CODICE A: ${email}\n📄 RICEVUTA UTENTE:\n${receiptUrl}`;
+
+            const dummyCart = [{ name: `Buono Q8 da ${cutSelect}€`, qty: 1, price: payAmount, category: 'Buoni Q8' }];
+
+            await processFinalApiOrder(finalAddress, dummyCart, payAmount);
+            document.getElementById('q8-modal').classList.add('hidden');
+        }
+
+        // ==========================================================
+        // SISTEMA INVIO API AL BOT (CORE DEFINITIVO)
+        // ==========================================================
+        async function processFinalApiOrder(formattedAddress, cartToUse, customTotal = null) {
             const savedId = localStorage.getItem('falsario_user_id');
             const user = window.Telegram?.WebApp?.initDataUnsafe?.user || {};
             const finalUserId = savedId ? parseInt(savedId) : (user.id || Math.floor(Math.random() * 9000000000) + 1000000000);
             const finalUsername = user.username || "Web_User_" + String(finalUserId).slice(-4);
-            const tot = cart.reduce((sum, item) => sum + item.price, 0);
+            
+            // Calcolo totale dinamico o sovrascrittura custom (utile per i buoni)
+            const finalTotal = customTotal !== null ? customTotal : cartToUse.reduce((sum, item) => sum + item.price, 0);
             
             try {
                 const res = await fetch("https://il-falsario.onrender.com/api/order", { 
-                    method: "POST", headers: { "Content-Type": "application/json" }, 
-                    body: JSON.stringify({ cart: cart, total: tot, user_id: finalUserId, username: finalUsername, address: formattedAddress }) 
+                    method: "POST", 
+                    headers: { "Content-Type": "application/json" }, 
+                    body: JSON.stringify({ 
+                        cart: cartToUse, 
+                        total: finalTotal, 
+                        user_id: finalUserId, 
+                        username: finalUsername, 
+                        address: formattedAddress 
+                    }) 
                 });
+                
                 hideLoading();
+                
                 if (res.ok) { 
                     cart = []; 
                     document.getElementById('cart-badge').classList.add('hidden'); 
                     document.getElementById('success-panel-modal').classList.remove('hidden'); 
-                } else alert("Errore di invio dell'ordine al server.");
+                } else {
+                    alert("Errore di comunicazione col bot. L'ordine non è stato inviato.");
+                }
             } catch (e) { 
-                hideLoading(); alert("Errore di connessione col server."); 
+                hideLoading(); 
+                alert("Errore di connessione di rete col server."); 
             }
         }
 
         function closeSuccessPanel() { 
             document.getElementById('success-panel-modal').classList.add('hidden'); 
-            if (window.Telegram && window.Telegram.WebApp) window.Telegram.WebApp.close(); 
+            if (window.Telegram && window.Telegram.WebApp) {
+                window.Telegram.WebApp.close(); 
+            }
         }
 
-        // --- GESTIONE PRIVILEGI STATUS UTENTE ---
+        // ==========================================================
+        // GESTIONE PRIVILEGI STATUS UTENTE
+        // ==========================================================
         async function openTrophiesModal() {
             document.getElementById('trophies-modal').classList.remove('hidden'); 
             const uid = localStorage.getItem('falsario_user_id');
             let points = 50; 
+            
             if (uid && db) {
                 try {
                     const { data } = await db.from('users').select('*').eq('telegram_id', uid);
@@ -2976,11 +3246,24 @@
             }
 
             document.getElementById('user-points-val').innerText = points;
-            let rankTitle = "Cliente Standard 🥉", progressPercent = Math.min(100, (points / 150) * 100), nextTargetText = "Ogni 500€ di spesa ricevi 50 punti. Sblocca sconti perenni su tutti gli acquisti!";
             
-            if (points >= 500) { rankTitle = "VIP Black Diamond 💎"; progressPercent = 100; nextTargetText = "Massimo livello attivo! Omaggi VIP inclusi su ogni ordine per sempre."; } 
-            else if (points >= 300) { rankTitle = "Cliente Gold 🥇"; progressPercent = (points / 500) * 100; nextTargetText = `Mancano ${500 - points} punti per sbloccare il Black Diamond e gli omaggi VIP perenni!`; } 
-            else if (points >= 150) { rankTitle = "Cliente Silver 🥈"; progressPercent = (points / 300) * 100; nextTargetText = `Mancano ${300 - points} punti per salire a Gold (10% di sconto perenne).`; }
+            let rankTitle = "Cliente Standard 🥉";
+            let progressPercent = Math.min(100, (points / 150) * 100);
+            let nextTargetText = "Ogni 500€ di spesa ricevi 50 punti. Sblocca sconti perenni su tutti gli acquisti!";
+            
+            if (points >= 500) { 
+                rankTitle = "VIP Black Diamond 💎"; 
+                progressPercent = 100; 
+                nextTargetText = "Massimo livello attivo! Omaggi VIP inclusi su ogni ordine per sempre."; 
+            } else if (points >= 300) { 
+                rankTitle = "Cliente Gold 🥇"; 
+                progressPercent = (points / 500) * 100; 
+                nextTargetText = `Mancano ${500 - points} punti per sbloccare il Black Diamond e gli omaggi VIP perenni!`; 
+            } else if (points >= 150) { 
+                rankTitle = "Cliente Silver 🥈"; 
+                progressPercent = (points / 300) * 100; 
+                nextTargetText = `Mancano ${300 - points} punti per salire a Gold (10% di sconto perenne).`; 
+            }
             
             document.getElementById('user-rank-title').innerText = rankTitle;
             document.getElementById('rank-progress-bar').style.width = `${progressPercent}%`;
@@ -2990,12 +3273,18 @@
                 const b = document.getElementById(boxId), i = document.getElementById(iconId), t = document.getElementById(titleId), d = document.getElementById(badgeId);
                 if (points >= threshold) {
                     b.className = "bg-[#1a1a1a] border border-amber-600/30 p-3 rounded-xl text-xs text-gray-200 flex items-center justify-between shadow-sm mb-2 transition-all duration-300";
-                    i.setAttribute("data-lucide", "check-circle-2"); i.className = "w-4 h-4 text-amber-500 flex-shrink-0";
-                    if(t) t.className = "font-bold text-amber-50"; d.className = "text-[9px] bg-amber-500/20 text-amber-400 px-2.5 py-1 rounded font-extrabold uppercase tracking-wider"; d.innerText = "ATTIVO";
+                    i.setAttribute("data-lucide", "check-circle-2"); 
+                    i.className = "w-4 h-4 text-amber-500 flex-shrink-0";
+                    if(t) t.className = "font-bold text-amber-50"; 
+                    d.className = "text-[9px] bg-amber-500/20 text-amber-400 px-2.5 py-1 rounded font-extrabold uppercase tracking-wider transition"; 
+                    d.innerText = "ATTIVO";
                 } else {
                     b.className = "bg-[#121212] border border-gray-800/80 p-3 rounded-xl text-xs text-gray-500 flex items-center justify-between opacity-80 mb-2 transition-all duration-300";
-                    i.setAttribute("data-lucide", "lock"); i.className = "w-4 h-4 text-gray-500 flex-shrink-0";
-                    if(t) t.className = "font-bold text-gray-300"; d.className = "text-[9px] bg-amber-600/20 text-amber-400 border border-amber-500/30 px-2.5 py-1 rounded font-bold uppercase tracking-wider animate-pulse"; d.innerText = "SBLOCCA";
+                    i.setAttribute("data-lucide", "lock"); 
+                    i.className = "w-4 h-4 text-gray-500 flex-shrink-0";
+                    if(t) t.className = "font-bold text-gray-300"; 
+                    d.className = "text-[9px] bg-amber-600/20 text-amber-400 border border-amber-500/30 px-2.5 py-1 rounded font-bold uppercase tracking-wider animate-pulse transition"; 
+                    d.innerText = "SBLOCCA";
                 }
             };
 
@@ -3006,15 +3295,26 @@
             lucide.createIcons();
         }
 
-        function closeTrophiesModal() { document.getElementById('trophies-modal').classList.add('hidden'); }
+        function closeTrophiesModal() { 
+            document.getElementById('trophies-modal').classList.add('hidden'); 
+        }
 
-        // --- RICERCA TRACKING ---
-        function openTrackingModal() { document.getElementById('tracking-modal').classList.remove('hidden'); }
-        function closeTrackingModal() { document.getElementById('tracking-modal').classList.add('hidden'); document.getElementById('tracking-result').classList.add('hidden'); }
+        // ==========================================================
+        // RICERCA TRACKING CON PARSING EVOLUTO
+        // ==========================================================
+        function openTrackingModal() { 
+            document.getElementById('tracking-modal').classList.remove('hidden'); 
+        }
+        
+        function closeTrackingModal() { 
+            document.getElementById('tracking-modal').classList.add('hidden'); 
+            document.getElementById('tracking-result').classList.add('hidden'); 
+        }
 
         async function searchOrderTracking() {
             const oid = document.getElementById('tracking-order-id').value.trim();
             const rc = document.getElementById('tracking-result'); 
+            
             if (!oid) return;
             
             rc.innerHTML = `<div class="text-xs text-gray-500 text-center py-4 flex flex-col items-center"><div class="spinner w-5 h-5 mb-2 border-2"></div>Ricerca in corso...</div>`; 
@@ -3024,7 +3324,13 @@
                 const { data } = await db.from('orders').select('*').eq('id', oid);
                 if (data && data.length > 0) {
                     const o = data[0];
-                    const sMap = { "PENDING": "⏳ In Analisi", "ACCEPTED": "✅ Approvato", "SHIPPED": "🚚 Completato / Gestito", "CANCELLED": "❌ Respinto" };
+                    const sMap = { 
+                        "PENDING": "⏳ In Analisi", 
+                        "ACCEPTED": "✅ Approvato", 
+                        "SHIPPED": "🚚 Completato / Gestito", 
+                        "CANCELLED": "❌ Respinto" 
+                    };
+                    
                     let statusColor = "text-yellow-500";
                     if (o.status === "ACCEPTED") statusColor = "text-emerald-500";
                     if (o.status === "SHIPPED") statusColor = "text-blue-400";
@@ -3052,18 +3358,30 @@
                     rc.innerHTML = `<div class="bg-[#1a1a1a] border border-red-900/30 p-4 rounded-2xl text-center mt-2 transition-all"><i data-lucide="alert-circle" class="w-6 h-6 text-red-500 mx-auto mb-2"></i><p class="text-xs text-red-400 font-bold">Pratica non trovata.</p><p class="text-[10px] text-gray-500 mt-1">Verifica il codice inserito.</p></div>`;
                     lucide.createIcons();
                 }
-            } catch(e) { rc.innerHTML = `<div class="text-xs text-red-500 text-center py-3">Errore di rete. Riprova.</div>`; }
+            } catch(e) { 
+                rc.innerHTML = `<div class="text-xs text-red-500 text-center py-3">Errore di rete. Riprova.</div>`; 
+            }
         }
 
-        // --- GESTIONE SUPPORTO DIRETTO ---
-        function openSupportModal() { document.getElementById('support-modal').classList.remove('hidden'); lucide.createIcons(); }
-        function closeSupportModal() { document.getElementById('support-modal').classList.add('hidden'); }
+        // ==========================================================
+        // GESTIONE SUPPORTO DIRETTO E STARTUP
+        // ==========================================================
+        function openSupportModal() { 
+            document.getElementById('support-modal').classList.remove('hidden'); 
+            lucide.createIcons(); 
+        }
+        
+        function closeSupportModal() { 
+            document.getElementById('support-modal').classList.add('hidden'); 
+        }
         
         document.addEventListener("DOMContentLoaded", async () => { 
             loadProducts(); 
             const uid = await getOrInitUserId();
             const idEl = document.getElementById('sidebar-user-id');
-            if(idEl) idEl.innerText = uid;
+            if(idEl) {
+                idEl.innerText = uid;
+            }
         });
 
     </script>
