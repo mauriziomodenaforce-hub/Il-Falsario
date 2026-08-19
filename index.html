@@ -512,69 +512,12 @@
                     </span>
                 </div>
                 
-                <!-- Bivio per Checkout -->
+                <!-- Pulsante Intelligente (Router automatico tra Ship e Meet Up) -->
                 <button 
-                    onclick="openCheckoutMethodModal()" 
+                    onclick="proceedToCheckout()" 
                     class="w-full bg-gradient-to-r from-amber-600 to-yellow-600 hover:from-amber-500 text-white font-extrabold py-3.5 rounded-xl text-xs uppercase shadow-[0_0_15px_rgba(217,119,6,0.3)] tracking-wider"
                 >
                     Procedi al Checkout
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <!-- MODALE BIVIO CHECKOUT (SHIP O MEET UP) -->
-    <div 
-        id="checkout-method-modal" 
-        class="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4 hidden backdrop-blur-md"
-    >
-        <div 
-            class="bg-[#121212] border border-gray-800 rounded-2xl w-full max-w-sm p-5 space-y-4 shadow-2xl"
-        >
-            <div 
-                class="flex justify-between items-center border-b border-gray-800 pb-3"
-            >
-                <h3 
-                    class="font-bold text-lg text-white flex items-center"
-                >
-                    <i 
-                        data-lucide="navigation" 
-                        class="w-5 h-5 text-amber-500 mr-2"
-                    ></i> 
-                    Metodo di Consegna
-                </h3>
-                <button 
-                    onclick="closeCheckoutMethodModal()" 
-                    class="text-gray-500 hover:text-white"
-                >
-                    <i 
-                        data-lucide="arrow-left" 
-                        class="w-5 h-5"
-                    ></i>
-                </button>
-            </div>
-            
-            <p class="text-sm text-gray-400 mb-4 text-center">
-                Scegli come desideri ricevere la tua valigetta.
-            </p>
-
-            <div class="space-y-3">
-                <button 
-                    onclick="openCheckoutShipModal()" 
-                    class="w-full bg-[#1a1a1a] border border-gray-700 hover:border-amber-500 rounded-xl p-4 flex flex-col items-center justify-center transition shadow-lg"
-                >
-                    <span class="text-3xl mb-2">🚚</span>
-                    <span class="font-bold text-white tracking-wide text-sm">Spedizione (Ship)</span>
-                    <span class="text-xs text-gray-500 mt-1">Consegna a domicilio o InPost Locker</span>
-                </button>
-
-                <button 
-                    onclick="openCheckoutMeetModal()" 
-                    class="w-full bg-[#1a1a1a] border border-gray-700 hover:border-amber-500 rounded-xl p-4 flex flex-col items-center justify-center transition shadow-lg"
-                >
-                    <span class="text-3xl mb-2">🤝</span>
-                    <span class="font-bold text-white tracking-wide text-sm">Consegna a Mano (Meet Up)</span>
-                    <span class="text-xs text-gray-500 mt-1">Solo su Roma e provincia per ordini grossi</span>
                 </button>
             </div>
         </div>
@@ -602,7 +545,7 @@
                     class="text-gray-500 hover:text-white"
                 >
                     <i 
-                        data-lucide="x" 
+                        data-lucide="arrow-left" 
                         class="w-5 h-5"
                     ></i>
                 </button>
@@ -727,7 +670,7 @@
                     class="text-gray-500 hover:text-white"
                 >
                     <i 
-                        data-lucide="x" 
+                        data-lucide="arrow-left" 
                         class="w-5 h-5"
                     ></i>
                 </button>
@@ -1349,9 +1292,7 @@
         </div>
     </div>
 
-    <!-- ========================================================== -->
-    <!-- MAIN PAGE CONTENT (BANNER E GRIGLIE)                       -->
-    <!-- ========================================================== -->
+    <!-- MAIN PAGE CONTENT -->
     <main class="p-4 space-y-5">
         
         <!-- VIDEO BANNER -->
@@ -1953,7 +1894,7 @@
                             <div class="flex items-center space-x-4">
                                 <span class="font-black text-amber-500 text-sm">€${opt.price}</span>
                                 <button 
-                                    onclick="addToCart('${p.name.replace(/'/g, "\\'")}', '${opt.qty.replace(/'/g, "\\'")}', ${opt.price}, 1)" 
+                                    onclick="addToCart('${p.name.replace(/'/g, "\\'")}', '${opt.qty.replace(/'/g, "\\'")}', ${opt.price}, 1, '${p.category || ''}')" 
                                     class="bg-gray-800 text-white px-3 py-1.5 rounded-lg font-bold text-[10px] uppercase tracking-wider hover:bg-amber-600 transition"
                                 >
                                     Richiedi
@@ -2166,22 +2107,23 @@
             }
         }
 
-        // --- GESTIONE DEL CARRELLO ---
+        // --- GESTIONE DEL CARRELLO E ROUTING CHECKOUT INTELLIGENTE ---
         function addToCartFromModal() { 
             if(!currentProd) {
                 return;
             }
             
             const opt = currentProd.parsedOpts[selectedVariantIndex]; 
-            addToCart(currentProd.name, opt.qty, opt.price * currentQty, currentQty); 
+            addToCart(currentProd.name, opt.qty, opt.price * currentQty, currentQty, currentProd.category); 
             closeProductModal(); 
         }
         
-        function addToCart(name, qtyLabel, finalPrice, numericQty = 1) {
+        function addToCart(name, qtyLabel, finalPrice, numericQty = 1, category = '') {
             cart.push({ 
                 name: `${name} - ${qtyLabel}`, 
                 qty: numericQty, 
-                price: finalPrice 
+                price: finalPrice,
+                category: category
             });
             
             const badge = document.getElementById('cart-badge'); 
@@ -2243,7 +2185,7 @@
         }
 
         // ==========================================================
-        // NUOVO SISTEMA CHECKOUT: BIVIO SHIP E MEET UP
+        // NUOVO SISTEMA CHECKOUT AUTOMATICO (NO BIVIO)
         // ==========================================================
 
         function showLoading() {
@@ -2256,37 +2198,54 @@
             document.getElementById('loading-overlay').classList.remove('flex');
         }
 
-        // 1. Apre il bivio (Scegli metodo)
-        function openCheckoutMethodModal() {
+        // Routine intelligente di smistamento Checkout
+        function proceedToCheckout() {
+            if (cart.length === 0) return;
+
+            let hasShip = false;
+            let hasMeet = false;
+            
+            cart.forEach(item => {
+                const cat = item.category ? item.category.toLowerCase() : '';
+                if (cat.includes('meet up')) {
+                    hasMeet = true;
+                } else {
+                    hasShip = true;
+                }
+            });
+
+            if (hasShip && hasMeet) {
+                alert("⛔ Attenzione: Non puoi inserire prodotti per la Spedizione (Ship) e prodotti per la Consegna a Mano (Meet Up) nello stesso ordine. Dividili in due richieste separate.");
+                return;
+            }
+
             closeCartModal();
-            document.getElementById('checkout-method-modal').classList.remove('hidden');
-        }
-        
-        function closeCheckoutMethodModal() {
-            document.getElementById('checkout-method-modal').classList.add('hidden');
-            openCartModal(); // Se annulla torna al carrello
+
+            if (hasMeet) {
+                openCheckoutMeetModal();
+            } else {
+                openCheckoutShipModal();
+            }
         }
 
-        // 2. Apre il Checkout SHIP
+        // Apre il Checkout SHIP
         function openCheckoutShipModal() {
-            document.getElementById('checkout-method-modal').classList.add('hidden');
             document.getElementById('checkout-ship-modal').classList.remove('hidden');
         }
         
         function closeCheckoutShipModal() {
             document.getElementById('checkout-ship-modal').classList.add('hidden');
-            document.getElementById('checkout-method-modal').classList.remove('hidden');
+            openCartModal();
         }
 
-        // 3. Apre il Checkout MEET UP
+        // Apre il Checkout MEET UP
         function openCheckoutMeetModal() {
-            document.getElementById('checkout-method-modal').classList.add('hidden');
             document.getElementById('checkout-meet-modal').classList.remove('hidden');
         }
         
         function closeCheckoutMeetModal() {
             document.getElementById('checkout-meet-modal').classList.add('hidden');
-            document.getElementById('checkout-method-modal').classList.remove('hidden');
+            openCartModal();
         }
 
         // Helper UI per File e Metodi
