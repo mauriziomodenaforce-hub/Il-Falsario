@@ -509,205 +509,86 @@
     <!-- ========================================================== -->
     <!-- MODALE CHECKOUT SPEDIZIONE (SHIP)                          -->
     <!-- ========================================================== -->
-    <div 
-        id="checkout-ship-modal" 
-        class="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4 hidden backdrop-blur-md"
-    >
-        <div 
-            class="bg-[#121212] border border-gray-800 rounded-2xl w-full max-w-md p-5 shadow-2xl flex flex-col max-h-[90vh]"
-        >
-            <div 
-                class="flex justify-between items-center border-b border-gray-800 pb-3 mb-4 shrink-0"
-            >
-                <h3 
-                    class="font-bold text-lg text-white flex items-center"
-                >
-                    <span 
-                        class="mr-2"
-                    >
-                        🚚
-                    </span> 
-                    Dettagli Spedizione
+       <!-- MODALE CHECKOUT SPEDIZIONE (SHIP) PREMIUM -->
+    <div id="checkout-ship-modal" class="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4 hidden backdrop-blur-md">
+        <div class="bg-[#121212] border border-gray-800 rounded-[24px] w-full max-w-md p-6 shadow-2xl flex flex-col max-h-[90vh] relative overflow-hidden">
+            <!-- Barra Colorata Decorativa -->
+            <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-amber-600 to-yellow-400"></div>
+
+            <div class="flex justify-between items-center border-b border-gray-800/60 pb-4 mb-5 shrink-0">
+                <h3 class="font-black text-xl text-white flex items-center tracking-wide">
+                    <span class="mr-3 text-2xl">🚚</span> Spedizione
                 </h3>
-                <button 
-                    onclick="closeCheckoutShipModal()" 
-                    class="text-gray-500 hover:text-white transition"
-                >
-                    <i 
-                        data-lucide="arrow-left" 
-                        class="w-5 h-5"
-                    ></i>
+                <button onclick="closeCheckoutShipModal()" class="p-2 bg-gray-800/50 hover:bg-gray-700 rounded-full text-gray-400 hover:text-white transition">
+                    <i data-lucide="arrow-left" class="w-5 h-5"></i>
                 </button>
             </div>
             
-            <div 
-                class="overflow-y-auto space-y-5 pr-1 flex-1 hide-scrollbar"
-            >
+            <div class="overflow-y-auto space-y-6 pr-2 flex-1 hide-scrollbar">
+                
+                <!-- Tipo Consegna Toggle -->
                 <div>
-                    <label 
-                        class="text-[10px] font-bold text-gray-500 uppercase tracking-widest block mb-2"
-                    >
-                        Tipo di Consegna
-                    </label>
-                    <div 
-                        class="grid grid-cols-2 gap-2"
-                    >
-                        <label 
-                            class="cursor-pointer"
-                        >
-                            <input 
-                                type="radio" 
-                                name="ship_type" 
-                                value="Indirizzo Privato" 
-                                class="peer sr-only" 
-                                checked 
-                                onchange="updateShipTypeUI()"
-                            >
-                            <div 
-                                class="rounded-xl border border-gray-700 bg-[#1a1a1a] p-3 text-center peer-checked:border-amber-500 peer-checked:bg-amber-500/10 transition"
-                            >
-                                <span 
-                                    class="text-xs font-bold text-gray-300 peer-checked:text-amber-500"
-                                >
-                                    Privato
-                                </span>
+                    <label class="text-[10px] font-bold text-gray-500 uppercase tracking-widest block mb-3">Modalità di ricezione</label>
+                    <div class="grid grid-cols-2 gap-3 bg-[#1a1a1a] p-1.5 rounded-xl border border-gray-800">
+                        <label class="cursor-pointer relative">
+                            <input type="radio" name="ship_type" value="Indirizzo Privato" class="peer sr-only" checked onchange="updateShipTypeUI()">
+                            <div class="rounded-lg py-2.5 text-center peer-checked:bg-amber-500/20 peer-checked:shadow-sm transition duration-300">
+                                <span class="text-xs font-bold text-gray-400 peer-checked:text-amber-500">🏠 A Domicilio</span>
                             </div>
                         </label>
-                        <label 
-                            class="cursor-pointer"
-                        >
-                            <input 
-                                type="radio" 
-                                name="ship_type" 
-                                value="Locker InPost" 
-                                class="peer sr-only" 
-                                onchange="updateShipTypeUI()"
-                            >
-                            <div 
-                                class="rounded-xl border border-gray-700 bg-[#1a1a1a] p-3 text-center peer-checked:border-amber-500 peer-checked:bg-amber-500/10 transition"
-                            >
-                                <span 
-                                    class="text-xs font-bold text-gray-300 peer-checked:text-amber-500"
-                                >
-                                    InPost
-                                </span>
+                        <label class="cursor-pointer relative">
+                            <input type="radio" name="ship_type" value="Locker InPost" class="peer sr-only" onchange="updateShipTypeUI()">
+                            <div class="rounded-lg py-2.5 text-center peer-checked:bg-amber-500/20 peer-checked:shadow-sm transition duration-300">
+                                <span class="text-xs font-bold text-gray-400 peer-checked:text-amber-500">📦 InPost Locker</span>
                             </div>
                         </label>
                     </div>
                 </div>
 
-                <div>
-                    <label 
-                        id="ship-address-label" 
-                        class="text-[10px] font-bold text-gray-500 uppercase tracking-widest block mb-1"
-                    >
-                        Indirizzo Completo (Via, Città, CAP, Nome Citofono)
-                    </label>
-                    <textarea 
-                        id="ship-address-input" 
-                        rows="2" 
-                        class="w-full bg-[#1a1a1a] border border-gray-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-amber-500 transition"
-                    ></textarea>
-                </div>
+                <!-- FORM DINAMICO INTELLIGENTE (Si popola con JS) -->
+                <div id="ship-dynamic-form" class="space-y-4"></div>
 
-                <div 
-                    class="border-t border-gray-800"
-                ></div>
+                <div class="border-t border-gray-800/60"></div>
 
+                <!-- Pagamento -->
                 <div>
-                    <label 
-                        class="text-[10px] font-bold text-gray-500 uppercase tracking-widest block mb-2"
-                    >
-                        Metodo di Pagamento
-                    </label>
-                    <select 
-                        id="ship-payment-method" 
-                        onchange="updatePaymentDetails()"
-                        class="w-full bg-[#1a1a1a] border border-gray-700 rounded-xl px-3 py-2.5 text-xs text-white focus:outline-none focus:border-amber-500 appearance-none transition"
-                    >
-                        <option value="" disabled selected>-- Seleziona un metodo --</option>
+                    <label class="text-[10px] font-bold text-gray-500 uppercase tracking-widest block mb-2">Transazione</label>
+                    <select id="ship-payment-method" onchange="updatePaymentDetails()" class="w-full bg-[#1a1a1a] border border-gray-700 rounded-xl px-4 py-3.5 text-[13px] text-white focus:outline-none focus:border-amber-500 appearance-none transition shadow-inner font-medium">
+                        <option value="" disabled selected>-- Seleziona Metodo di Pagamento --</option>
                         <option value="PayPal">PayPal</option>
-                        <option value="Crypto BTC">Crypto (Bitcoin BTC)</option>
-                        <option value="Crypto LTC">Crypto (Litecoin LTC)</option>
-                        <option value="Crypto ETH">Crypto (Ethereum ETH)</option>
-                        <option value="Crypto USDT">Crypto (USDT TRC20)</option>
+                        <option value="Crypto BTC">Bitcoin (BTC)</option>
+                        <option value="Crypto LTC">Litecoin (LTC)</option>
+                        <option value="Crypto ETH">Ethereum (ETH)</option>
+                        <option value="Crypto USDT">Tether (USDT TRC20)</option>
                         <option value="Bonifico">Bonifico Bancario</option>
                         <option value="Postepay">Ricarica Postepay</option>
                     </select>
                 </div>
 
-                <div 
-                    id="payment-details-box" 
-                    class="hidden space-y-4"
-                >
-                    <div 
-                        class="bg-[#1a1a1a] border border-amber-600/30 p-4 rounded-xl shadow-inner transition"
-                    >
-                        <p 
-                            class="text-[10px] text-gray-400 uppercase tracking-widest mb-2"
-                        >
-                            Invia il pagamento qui:
-                        </p>
-                        <p 
-                            id="payment-address-text" 
-                            class="text-sm font-mono text-amber-400 break-all select-all font-bold leading-relaxed"
-                        ></p>
+                <!-- Box Dettagli Pagamento Scurito -->
+                <div id="payment-details-box" class="hidden space-y-5">
+                    <div class="bg-gradient-to-br from-[#1a1a1a] to-[#0a0a0a] border border-amber-600/30 p-5 rounded-2xl shadow-[0_0_15px_rgba(217,119,6,0.05)] transition">
+                        <p class="text-[10px] text-amber-500/80 uppercase tracking-widest mb-3 font-bold flex items-center"><i data-lucide="info" class="w-3 h-3 mr-1.5"></i> Dati per l'invio</p>
+                        <p id="payment-address-text" class="text-sm font-mono text-amber-400 break-all select-all font-bold leading-relaxed"></p>
                     </div>
 
                     <div>
-                        <label 
-                            class="text-[10px] font-bold text-gray-500 uppercase tracking-widest block mb-1"
-                        >
-                            Ricevuta (Facoltativa ma consigliata)
-                        </label>
-                        <div 
-                            class="relative"
-                        >
-                            <input 
-                                type="file" 
-                                id="ship-receipt-file" 
-                                accept="image/*"
-                                class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
-                                onchange="updateFileName('ship-receipt-file', 'ship-receipt-name', 'amber')"
-                            >
-                            <div 
-                                class="bg-[#1a1a1a] border border-dashed border-gray-600 rounded-xl p-3 flex flex-col items-center justify-center text-center transition hover:border-amber-500"
-                            >
-                                <i 
-                                    data-lucide="upload-cloud" 
-                                    class="w-5 h-5 text-gray-400 mb-1"
-                                ></i>
-                                <span 
-                                    id="ship-receipt-name" 
-                                    class="text-[10px] text-gray-300 font-bold"
-                                >
-                                    Tocca per allegare uno screenshot
-                                </span>
+                        <label class="text-[10px] font-bold text-gray-500 uppercase tracking-widest block mb-2">Ricevuta di Pagamento <span class="text-amber-500/50 normal-case text-[9px] ml-1">(Consigliata)</span></label>
+                        <div class="relative">
+                            <input type="file" id="ship-receipt-file" accept="image/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" onchange="updateFileName('ship-receipt-file', 'ship-receipt-name', 'amber')">
+                            <div class="bg-[#1a1a1a] border border-dashed border-gray-600 rounded-xl p-4 flex flex-col items-center justify-center text-center transition hover:border-amber-500 hover:bg-gray-800/50">
+                                <i data-lucide="upload-cloud" class="w-6 h-6 text-gray-400 mb-2"></i>
+                                <span id="ship-receipt-name" class="text-[11px] text-gray-300 font-bold">Tocca per allegare lo screenshot</span>
                             </div>
                         </div>
                     </div>
 
-                    <div 
-                        class="bg-amber-900/10 border border-amber-500/30 p-3 rounded-xl flex items-start space-x-3 transition"
-                    >
-                        <div 
-                            class="pt-0.5"
-                        >
-                            <input 
-                                type="checkbox" 
-                                id="payment-confirmed-cb" 
-                                class="w-4 h-4 accent-amber-500 cursor-pointer rounded transition"
-                            >
+                    <div class="bg-amber-900/10 border border-amber-500/30 p-4 rounded-xl flex items-start space-x-3 transition">
+                        <div class="pt-0.5">
+                            <input type="checkbox" id="payment-confirmed-cb" class="w-4 h-4 accent-amber-500 cursor-pointer rounded transition">
                         </div>
-                        <label 
-                            for="payment-confirmed-cb" 
-                            class="text-[10px] text-amber-200/80 leading-tight cursor-pointer"
-                        >
-                            <strong 
-                                class="block text-amber-500 mb-0.5 uppercase tracking-wider text-[9px]"
-                            >
-                                Dichiarazione Vincolante
-                            </strong>
+                        <label for="payment-confirmed-cb" class="text-[11px] text-amber-100/90 leading-relaxed cursor-pointer">
+                            <strong class="block text-amber-500 mb-1 uppercase tracking-wider text-[10px]">Dichiarazione Vincolante</strong>
                             Confermo di aver già inviato i fondi. Sono consapevole che l'elaborazione dell'ordine inizierà solo a ricezione confermata.
                         </label>
                     </div>
@@ -715,14 +596,9 @@
 
             </div>
             
-            <div 
-                class="border-t border-gray-800 pt-4 mt-2 shrink-0"
-            >
-                <button 
-                    onclick="submitShipOrder()" 
-                    class="w-full bg-gradient-to-r from-amber-600 to-yellow-600 hover:from-amber-500 text-white font-extrabold py-3.5 rounded-xl text-xs uppercase shadow-[0_0_15px_rgba(217,119,6,0.3)] tracking-wider transition"
-                >
-                    Invia Ordine Spedizione
+            <div class="border-t border-gray-800/60 pt-5 mt-3 shrink-0">
+                <button onclick="submitShipOrder()" class="w-full bg-gradient-to-r from-amber-600 to-yellow-500 hover:from-amber-500 text-black font-black py-4 rounded-xl text-[12px] uppercase shadow-[0_0_20px_rgba(217,119,6,0.3)] tracking-widest transition">
+                    Conferma Ordine Spedizione
                 </button>
             </div>
         </div>
