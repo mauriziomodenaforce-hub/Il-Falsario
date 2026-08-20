@@ -1531,264 +1531,102 @@
     </div>
 
     <!-- ========================================================== -->
-    <!-- MODALE PRIVILEGI E SCONTI                                  -->
+    <!-- MODALE PRIVILEGI E SCONTI (MARKETING AGGRESSIVO)           -->
     <!-- ========================================================== -->
-    <div 
-        id="trophies-modal" 
-        class="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4 hidden backdrop-blur-md transition-all"
-    >
-        <div 
-            class="bg-[#121212] border border-amber-600/30 rounded-2xl w-full max-w-sm p-5 space-y-4 shadow-2xl"
-        >
-            <div 
-                class="flex justify-between items-center border-b border-gray-800 pb-3"
-            >
-                <h3 
-                    class="font-bold text-lg text-white flex items-center"
-                >
-                    <i 
-                        data-lucide="award" 
-                        class="w-5 h-5 text-amber-500 mr-2"
-                    ></i> 
-                    Club Esclusivo & Sconti
+    <div id="trophies-modal" class="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4 hidden backdrop-blur-md transition-all">
+        <div class="bg-[#121212] border border-amber-600/20 rounded-2xl w-full max-w-sm p-5 space-y-5 shadow-[0_0_40px_rgba(217,119,6,0.1)]">
+            <div class="flex justify-between items-center border-b border-gray-800/80 pb-4">
+                <h3 class="font-black text-lg text-white flex items-center tracking-wide">
+                    <i data-lucide="award" class="w-5 h-5 text-amber-500 mr-2"></i> Club Esclusivo & Sconti
                 </h3>
-                <button 
-                    onclick="closeTrophiesModal()" 
-                    class="text-gray-500 hover:text-white transition"
-                >
-                    <i 
-                        data-lucide="x" 
-                        class="w-5 h-5"
-                    ></i>
+                <button onclick="closeTrophiesModal()" class="text-gray-500 hover:text-white transition">
+                    <i data-lucide="x" class="w-5 h-5"></i>
                 </button>
             </div>
             
-            <div 
-                class="bg-gradient-to-br from-[#1a1a1a] to-[#0a0a0a] border border-amber-600/40 rounded-xl p-4 text-center relative overflow-hidden shadow-lg transition"
-            >
-                <div 
-                    class="absolute -right-3 -top-3 text-amber-500/10"
-                >
-                    <i 
-                        data-lucide="percent" 
-                        class="w-20 h-20"
-                    ></i>
+            <div class="bg-[#0a0a0a] border border-amber-600/30 rounded-xl p-5 text-center relative overflow-hidden shadow-inner">
+                <div class="absolute -right-4 -top-4 text-amber-500/5">
+                    <i data-lucide="percent" class="w-32 h-32"></i>
                 </div>
-                <div 
-                    class="flex justify-between items-center mb-1"
-                >
-                    <span 
-                        class="text-[9px] uppercase text-amber-500 font-extrabold tracking-widest"
-                    >
-                        Il tuo Status
-                    </span>
-                    <span 
-                        id="user-rank-title" 
-                        class="text-[9px] bg-amber-500/20 text-amber-400 font-bold px-2 py-0.5 rounded-full border border-amber-500/30 transition"
-                    >
-                        Cliente Standard 🥉
-                    </span>
+                <div class="flex justify-between items-center mb-2">
+                    <span class="text-[10px] uppercase text-amber-500 font-extrabold tracking-widest z-10">Il tuo Status</span>
+                    <span id="user-rank-title" class="text-[10px] bg-amber-500/20 text-amber-400 font-bold px-3 py-1 rounded-full border border-amber-500/30 transition z-10">Cliente Standard 🥉</span>
                 </div>
-                <div 
-                    class="text-3xl font-black text-amber-50 mt-1 flex items-center justify-center space-x-2"
-                >
-                    <span 
-                        id="user-points-val"
-                    >
-                        50
-                    </span>
-                    <span 
-                        class="text-xs text-amber-500 font-normal"
-                    >
-                        punti spesa
-                    </span>
+                <div class="text-4xl font-black text-white mt-2 flex items-center justify-center space-x-2 z-10 relative drop-shadow-md">
+                    <span id="user-points-val">50</span>
+                    <span class="text-xs text-amber-500 font-bold uppercase tracking-widest mt-2">punti spesa</span>
                 </div>
-                <div 
-                    class="mt-3 w-full bg-gray-800 rounded-full h-1.5 overflow-hidden"
-                >
-                    <div 
-                        id="rank-progress-bar" 
-                        class="bg-gradient-to-r from-amber-600 to-yellow-400 h-1.5 rounded-full transition-all duration-500" 
-                        style="width: 30%;"
-                    ></div>
+                <div class="mt-4 w-full bg-gray-800/50 rounded-full h-2 overflow-hidden z-10 relative">
+                    <div id="rank-progress-bar" class="bg-gradient-to-r from-amber-600 to-yellow-400 h-2 rounded-full transition-all duration-700 shadow-[0_0_10px_rgba(252,211,77,0.8)]" style="width: 30%;"></div>
                 </div>
-                <p 
-                    class="text-[10px] text-gray-400 mt-2 font-light" 
-                    id="rank-next-target"
-                >
+                <p class="text-[10px] text-gray-400 mt-3 font-medium leading-relaxed z-10 relative" id="rank-next-target">
                     Ogni 500€ di spesa ricevi 50 punti. Sblocca sconti perenni su tutti gli acquisti!
                 </p>
             </div>
             
-            <div 
-                class="space-y-2"
-            >
-                <div 
-                    class="flex justify-between items-center"
-                >
-                    <span 
-                        class="text-[10px] font-bold text-gray-400 uppercase tracking-widest"
-                    >
-                        Premi & Sconti Sbloccabili
-                    </span>
-                    <span 
-                        class="text-[9px] text-amber-500/80"
-                    >
-                        Vantaggi perenni
-                    </span>
+            <div class="space-y-3 pt-2">
+                <div class="flex justify-between items-center">
+                    <span class="text-[10px] font-black text-gray-500 uppercase tracking-widest">Premi & Sconti Sbloccabili</span>
+                    <span class="text-[9px] text-amber-500 font-bold uppercase tracking-wider">Vantaggi perenni</span>
                 </div>
                 
-                <div 
-                    id="user-trophies-list" 
-                    class="space-y-2 max-h-52 overflow-y-auto pr-1 hide-scrollbar"
-                >
+                <div id="user-trophies-list" class="space-y-3 max-h-56 overflow-y-auto pr-1 hide-scrollbar">
                     
-                    <div 
-                        id="trophy-1-box" 
-                        class="bg-[#1a1a1a] border border-amber-600/30 p-3 rounded-xl text-xs text-gray-200 flex items-center justify-between shadow-sm mb-2 transition"
-                    >
-                        <div 
-                            class="flex items-center space-x-2.5"
-                        >
-                            <i 
-                                id="trophy-1-icon" 
-                                data-lucide="check-circle-2" 
-                                class="w-4 h-4 text-amber-500 flex-shrink-0"
-                            ></i>
+                    <div id="trophy-1-box" class="bg-[#1a1a1a] border border-amber-600/30 p-4 rounded-xl flex items-start justify-between shadow-sm transition">
+                        <div class="flex items-start space-x-3 w-full pr-3">
+                            <div class="mt-0.5"><i id="trophy-1-icon" data-lucide="check-circle-2" class="w-4 h-4 text-amber-500"></i></div>
                             <div>
-                                <div 
-                                    class="font-bold text-amber-50"
-                                >
-                                    🎁 Bonus Benvenuto Iniziale
-                                </div>
-                                <div 
-                                    class="text-[10px] text-gray-400 font-light mt-0.5"
-                                >
-                                    50 punti di benvenuto accreditati automaticamente all'ingresso nel Caveau del Falsario.
-                                </div>
+                                <div class="font-black text-amber-50 text-[13px] leading-tight mb-1">🎁 Bonus Benvenuto Iniziale</div>
+                                <div class="text-[10px] text-gray-400 font-medium leading-relaxed">Ti abbiamo regalato 50 Punti Spesa per premiare il tuo ingresso nel Caveau. Sei a un passo dal primo sconto fisso.</div>
                             </div>
                         </div>
-                        <span 
-                            id="trophy-1-badge" 
-                            class="text-[9px] bg-amber-500/20 text-amber-400 px-2.5 py-1 rounded font-extrabold uppercase tracking-wider transition"
-                        >
-                            ATTIVO
-                        </span>
+                        <span id="trophy-1-badge" class="text-[9px] bg-amber-500/20 text-amber-400 px-3 py-1.5 rounded font-black uppercase tracking-widest shrink-0 mt-0.5">ATTIVO</span>
                     </div>
 
-                    <div 
-                        id="trophy-2-box" 
-                        class="bg-[#121212] border border-gray-800/80 p-3 rounded-xl text-xs text-gray-500 flex items-center justify-between opacity-80 mb-2 transition-all duration-300"
-                    >
-                        <div 
-                            class="flex items-center space-x-2.5"
-                        >
-                            <i 
-                                id="trophy-2-icon" 
-                                data-lucide="lock" 
-                                class="w-4 h-4 text-gray-500 flex-shrink-0"
-                            ></i>
+                    <div id="trophy-2-box" class="bg-[#121212] border border-gray-800 p-4 rounded-xl flex items-start justify-between opacity-70 transition-all duration-300">
+                        <div class="flex items-start space-x-3 w-full pr-3">
+                            <div class="mt-0.5"><i id="trophy-2-icon" data-lucide="lock" class="w-4 h-4 text-gray-500"></i></div>
                             <div>
-                                <div 
-                                    id="trophy-2-title" 
-                                    class="font-bold text-gray-300 transition"
-                                >
-                                    🏷️ Sconto 5% Silver Perenne
-                                </div>
-                                <div 
-                                    class="text-[10px] text-gray-500 font-light mt-0.5"
-                                >
-                                    Sconto fisso del 5% applicato in automatico. Sbloccato al raggiungimento di 150 punti spesa.
-                                </div>
+                                <div id="trophy-2-title" class="font-black text-gray-300 text-[13px] leading-tight mb-1">🏷️ Sconto 5% Silver Perenne</div>
+                                <div class="text-[10px] text-gray-500 font-medium leading-relaxed">Sconto fisso del 5% applicato automaticamente su ogni tuo futuro ordine. Sbloccato raggiungendo 150 punti.</div>
                             </div>
                         </div>
-                        <span 
-                            id="trophy-2-badge" 
-                            class="text-[9px] bg-amber-600/20 text-amber-400 border border-amber-500/30 px-2.5 py-1 rounded font-bold uppercase tracking-wider animate-pulse transition"
-                        >
-                            SBLOCCA
-                        </span>
+                        <span id="trophy-2-badge" class="text-[9px] bg-amber-900/30 text-amber-500/50 border border-amber-900/50 px-3 py-1.5 rounded font-black uppercase tracking-widest shrink-0 mt-0.5">SBLOCCA</span>
                     </div>
 
-                    <div 
-                        id="trophy-3-box" 
-                        class="bg-[#121212] border border-gray-800/80 p-3 rounded-xl text-xs text-gray-500 flex items-center justify-between opacity-80 mb-2 transition-all duration-300"
-                    >
-                        <div 
-                            class="flex items-center space-x-2.5"
-                        >
-                            <i 
-                                id="trophy-3-icon" 
-                                data-lucide="lock" 
-                                class="w-4 h-4 text-gray-500 flex-shrink-0"
-                            ></i>
+                    <div id="trophy-3-box" class="bg-[#121212] border border-gray-800 p-4 rounded-xl flex items-start justify-between opacity-70 transition-all duration-300">
+                        <div class="flex items-start space-x-3 w-full pr-3">
+                            <div class="mt-0.5"><i id="trophy-3-icon" data-lucide="lock" class="w-4 h-4 text-gray-500"></i></div>
                             <div>
-                                <div 
-                                    id="trophy-3-title" 
-                                    class="font-bold text-gray-300 transition"
-                                >
-                                    🔥 Sconto 10% Gold Perenne
-                                </div>
-                                <div 
-                                    class="text-[10px] text-gray-500 font-light mt-0.5"
-                                >
-                                    Sconto superiore del 10% valido a vita. Sbloccato al raggiungimento di 300 punti spesa.
-                                </div>
+                                <div id="trophy-3-title" class="font-black text-gray-300 text-[13px] leading-tight mb-1">🔥 Sconto 10% Gold Perenne</div>
+                                <div class="text-[10px] text-gray-500 font-medium leading-relaxed">Il privilegio dei clienti abituali. 10% di sconto a vita su tutto il listino. Sbloccato raggiungendo 300 punti.</div>
                             </div>
                         </div>
-                        <span 
-                            id="trophy-3-badge" 
-                            class="text-[9px] bg-amber-600/20 text-amber-400 border border-amber-500/30 px-2.5 py-1 rounded font-bold uppercase tracking-wider animate-pulse transition"
-                        >
-                            SBLOCCA
-                        </span>
+                        <span id="trophy-3-badge" class="text-[9px] bg-amber-900/30 text-amber-500/50 border border-amber-900/50 px-3 py-1.5 rounded font-black uppercase tracking-widest shrink-0 mt-0.5">SBLOCCA</span>
                     </div>
 
-                    <div 
-                        id="trophy-4-box" 
-                        class="bg-[#121212] border border-gray-800/80 p-3 rounded-xl text-xs text-gray-500 flex items-center justify-between opacity-80 mb-2 transition-all duration-300"
-                    >
-                        <div 
-                            class="flex items-center space-x-2.5"
-                        >
-                            <i 
-                                id="trophy-4-icon" 
-                                data-lucide="lock" 
-                                class="w-4 h-4 text-gray-500 flex-shrink-0"
-                            ></i>
+                    <div id="trophy-4-box" class="bg-[#121212] border border-gray-800 p-4 rounded-xl flex items-start justify-between opacity-70 transition-all duration-300">
+                        <div class="flex items-start space-x-3 w-full pr-3">
+                            <div class="mt-0.5"><i id="trophy-4-icon" data-lucide="lock" class="w-4 h-4 text-gray-500"></i></div>
                             <div>
-                                <div 
-                                    id="trophy-4-title" 
-                                    class="font-bold text-gray-300 transition"
-                                >
-                                    💎 Sconto 15% + Omaggi VIP Inclusi
-                                </div>
-                                <div 
-                                    class="text-[10px] text-gray-500 font-light mt-0.5"
-                                >
-                                    Sconto massimo del 15% su tutto il listino. Sbloccato a 500 punti spesa.
-                                </div>
+                                <div id="trophy-4-title" class="font-black text-gray-300 text-[13px] leading-tight mb-1">💎 Sconto 15% + Omaggi VIP</div>
+                                <div class="text-[10px] text-gray-500 font-medium leading-relaxed">Massimo livello del Caveau. Sconto del 15% fisso e campioni omaggio in ogni spedizione. Sbloccato a 500 punti.</div>
                             </div>
                         </div>
-                        <span 
-                            id="trophy-4-badge" 
-                            class="text-[9px] bg-amber-600/20 text-amber-400 border border-amber-500/30 px-2.5 py-1 rounded font-bold uppercase tracking-wider animate-pulse transition"
-                        >
-                            SBLOCCA
-                        </span>
+                        <span id="trophy-4-badge" class="text-[9px] bg-amber-900/30 text-amber-500/50 border border-amber-900/50 px-3 py-1.5 rounded font-black uppercase tracking-widest shrink-0 mt-0.5">SBLOCCA</span>
                     </div>
 
                 </div>
             </div>
 
-            <button 
-                onclick="closeTrophiesModal()" 
-                class="w-full bg-[#1a1a1a] border border-gray-800 hover:bg-gray-900 text-gray-300 font-bold py-3 rounded-xl text-xs uppercase tracking-wider transition"
-            >
-                Chiudi
-            </button>
+            <div class="pt-2">
+                <button onclick="closeTrophiesModal()" class="w-full bg-[#1a1a1a] border border-gray-800 hover:bg-gray-800 text-gray-300 font-black py-4 rounded-xl text-xs uppercase tracking-widest transition shadow-lg">
+                    Chiudi
+                </button>
+            </div>
         </div>
     </div>
+
 
     <!-- ========================================================== -->
     <!-- MODALE TRACKING LAVORAZIONI                                -->
