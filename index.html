@@ -4911,33 +4911,72 @@
         // ==========================================================
         // SISTEMA CHECKOUT AUTOMATICO E ROUTING
         // ==========================================================
-        function proceedToCheckout() {
-            if (cart.length === 0) return;
-            let hasShip = false, hasMeet = false;
-            cart.forEach(item => {
-                const cat = item.category ? item.category.toLowerCase() : '';
-                if (cat.includes('meet up')) hasMeet = true; else hasShip = true;
-            });
-            if (hasShip && hasMeet) {
-                alert("⛔ Attenzione: Non puoi inserire prodotti per la Spedizione e prodotti per la Consegna a Mano (Meet Up) nello stesso ordine. Dividili in due richieste separate.");
-                return;
-            }
-            closeCartModal();
-            if (hasMeet) openCheckoutMeetModal(); else openCheckoutShipModal();
+        function openCheckoutShipModal() { 
+            updateShipTypeUI(); 
+            document.getElementById('checkout-ship-modal').classList.remove('hidden'); 
         }
-
-        function openCheckoutShipModal() { document.getElementById('checkout-ship-modal').classList.remove('hidden'); }
-        function closeCheckoutShipModal() { document.getElementById('checkout-ship-modal').classList.add('hidden'); openCartModal(); }
-        function openCheckoutMeetModal() { document.getElementById('checkout-meet-modal').classList.remove('hidden'); }
-        function closeCheckoutMeetModal() { document.getElementById('checkout-meet-modal').classList.add('hidden'); openCartModal(); }
+        function closeCheckoutShipModal() { 
+            document.getElementById('checkout-ship-modal').classList.add('hidden'); 
+            openCartModal(); 
+        }
+        function openCheckoutMeetModal() { 
+            document.getElementById('checkout-meet-modal').classList.remove('hidden'); 
+        }
+        function closeCheckoutMeetModal() { 
+            document.getElementById('checkout-meet-modal').classList.add('hidden'); 
+            openCartModal(); 
+        }
 
         // --- HELPERS UI METODI E FILE ---
         function updateShipTypeUI() {
             const val = document.querySelector('input[name="ship_type"]:checked').value;
-            const label = document.getElementById('ship-address-label');
-            const input = document.getElementById('ship-address-input');
-            if(val === 'Locker InPost') { label.innerText = "Info Locker InPost (Indirizzo e Nome Locker)"; input.placeholder = "Es: Locker IT-12345, Via Roma..."; } 
-            else { label.innerText = "Indirizzo Completo (Via, Città, CAP, Nome Citofono)"; input.placeholder = "Es: Via Milano 10, 00100 Roma, Citofono: Falsario"; }
+            const formContainer = document.getElementById('ship-dynamic-form');
+            
+            if(val === 'Indirizzo Privato') {
+                formContainer.innerHTML = `
+                    <div class="space-y-4">
+                        <div>
+                            <label class="text-[9px] font-bold text-gray-500 uppercase tracking-widest block mb-1">Destinatario <span class="text-red-500">*</span></label>
+                            <input type="text" id="ship-name" placeholder="Nome e Cognome" class="w-full bg-[#1a1a1a] border border-gray-700 rounded-xl px-4 py-3.5 text-[13px] text-white focus:outline-none focus:border-amber-500 transition shadow-inner">
+                        </div>
+                        <div>
+                            <label class="text-[9px] font-bold text-gray-500 uppercase tracking-widest block mb-1">Indirizzo <span class="text-red-500">*</span></label>
+                            <input type="text" id="ship-street" placeholder="Via/Piazza e Numero Civico" class="w-full bg-[#1a1a1a] border border-gray-700 rounded-xl px-4 py-3.5 text-[13px] text-white focus:outline-none focus:border-amber-500 transition shadow-inner">
+                        </div>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="text-[9px] font-bold text-gray-500 uppercase tracking-widest block mb-1">Città <span class="text-red-500">*</span></label>
+                                <input type="text" id="ship-city" placeholder="Città" class="w-full bg-[#1a1a1a] border border-gray-700 rounded-xl px-4 py-3.5 text-[13px] text-white focus:outline-none focus:border-amber-500 transition shadow-inner">
+                            </div>
+                            <div>
+                                <label class="text-[9px] font-bold text-gray-500 uppercase tracking-widest block mb-1">CAP <span class="text-red-500">*</span></label>
+                                <input type="number" id="ship-zip" placeholder="Es: 00100" class="w-full bg-[#1a1a1a] border border-gray-700 rounded-xl px-4 py-3.5 text-[13px] text-white focus:outline-none focus:border-amber-500 transition shadow-inner">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="text-[9px] font-bold text-gray-500 uppercase tracking-widest block mb-1">Nome sul Citofono <span class="text-amber-500/50 normal-case text-[9px] ml-1">(Facoltativo)</span></label>
+                            <input type="text" id="ship-intercom" placeholder="Se diverso dal destinatario..." class="w-full bg-[#1a1a1a] border border-gray-700 rounded-xl px-4 py-3.5 text-[13px] text-white focus:outline-none focus:border-amber-500 transition shadow-inner">
+                        </div>
+                    </div>
+                `;
+            } else {
+                formContainer.innerHTML = `
+                    <div class="space-y-4">
+                        <div>
+                            <label class="text-[9px] font-bold text-gray-500 uppercase tracking-widest block mb-1">Nome sul Pacco <span class="text-red-500">*</span></label>
+                            <input type="text" id="ship-name" placeholder="Nome e Cognome / Alias" class="w-full bg-[#1a1a1a] border border-gray-700 rounded-xl px-4 py-3.5 text-[13px] text-white focus:outline-none focus:border-amber-500 transition shadow-inner">
+                        </div>
+                        <div>
+                            <label class="text-[9px] font-bold text-gray-500 uppercase tracking-widest block mb-1">Info Locker InPost <span class="text-red-500">*</span></label>
+                            <input type="text" id="ship-locker-id" placeholder="Es: Locker IT-12345, Via Roma 10" class="w-full bg-[#1a1a1a] border border-gray-700 rounded-xl px-4 py-3.5 text-[13px] text-white focus:outline-none focus:border-amber-500 transition shadow-inner">
+                        </div>
+                        <div>
+                            <label class="text-[9px] font-bold text-gray-500 uppercase tracking-widest block mb-1">Contatto per Tracking <span class="text-red-500">*</span></label>
+                            <input type="text" id="ship-contact" placeholder="Email o Telefono per il codice" class="w-full bg-[#1a1a1a] border border-gray-700 rounded-xl px-4 py-3.5 text-[13px] text-white focus:outline-none focus:border-amber-500 transition shadow-inner">
+                        </div>
+                    </div>
+                `;
+            }
         }
 
         function updateFileName(inputId, textId, color = 'amber') {
@@ -4954,6 +4993,59 @@
             if (method) { txt.innerHTML = getWalletDetailsHTML(method); box.classList.remove('hidden'); } 
             else { box.classList.add('hidden'); }
         }
+
+        // --- INVIO ORDINE SPEDIZIONE ---
+        async function submitShipOrder() {
+            const shipType = document.querySelector('input[name="ship_type"]:checked').value;
+            const paymentMethod = document.getElementById('ship-payment-method').value;
+            const receiptFile = document.getElementById('ship-receipt-file').files[0];
+            const isConfirmed = document.getElementById('payment-confirmed-cb').checked;
+            
+            let addressInput = "";
+
+            if (shipType === 'Indirizzo Privato') {
+                const name = document.getElementById('ship-name')?.value.trim();
+                const street = document.getElementById('ship-street')?.value.trim();
+                const city = document.getElementById('ship-city')?.value.trim();
+                const zip = document.getElementById('ship-zip')?.value.trim();
+                const intercom = document.getElementById('ship-intercom')?.value.trim();
+
+                if (!name || !street || !city || !zip) { 
+                    alert("⚠️ Errore: Compila tutti i campi obbligatori dell'indirizzo (*)."); 
+                    return; 
+                }
+                
+                addressInput = `👤 Nome: ${name}\n📍 Via: ${street}\n🏙️ Città: ${zip} ${city}`;
+                if (intercom) addressInput += `\n🔔 Citofono: ${intercom}`;
+
+            } else {
+                const name = document.getElementById('ship-name')?.value.trim();
+                const lockerId = document.getElementById('ship-locker-id')?.value.trim();
+                const contact = document.getElementById('ship-contact')?.value.trim();
+
+                if (!name || !lockerId || !contact) { 
+                    alert("⚠️ Errore: Compila tutti i campi obbligatori per il Locker InPost (*)."); 
+                    return; 
+                }
+
+                addressInput = `👤 Nome Pacco: ${name}\n📦 Locker: ${lockerId}\n📞 Contatto: ${contact}`;
+            }
+
+            if (!paymentMethod) { alert("⚠️ Errore: Seleziona un metodo di pagamento."); return; }
+            if (!isConfirmed) { alert("⛔ Devi confermare di aver inviato i fondi spuntando la Dichiarazione Vincolante in basso."); return; }
+
+            showLoading();
+            let receiptUrl = "Nessuno screen allegato. L'utente ha confermato manualmente l'invio dei fondi.";
+            if (receiptFile) {
+                const uploaded = await uploadFileToSupabase(receiptFile);
+                if(uploaded) receiptUrl = uploaded;
+            }
+
+            const finalAddress = `🚚 TIPO: Spedizione (${shipType})\n\n${addressInput}\n\n💰 PAGAMENTO: ${paymentMethod}\n📄 RICEVUTA:\n${receiptUrl}`;
+            await processFinalApiOrder(finalAddress, cart);
+            document.getElementById('checkout-ship-modal').classList.add('hidden');
+        }
+
 
         // --- INVIO ORDINE SPEDIZIONE ---
         async function submitShipOrder() {
