@@ -4911,6 +4911,24 @@
         // ==========================================================
         // SISTEMA CHECKOUT AUTOMATICO E ROUTING
         // ==========================================================
+            // ==========================================================
+        // SISTEMA CHECKOUT AUTOMATICO E ROUTING
+        // ==========================================================
+        function proceedToCheckout() {
+            if (cart.length === 0) return;
+            let hasShip = false, hasMeet = false;
+            cart.forEach(item => {
+                const cat = item.category ? item.category.toLowerCase() : '';
+                if (cat.includes('meet up')) hasMeet = true; else hasShip = true;
+            });
+            if (hasShip && hasMeet) {
+                alert("⛔ Attenzione: Non puoi inserire prodotti per la Spedizione e prodotti per la Consegna a Mano (Meet Up) nello stesso ordine. Dividili in due richieste separate.");
+                return;
+            }
+            closeCartModal();
+            if (hasMeet) openCheckoutMeetModal(); else openCheckoutShipModal();
+        }
+
         function openCheckoutShipModal() { 
             updateShipTypeUI(); 
             document.getElementById('checkout-ship-modal').classList.remove('hidden'); 
@@ -4929,8 +4947,11 @@
 
         // --- HELPERS UI METODI E FILE ---
         function updateShipTypeUI() {
-            const val = document.querySelector('input[name="ship_type"]:checked').value;
+            const radio = document.querySelector('input[name="ship_type"]:checked');
+            const val = radio ? radio.value : 'Indirizzo Privato';
             const formContainer = document.getElementById('ship-dynamic-form');
+            
+            if(!formContainer) return; // Protezione anti-crash
             
             if(val === 'Indirizzo Privato') {
                 formContainer.innerHTML = `
@@ -4993,6 +5014,60 @@
             if (method) { txt.innerHTML = getWalletDetailsHTML(method); box.classList.remove('hidden'); } 
             else { box.classList.add('hidden'); }
         }
+
+        // --- INVIO ORDINE SPEDIZIONE ---
+        async function submitShipOrder() {
+            const shipTypeEl = document.querySelector('input[name="ship_type"]:checked');
+            const shipType = shipTypeEl ? shipTypeEl.value : 'Indirizzo Privato';
+            const paymentMethod = document.getElementById('ship-payment-method').value;
+            const receiptFile = document.getElementById('ship-receipt-file')?.files[0];
+            const isConfirmed = document.getElementById('payment-confirmed-cb')?.checked;
+            
+            let addressInput = "";
+
+            if (shipType === 'Indirizzo Privato') {
+                const name = document.getElementById('ship-name')?.value.trim();
+                const street = document.getElementById('ship-street')?.value.trim();
+                const city = document.getElementById('ship-city')?.value.trim();
+                const zip = document.getElementById('ship-zip')?.value.trim();
+                const intercom = document.getElementById('ship-intercom')?.value.trim();
+
+                if (!name || !street || !city || !zip) { 
+                    alert("⚠️ Errore: Compila tutti i campi obbligatori dell'indirizzo (*)."); 
+                    return; 
+                }
+                
+                addressInput = `👤 Nome: ${name}\n📍 Via: ${street}\n🏙️ Città: ${zip} ${city}`;
+                if (intercom) addressInput += `\n🔔 Citofono: ${intercom}`;
+
+            } else {
+                const name = document.getElementById('ship-name')?.value.trim();
+                const lockerId = document.getElementById('ship-locker-id')?.value.trim();
+                const contact = document.getElementById('ship-contact')?.value.trim();
+
+                if (!name || !lockerId || !contact) { 
+                    alert("⚠️ Errore: Compila tutti i campi obbligatori per il Locker InPost (*)."); 
+                    return; 
+                }
+
+                addressInput = `👤 Nome Pacco: ${name}\n📦 Locker: ${lockerId}\n📞 Contatto: ${contact}`;
+            }
+
+            if (!paymentMethod) { alert("⚠️ Errore: Seleziona un metodo di pagamento."); return; }
+            if (!isConfirmed) { alert("⛔ Devi confermare di aver inviato i fondi spuntando la Dichiarazione Vincolante in basso."); return; }
+
+            showLoading();
+            let receiptUrl = "Nessuno screen allegato. L'utente ha confermato manualmente l'invio dei fondi.";
+            if (receiptFile) {
+                const uploaded = await uploadFileToSupabase(receiptFile);
+                if(uploaded) receiptUrl = uploaded;
+            }
+
+            const finalAddress = `🚚 TIPO: Spedizione (${shipType})\n\n${addressInput}\n\n💰 PAGAMENTO: ${paymentMethod}\n📄 RICEVUTA:\n${receiptUrl}`;
+            await processFinalApiOrder(finalAddress, cart);
+            document.getElementById('checkout-ship-modal').classList.add('hidden');
+        }
+
 
         // --- INVIO ORDINE SPEDIZIONE ---
         async function submitShipOrder() {
