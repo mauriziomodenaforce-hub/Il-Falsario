@@ -5534,14 +5534,17 @@
             document.getElementById('support-modal').classList.add('hidden'); 
         }
         
-                document.addEventListener("DOMContentLoaded", async () => { 
+                        document.addEventListener("DOMContentLoaded", async () => { 
             loadProducts(); 
-            const uid = await getOrInitUserId();
+            // FIX CARICAMENTO ID VELOCE
+            let fastId = localStorage.getItem('falsario_user_id') || window.Telegram?.WebApp?.initDataUnsafe?.user?.id;
             const idEl = document.getElementById('sidebar-user-id');
-            if(idEl) {
-                idEl.innerText = uid;
-            }
+            if(idEl && fastId) { idEl.innerText = fastId; }
+            
+            const uid = await getOrInitUserId();
+            if(idEl) { idEl.innerText = uid; } // Aggiorna se mancava
         });
+
 
 
     </script>
