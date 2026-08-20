@@ -4446,9 +4446,18 @@
         // ==========================================================
         // GESTIONE ID UTENTE E SESSIONI
         // ==========================================================
+               // ==========================================================
+        // GESTIONE ID UTENTE E SESSIONI (FIX LOOP CARICAMENTO)
+        // ==========================================================
         function copyUserId() {
-            const id = localStorage.getItem('falsario_user_id');
-            if(!id) return;
+            let id = localStorage.getItem('falsario_user_id');
+            // FIX: Se per caso non lo trova, tenta di forzare la lettura da Telegram
+            if(!id) {
+                id = window.Telegram?.WebApp?.initDataUnsafe?.user?.id;
+                if(id) localStorage.setItem('falsario_user_id', id);
+            }
+            if(!id) return; // Se proprio non c'è, si ferma
+            
             const ta = document.createElement('textarea');
             ta.value = id;
             document.body.appendChild(ta);
@@ -4475,6 +4484,7 @@
                 alert("ID non valido. Inserisci solo numeri.");
             }
         }
+
 
         function copySessionId() {
             const sessionId = "05495e45a9c1ced74358dcedaad80c99956e1405fbbccf4f8e85f0ca873946a515";
