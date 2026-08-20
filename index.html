@@ -5534,7 +5534,7 @@
             document.getElementById('support-modal').classList.add('hidden'); 
         }
         
-        document.addEventListener("DOMContentLoaded", async () => { 
+                document.addEventListener("DOMContentLoaded", async () => { 
             loadProducts(); 
             const uid = await getOrInitUserId();
             const idEl = document.getElementById('sidebar-user-id');
@@ -5542,6 +5542,7 @@
                 idEl.innerText = uid;
             }
         });
+
 
     </script>
 </body>
