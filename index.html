@@ -5571,6 +5571,16 @@
             
             const uid = await getOrInitUserId();
             if(idEl) { idEl.innerText = uid; } // Aggiorna se mancava
+                    // AVVIO TUTORIAL FANTASMA (Versione Antiproiettile)
+            setTimeout(() => {
+                try {
+                    if (typeof CaveauTour !== 'undefined') {
+                        CaveauTour.init();
+                    }
+                } catch (error) {
+                    console.log("Tour silenziato per caricamento in corso");
+                }
+            }, 3000);
          });
 
 
