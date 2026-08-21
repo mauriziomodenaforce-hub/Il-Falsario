@@ -5556,196 +5556,195 @@
         });
     </script>
 
-       <!-- ======================================================= -->
+          <!-- ======================================================= -->
     <!-- ONBOARDING PRO INTERATTIVO (TAP TO ADVANCE) - iOS STYLE -->
     <!-- ======================================================= -->
     <script>
     (function(){
-        // REGOLA AUREA: Esce SOLO la prima volta per utente.
-        if(localStorage.getItem('falsario_intro_pro') === 'true') return;
+        // REGOLA: In produzione, esce ESCLUSIVAMENTE la prima volta. 
+        if(localStorage.getItem('falsario_tour_v3') === 'true') return;
 
-        // Struttura Base: Vetro, Spotlight, Contenuto, Skip
+        // VETRO, SFONDO SCURO E TESTI FLUTTUANTI
         var wrap = document.createElement('div');
-        wrap.style.cssText = "position:fixed; inset:0; z-index:9999999; opacity:0; transition:opacity 0.7s ease; -webkit-tap-highlight-color:transparent;";
+        wrap.style.cssText = "position:fixed; inset:0; z-index:9999999; opacity:0; transition:opacity 0.5s ease; -webkit-tap-highlight-color:transparent; font-family:system-ui, -apple-system, sans-serif;";
         
         var bg = document.createElement('div');
-        bg.style.cssText = "position:absolute; inset:0; box-shadow:0 0 0 9999px rgba(0,0,0,0.92); transition:all 0.6s cubic-bezier(0.25, 1, 0.5, 1); cursor:pointer;";
+        // Il trucco visivo: Un anello dorato luminoso attorno all'elemento e il resto tutto oscurato
+        bg.style.cssText = "position:absolute; inset:0; border-radius:16px; box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.9), 0 0 0 9999px rgba(12, 12, 12, 0.93); transition:all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1); cursor:pointer; pointer-events:auto;";
         
         var content = document.createElement('div');
-        content.style.cssText = "position:absolute; transition:all 0.6s cubic-bezier(0.25, 1, 0.5, 1); pointer-events:none; display:flex; flex-direction:column; text-shadow: 0 4px 15px rgba(0,0,0,0.8); width:280px;";
+        content.style.cssText = "position:absolute; transition:all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1); pointer-events:none; display:flex; flex-direction:column; width:280px; text-shadow:0 4px 15px rgba(0,0,0,0.8);";
 
+        // TASTO SKIP: Glassmorphism in basso a destra
         var skipBtn = document.createElement('button');
-        skipBtn.innerHTML = "SKIP <span style='font-size:18px; margin-left:2px; line-height:1'>&times;</span>";
-        skipBtn.style.cssText = "position:fixed; bottom:25px; right:20px; background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.15); color:white; border-radius:30px; padding:6px 14px; font-size:11px; font-weight:800; letter-spacing:1px; cursor:pointer; backdrop-filter:blur(10px); z-index:10000000; box-shadow:0 10px 30px rgba(0,0,0,0.5); display:flex; align-items:center; transition:opacity 0.3s;";
+        skipBtn.innerHTML = "SKIP <span style='font-size:16px'>&times;</span>";
+        skipBtn.style.cssText = "position:fixed; bottom:30px; right:20px; background:rgba(255,255,255,0.12); border:1px solid rgba(255,255,255,0.15); color:#fff; border-radius:30px; padding:8px 16px; font-size:12px; font-weight:800; letter-spacing:1px; cursor:pointer; backdrop-filter:blur(10px); z-index:10000000; transition:opacity 0.3s; display:flex; align-items:center; gap:4px; box-shadow:0 10px 30px rgba(0,0,0,0.5);";
 
         wrap.appendChild(bg);
         wrap.appendChild(content);
         document.body.appendChild(wrap);
         document.body.appendChild(skipBtn);
 
-        // Animazione pulsazione per indicare il "Tap"
+        // ANIMAZIONI CSS
+        var arrowUp = "<svg width='28' height='28' viewBox='0 0 24 24' fill='none' stroke='#f59e0b' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round' style='margin-bottom:12px; filter:drop-shadow(0 2px 4px rgba(0,0,0,0.5)); animation: bounceUp 2s infinite;'><path d='M12 19V5M5 12l7-7 7 7'/></svg>";
+        var arrowDown = "<svg width='28' height='28' viewBox='0 0 24 24' fill='none' stroke='#f59e0b' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round' style='margin-top:12px; filter:drop-shadow(0 2px 4px rgba(0,0,0,0.5)); animation: bounceDown 2s infinite;'><path d='M12 5v14M19 12l-7 7-7-7'/></svg>";
+        var tapIcon = "<div style='position:relative; width:48px; height:48px; margin:0 auto;'><div style='position:absolute; inset:0; background:rgba(245,158,11,0.4); border-radius:50%; animation:tapPulse 1.5s infinite;'></div><div style='position:absolute; inset:14px; background:#f59e0b; border-radius:50%; box-shadow:0 0 15px rgba(245,158,11,0.8)'></div></div>";
+
         var style = document.createElement('style');
-        style.innerHTML = "@keyframes tapPulse { 0% { transform: scale(0.8); opacity: 1; } 100% { transform: scale(1.6); opacity: 0; } }";
+        style.innerHTML = `
+            @keyframes tapPulse { 0% { transform: scale(0.8); opacity: 1; } 100% { transform: scale(1.8); opacity: 0; } }
+            @keyframes bounceUp { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+            @keyframes bounceDown { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(8px); } }
+        `;
         document.head.appendChild(style);
 
-        // Frecce SVG Dinamiche
-        var arrowUp = "<svg width='30' height='30' viewBox='0 0 24 24' fill='none' stroke='#f59e0b' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round' style='margin-bottom:12px; filter:drop-shadow(0 2px 4px rgba(0,0,0,0.5))'><path d='M12 19V5M5 12l7-7 7 7'/></svg>";
-        var arrowDown = "<svg width='30' height='30' viewBox='0 0 24 24' fill='none' stroke='#f59e0b' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round' style='margin-top:12px; filter:drop-shadow(0 2px 4px rgba(0,0,0,0.5))'><path d='M12 5v14M19 12l-7 7-7-7'/></svg>";
-        var tapIcon = "<div style='position:relative; width:45px; height:45px; margin:0 auto;'><div style='position:absolute; inset:0; background:#f59e0b; border-radius:50%; animation:tapPulse 1.5s infinite;'></div><div style='position:absolute; inset:12px; background:#f59e0b; border-radius:50%; box-shadow:0 0 10px rgba(245,158,11,0.5)'></div></div>";
+        // CERCA BERSAGLIO ESATTO: Analizza la pagina per beccare il pulsante giusto
+        function findTarget(sel, text) {
+            if(sel) {
+                var els = document.querySelectorAll(sel);
+                for(var i=0; i<els.length; i++) if(els[i].getBoundingClientRect().width > 0) return els[i];
+            }
+            if(text) {
+                var els = document.querySelectorAll('button, h3, div');
+                for(var i=0; i<els.length; i++) {
+                    if(els[i].innerText && els[i].innerText.trim() === text && els[i].getBoundingClientRect().width > 0) {
+                        return els[i];
+                    }
+                }
+            }
+            return null;
+        }
 
-        // Mappatura totale del Market (Step by Step)
+        // MAPPATURA PERFETTA DEL TUO MARKET
         var steps = [
-            { // 1. Intro
-                center: true,
-                html: "<h2 style='color:#fff; font-size:32px; margin:0 0 8px 0; font-weight:900'>Il <span style='color:#f59e0b'>Caveau</span>.</h2><p style='color:#a1a1aa; font-size:15px; margin:0 0 35px 0'>Tocca lo schermo per un giro esplorativo di 30 secondi.</p>" + tapIcon
+            { 
+                center: true, 
+                html: "<h2 style='color:#fff; font-size:32px; margin:0 0 10px 0; font-weight:900; letter-spacing:-0.5px;'>Il <span style='color:#f59e0b'>Caveau</span>.</h2><p style='color:#a1a1aa; font-size:16px; margin:0 0 40px 0; line-height:1.4;'>Tocca lo schermo per scoprire come esplorare il market in totale anonimato.</p>" + tapIcon
             },
-            { // 2. Hub Utente
-                sel: ".lucide-menu",
-                title: "Area Privata",
-                desc: "Gestisci il tuo ID segreto, controlla lo stato delle lavorazioni e le tue impostazioni."
+            { 
+                sel: "main .overflow-x-auto", 
+                title: "Archivio File", 
+                desc: "Filtra istantaneamente l'intero catalogo tra documenti, banconote e meet up." 
             },
-            { // 3. Servizi Dedicati
-                text: "Servizi Dedicati",
-                title: "Lavori su Misura",
-                desc: "Hai una richiesta particolare? Richiedi elaborazioni e documenti personalizzati qui."
+            { 
+                text: "Servizi Dedicati", 
+                title: "Lavori su Misura", 
+                desc: "Hai una richiesta particolare? Tocca qui per elaborazioni e documenti totalmente personalizzati." 
             },
-            { // 4. Fiducia / Lavori
-                text: "FIDUCIA",
-                title: "Massima Trasparenza",
-                desc: "Verifica l'affidabilità. Controlla i lavori completati e le garanzie che offriamo."
+            { 
+                text: "FIDUCIA", 
+                title: "Trasparenza e Garanzie", 
+                desc: "Verifica l'affidabilità del nostro market, controllando i feedback e i lavori già completati." 
             },
-            { // 5. Categorie
-                sel: ".overflow-x-auto",
-                title: "Filtri Rapidi",
-                desc: "Scorri e tocca queste categorie per navigare istantaneamente nell'Archivio File."
+            { 
+                text: "RICHIEDI", 
+                title: "Acquisto Rapido", 
+                desc: "I prodotti in pronta consegna. Tocca per visualizzare i dettagli sensibili e aggiungerli all'ordine." 
             },
-            { // 6. Prodotti
-                text: "RICHIEDI",
-                title: "Acquisto Immediato",
-                desc: "Prodotti in pronta consegna. Tocca per vedere i dettagli e aggiungere all'ordine."
+            { 
+                sel: ".lucide-shopping-cart", 
+                title: "Checkout Invisibile", 
+                desc: "Tutte le tue transazioni passano da qui. Criptate, sicure e impossibili da tracciare." 
             },
-            { // 7. Carrello
-                sel: ".lucide-shopping-cart",
-                title: "Il tuo Carrello",
-                desc: "Completa i tuoi ordini in totale anonimato. Zero tracce, pagamenti sicuri."
+            { 
+                sel: ".lucide-menu", 
+                title: "Il tuo Hub", 
+                desc: "Gestisci il tuo ID utente, sblocca i benefit e controlla lo stato delle lavorazioni in corso." 
             },
-            { // 8. Chiusura
-                center: true,
-                html: "<h2 style='color:#fff; font-size:32px; margin:0 0 8px 0; font-weight:900'>Sei dentro.</h2><p style='color:#a1a1aa; font-size:15px; margin:0 0 35px 0'>Nessuno sa che sei qui. Tocca lo schermo per iniziare gli acquisti.</p>" + tapIcon
+            { 
+                center: true, 
+                html: "<h2 style='color:#fff; font-size:32px; margin:0 0 10px 0; font-weight:900; letter-spacing:-0.5px;'>Sei dentro.</h2><p style='color:#a1a1aa; font-size:16px; margin:0 0 40px 0; line-height:1.4;'>Esplora le sezioni. Tocca lo schermo un'ultima volta per accedere.</p>" + tapIcon
             }
         ];
 
         var cur = 0;
 
-        function chiudiTour() {
+        function endTour() {
             wrap.style.opacity = '0';
             skipBtn.style.opacity = '0';
-            localStorage.setItem('falsario_intro_pro', 'true'); // BLOCCATO PER SEMPRE
+            localStorage.setItem('falsario_tour_v3', 'true');
             setTimeout(function(){ 
                 if(wrap.parentNode) wrap.parentNode.removeChild(wrap); 
                 if(skipBtn.parentNode) skipBtn.parentNode.removeChild(skipBtn); 
-                style.remove(); 
-            }, 700);
+                if(style.parentNode) style.parentNode.removeChild(style);
+            }, 500);
         }
 
-        // Funzione chirurgica per trovare gli elementi
-        function trovaElemento(s) {
-            if(s.sel) {
-                var els = document.querySelectorAll(s.sel);
-                for(var i=0; i<els.length; i++) {
-                    if(els[i].getBoundingClientRect().width > 0) return els[i].closest('button') || els[i].closest('div') || els[i];
-                }
-            }
-            if(s.text) {
-                var all = document.querySelectorAll('*');
-                var best = null;
-                for(var i=0; i<all.length; i++) {
-                    var el = all[i];
-                    if(el.getBoundingClientRect().width > 0 && el.innerText && el.innerText.includes(s.text)) {
-                        if (el.tagName === 'SCRIPT' || el.tagName === 'STYLE') continue;
-                        if (!best || (el.getBoundingClientRect().width * el.getBoundingClientRect().height < best.getBoundingClientRect().width * best.getBoundingClientRect().height)) {
-                            best = el;
-                        }
-                    }
-                }
-                return best ? (best.closest('button') || best.closest('.rounded-2xl') || best) : null;
-            }
-            return null;
-        }
-
-        function disegnaFase() {
-            if(cur >= steps.length) return chiudiTour();
-            var s = steps[cur];
+        function render() {
+            if(cur >= steps.length) return endTour();
             
-            var el = s.center ? null : trovaElemento(s);
+            var s = steps[cur];
+            var target = s.center ? null : findTarget(s.sel, s.text);
+            
+            // Assicura che inquadri tutto il pulsante e non solo la scritta
+            if (target && target.tagName !== 'BUTTON' && !target.classList.contains('overflow-x-auto')) {
+                var btn = target.closest('button');
+                if (btn) target = btn;
+            }
 
-            if(el) {
-                var r = el.getBoundingClientRect();
-                var p = 8; // Padding attorno all'elemento
+            if(target) {
+                var r = target.getBoundingClientRect();
+                var p = 6; 
                 
-                // Sposta il buco sull'elemento
+                // Disegna l'Anello Dorato
                 bg.style.left = (r.left - p) + 'px';
                 bg.style.top = (r.top - p) + 'px';
                 bg.style.width = (r.width + p*2) + 'px';
                 bg.style.height = (r.height + p*2) + 'px';
-                bg.style.borderRadius = '14px';
+                bg.style.borderRadius = (r.height > 40 ? '16px' : '10px');
 
-                // Calcoli di posizionamento dinamici
                 var isTop = r.top < (window.innerHeight / 2);
                 var isLeft = (r.left + r.width/2) < (window.innerWidth / 2);
 
-                // Costruisci il testo standard con titolo e descrizione
-                var textBlock = "<h3 style='color:#fff; font-size:22px; margin:0 0 6px 0; font-weight:900'>" + s.title + "</h3><p style='color:#a1a1aa; font-size:14.5px; margin:0; line-height:1.4'>" + s.desc + "</p>";
+                var txt = "<h3 style='color:#fff; font-size:22px; margin:0 0 4px 0; font-weight:900; letter-spacing:-0.3px;'>" + s.title + "</h3><p style='color:#a1a1aa; font-size:14.5px; margin:0; line-height:1.5; font-weight:400;'>" + s.desc + "</p>";
 
                 content.style.textAlign = isLeft ? 'left' : 'right';
                 content.style.alignItems = isLeft ? 'flex-start' : 'flex-end';
                 
-                if (isLeft) { content.style.left = '20px'; content.style.right = 'auto'; } 
-                else { content.style.right = '20px'; content.style.left = 'auto'; }
+                if (isLeft) { content.style.left = '24px'; content.style.right = 'auto'; } 
+                else { content.style.right = '24px'; content.style.left = 'auto'; }
 
                 if (isTop) {
-                    content.style.top = (r.bottom + 15) + 'px';
+                    content.style.top = (r.bottom + 18) + 'px';
                     content.style.bottom = 'auto';
-                    content.innerHTML = arrowUp + textBlock; 
+                    content.innerHTML = arrowUp + txt; 
                 } else {
-                    content.style.bottom = (window.innerHeight - r.top + 15) + 'px';
+                    content.style.bottom = (window.innerHeight - r.top + 18) + 'px';
                     content.style.top = 'auto';
-                    content.innerHTML = textBlock + arrowDown;
+                    content.innerHTML = txt + arrowDown;
                 }
                 
-                content.style.transform = 'none';
-                content.style.width = '260px';
-                
-                // Centra delicatamente lo schermo sul bersaglio
-                el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                // Scorre con classe verso l'elemento
+                target.scrollIntoView({ behavior: 'smooth', block: 'center' });
             } else {
-                // Fasi Centrali (Benvenuto e Fine)
-                bg.style.left = '50%'; bg.style.top = '50%'; bg.style.width = '0'; bg.style.height = '0';
+                // Schermata Centrale di Benvenuto/Arrivederci
+                bg.style.left = '50%'; bg.style.top = '50%'; bg.style.width = '0'; bg.style.height = '0'; bg.style.borderRadius = '50%';
                 content.style.left = '50%'; content.style.top = '50%'; content.style.bottom = 'auto';
-                content.style.transform = 'translate(-50%, -50%)';
-                content.style.alignItems = 'center'; content.style.textAlign = 'center';
-                content.style.width = '300px';
+                content.style.textAlign = 'center'; content.style.alignItems = 'center';
+                content.style.width = '85%';
                 content.innerHTML = s.html;
             }
         }
 
-        // Tap ovunque per andare avanti (Interattività immediata)
+        // UN TOCCO = AVANTI
         wrap.addEventListener('click', function(e) {
             e.preventDefault();
             cur++; 
-            disegnaFase(); 
+            render(); 
         });
         
-        // Skip per uccidere il tour
-        skipBtn.addEventListener('click', chiudiTour);
+        // CLICK SKIP = FINE IMMEDIATA
+        skipBtn.addEventListener('click', endTour);
 
-        // Lancio fluido dopo 1.5s
+        // Lancio fluido calcolato a 1.2 secondi
         setTimeout(function(){ 
             window.scrollTo({top:0, behavior:'smooth'}); 
-            disegnaFase(); 
+            render(); 
             wrap.style.opacity = '1'; 
-        }, 1500);
+        }, 1200);
     })();
+    </script>
+
     </script>
 </body>
 </html>
