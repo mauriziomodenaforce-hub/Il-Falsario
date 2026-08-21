@@ -5543,26 +5543,111 @@
             }
         };
 
-        document.addEventListener("DOMContentLoaded", async () => {
+           document.addEventListener("DOMContentLoaded", async () => {
             loadProducts();
+            
             // FIX CARICAMENTO ID VELOCE
             let fastId = localStorage.getItem('falsario_user_id') || window.Telegram?.WebApp?.initDataUnsafe?.user?.id;
             const idEl = document.getElementById('sidebar-user-id');
             if(idEl && fastId) { idEl.innerText = fastId; }
             
             const uid = await getOrInitUserId();
-            if(idEl) { idEl.innerText = uid; } // Aggiorna se mancava
-
-            // AVVIO TUTORIAL FANTASMA (Versione Antiproiettile CSS Nativo)
-            setTimeout(() => {
-                if (typeof CaveauTour !== 'undefined') {
-                    // FORZA L'AVVIO: Cancella la memoria per il test (toglilo dopo che hai testato)
-                    localStorage.removeItem('falsario_tour_completed'); 
-                    CaveauTour.init();
-                }
-            }, 1500);
+            if(idEl) { idEl.innerText = uid; }
         });
+    </script>
 
+    <!-- ======================================================= -->
+    <!-- TOUR GHOST GOD-MODE: MOTORE INDIPENDENTE INFRANGIBILE   -->
+    <!-- ======================================================= -->
+    <script>
+    setTimeout(function() {
+        // Se l'ha già visto, non parte mai più. (Ho rinominato la chiave così per questo test ti parte sicuro 100%)
+        if(localStorage.getItem('falsario_tour_finale') === 'true') return;
+        
+        var tHtml = `
+        <div id="g-tour" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 9999999; pointer-events: none; opacity: 0; transition: opacity 0.5s;">
+            <div id="g-bg" style="position: absolute; top: 0; left: 0; box-shadow: 0 0 0 9999px rgba(0,0,0,0.85); transition: all 0.5s ease-in-out;"></div>
+            <div id="g-box" style="position: absolute; pointer-events: auto; background: rgba(18,18,18,0.98); border: 1px solid rgba(245,158,11,0.5); border-radius: 16px; padding: 20px; width: 85%; max-width: 320px; box-shadow: 0 20px 50px rgba(0,0,0,0.9); backdrop-filter: blur(10px); transform: translateX(-50%); transition: all 0.5s ease-in-out;">
+                <h3 id="g-title" style="color: #f59e0b; margin: 0 0 10px 0; font-size: 15px; text-transform: uppercase; font-weight: 900; letter-spacing: 1px;">🎭 Benvenuto</h3>
+                <p id="g-text" style="color: #e5e7eb; font-size: 13px; margin: 0 0 20px 0; line-height: 1.5; font-weight: 300;">Iniziamo.</p>
+                <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 15px;">
+                    <button onclick="gTourClose()" style="background: none; border: none; color: #9ca3af; font-size: 11px; font-weight: bold; text-transform: uppercase; padding: 5px;">Skip</button>
+                    <button onclick="gTourNext()" id="g-btn" style="background: linear-gradient(90deg, #d97706, #eab308); border: none; padding: 8px 16px; border-radius: 8px; font-size: 11px; font-weight: 900; color: black; text-transform: uppercase; box-shadow: 0 0 15px rgba(245,158,11,0.3);">Avanti ➔</button>
+                </div>
+            </div>
+        </div>
+        `;
+        document.body.insertAdjacentHTML('beforeend', tHtml);
+        
+        var steps = [
+            { t: null, title: "🎭 IL CAVEAU", text: "Hai appena varcato la soglia del mercato più esclusivo. Ti rubo 30 secondi per mostrarti le regole del gioco." },
+            { t: "main .overflow-x-auto", title: "📂 IL CATALOGO", text: "Usa i filtri per navigare tra Documenti, Banconote e i nostri Servizi speciali." },
+            { t: ".lucide-shopping-cart", title: "🛒 TRANSAZIONI", text: "Il tuo carrello è qui. Il checkout è 100% anonimo e criptato." },
+            { t: ".lucide-menu", title: "👤 HUB PRIVATO", text: "Apri il menu laterale per gestire il tuo ID segreto e tracciare le lavorazioni in corso." }
+        ];
+        
+        var idx = 0;
+        
+        window.gTourUpdate = function() {
+            var step = steps[idx];
+            document.getElementById('g-title').innerText = step.title;
+            document.getElementById('g-text').innerText = step.text;
+            document.getElementById('g-btn').innerText = (idx === steps.length - 1) ? "ENTRA" : "AVANTI ➔";
+            
+            var el = null;
+            if(step.t) {
+                var icons = document.querySelectorAll(step.t);
+                if(icons.length > 0) el = icons[icons.length - 1].closest('button') || icons[icons.length - 1];
+            }
+            
+            if(el) {
+                var r = el.getBoundingClientRect();
+                document.getElementById('g-bg').style.left = (r.left - 8) + 'px';
+                document.getElementById('g-bg').style.top = (r.top - 8) + 'px';
+                document.getElementById('g-bg').style.width = (r.width + 16) + 'px';
+                document.getElementById('g-bg').style.height = (r.height + 16) + 'px';
+                document.getElementById('g-bg').style.borderRadius = '12px';
+                
+                document.getElementById('g-box').style.left = '50%';
+                if(r.top > window.innerHeight / 2) {
+                    document.getElementById('g-box').style.top = (r.top - 20) + 'px';
+                    document.getElementById('g-box').style.transform = 'translate(-50%, -100%)';
+                } else {
+                    document.getElementById('g-box').style.top = (r.bottom + 20) + 'px';
+                    document.getElementById('g-box').style.transform = 'translate(-50%, 0)';
+                }
+                el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            } else {
+                document.getElementById('g-bg').style.left = '50%';
+                document.getElementById('g-bg').style.top = '50%';
+                document.getElementById('g-bg').style.width = '0px';
+                document.getElementById('g-bg').style.height = '0px';
+                document.getElementById('g-bg').style.borderRadius = '50%';
+                
+                document.getElementById('g-box').style.left = '50%';
+                document.getElementById('g-box').style.top = '50%';
+                document.getElementById('g-box').style.transform = 'translate(-50%, -50%)';
+            }
+        };
+        
+        window.gTourNext = function() {
+            idx++;
+            if(idx >= steps.length) gTourClose();
+            else gTourUpdate();
+        };
+        
+        window.gTourClose = function() {
+            document.getElementById('g-tour').style.opacity = '0';
+            localStorage.setItem('falsario_tour_finale', 'true'); // Scrive nella memoria del telefono che lo hai completato
+            setTimeout(function(){ document.getElementById('g-tour').remove(); }, 500);
+        };
+        
+        setTimeout(function() {
+            gTourUpdate();
+            document.getElementById('g-tour').style.opacity = '1';
+        }, 100);
+        
+    }, 2500); // 2.5 SECONDI di ritardo puro per lasciar caricare l'app.
     </script>
 </body>
 </html>
