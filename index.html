@@ -5556,33 +5556,32 @@
         });
     </script>
 
-      <!-- ======================================================= -->
-    <!-- ONBOARDING GOD-TIER (STEVE JOBS EDITION)                -->
+       <!-- ======================================================= -->
+    <!-- ONBOARDING GOD-TIER (60FPS TRACKING ENGINE)             -->
     <!-- ======================================================= -->
     <script>
     (function(){
-        // Regola base: esce solo la prima volta in assoluto.
-        if(localStorage.getItem('falsario_tour_steve') === 'true') return;
+        if(localStorage.getItem('falsario_tour_perfetto') === 'true') return;
 
-        // Iniezione degli stili per animazioni e layout blindato
+        // CSS Blindato. Nessuna interferenza.
         var style = document.createElement('style');
         style.innerHTML = `
-            .tour-wrap { position: fixed; inset: 0; z-index: 9999999; opacity: 0; transition: opacity 0.4s ease; font-family: system-ui, -apple-system, sans-serif; -webkit-tap-highlight-color: transparent; cursor: pointer; }
-            .tour-spot { position: absolute; box-shadow: 0 0 0 9999px rgba(10,10,10,0.92); transition: all 0.5s cubic-bezier(0.25, 1, 0.5, 1); pointer-events: none; }
-            .tour-ring { position: absolute; inset: -6px; border-radius: inherit; border: 2px solid rgba(245,158,11,0.6); animation: pulseRing 1.5s infinite; pointer-events: none; }
-            .tour-card { position: absolute; left: 50%; width: 85%; max-width: 320px; background: rgba(24,24,27,0.95); border: 1px solid rgba(245,158,11,0.2); border-radius: 20px; padding: 24px; box-shadow: 0 20px 40px rgba(0,0,0,0.9); backdrop-filter: blur(12px); transition: all 0.5s cubic-bezier(0.25, 1, 0.5, 1); pointer-events: none; display: flex; flex-direction: column; text-align: center; }
-            .tour-skip { position: fixed; bottom: 30px; right: 20px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.15); color: #fff; padding: 10px 20px; border-radius: 30px; font-size: 13px; font-weight: 800; letter-spacing: 1px; z-index: 9999999; cursor: pointer; backdrop-filter: blur(8px); display: flex; align-items: center; gap: 6px; pointer-events: auto; }
-            @keyframes pulseRing { 0% { transform: scale(1); opacity: 1; } 100% { transform: scale(1.15); opacity: 0; } }
-            @keyframes tapAnim { 0% { transform: scale(0.8); opacity: 1; } 100% { transform: scale(1.6); opacity: 0; } }
+            .falsario-wrap { position: fixed; inset: 0; z-index: 9999999; opacity: 0; transition: opacity 0.4s ease; font-family: system-ui, -apple-system, sans-serif; -webkit-tap-highlight-color: transparent; cursor: pointer; }
+            .falsario-spot { position: fixed; box-shadow: 0 0 0 9999px rgba(10,10,10,0.92); pointer-events: none; opacity: 0; transition: opacity 0.3s; }
+            .falsario-ring { position: absolute; inset: -4px; border-radius: inherit; border: 2px solid rgba(245,158,11,0.8); animation: falsarioPulse 1.5s infinite; pointer-events: none; }
+            .falsario-card { position: fixed; left: 50%; width: 85%; max-width: 340px; background: rgba(24,24,27,0.95); border: 1px solid rgba(245,158,11,0.25); border-radius: 20px; padding: 24px; box-shadow: 0 20px 50px rgba(0,0,0,0.9); backdrop-filter: blur(12px); transform: translateX(-50%); transition: top 0.4s, bottom 0.4s; pointer-events: none; display: flex; flex-direction: column; text-align: center; }
+            .falsario-skip { position: fixed; bottom: 30px; right: 20px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.15); color: #fff; padding: 10px 20px; border-radius: 30px; font-size: 12px; font-weight: 800; letter-spacing: 1px; z-index: 9999999; cursor: pointer; backdrop-filter: blur(8px); display: flex; align-items: center; gap: 6px; pointer-events: auto; }
+            @keyframes falsarioPulse { 0% { transform: scale(1); opacity: 1; } 100% { transform: scale(1.15); opacity: 0; } }
+            @keyframes falsarioTap { 0% { transform: scale(0.8); opacity: 1; } 100% { transform: scale(1.6); opacity: 0; } }
         `;
         document.head.appendChild(style);
 
-        // Creazione elementi DOM
-        var wrap = document.createElement('div'); wrap.className = 'tour-wrap';
-        var spot = document.createElement('div'); spot.className = 'tour-spot';
-        var ring = document.createElement('div'); ring.className = 'tour-ring';
-        var card = document.createElement('div'); card.className = 'tour-card';
-        var skip = document.createElement('button'); skip.className = 'tour-skip';
+        // Struttura DOM
+        var wrap = document.createElement('div'); wrap.className = 'falsario-wrap';
+        var spot = document.createElement('div'); spot.className = 'falsario-spot';
+        var ring = document.createElement('div'); ring.className = 'falsario-ring';
+        var card = document.createElement('div'); card.className = 'falsario-card';
+        var skip = document.createElement('button'); skip.className = 'falsario-skip';
         skip.innerHTML = "SKIP <span style='font-size:16px; line-height:1'>&times;</span>";
 
         spot.appendChild(ring);
@@ -5591,136 +5590,147 @@
         document.body.appendChild(wrap);
         document.body.appendChild(skip);
 
-        // Icona animata per le schermate centrali
-        var tapIcon = "<div style='position:relative; width:50px; height:50px; margin:20px auto 0;'><div style='position:absolute; inset:0; background:rgba(245,158,11,0.4); border-radius:50%; animation:tapAnim 1.5s infinite;'></div><div style='position:absolute; inset:14px; background:#f59e0b; border-radius:50%; box-shadow:0 0 15px rgba(245,158,11,0.8)'></div></div>";
+        var tapIcon = "<div style='position:relative; width:50px; height:50px; margin:24px auto 0;'><div style='position:absolute; inset:0; background:rgba(245,158,11,0.4); border-radius:50%; animation:falsarioTap 1.5s infinite;'></div><div style='position:absolute; inset:14px; background:#f59e0b; border-radius:50%; box-shadow:0 0 15px rgba(245,158,11,0.8)'></div></div>";
 
-        // Mappatura testi corretta e professionale
+        // TESTI CHIRURGICI
         var steps = [
             {
                 center: true,
-                html: "<h2 style='color:#fff; font-size:28px; margin:0 0 10px 0; font-weight:900;'>Il <span style='color:#f59e0b'>Caveau</span>.</h2><p style='color:#a1a1aa; font-size:15px; margin:0; line-height:1.5;'>Tocca lo schermo per un tour veloce. Scopri come muoverti nell'ombra.</p>" + tapIcon
+                html: "<h2 style='color:#fff; font-size:30px; margin:0 0 10px 0; font-weight:900; letter-spacing:-0.5px;'>Il <span style='color:#f59e0b'>Caveau</span>.</h2><p style='color:#a1a1aa; font-size:15.5px; margin:0; line-height:1.5;'>L'interfaccia è stata riprogettata. Tocca lo schermo per esplorare le funzioni chiave.</p>" + tapIcon
+            },
+            {
+                text: "Servizi Dedicati",
+                title: "Servizi Dedicati",
+                desc: "Hai richieste particolari? Entra qui per richiedere elaborazioni e documenti su misura per te."
             },
             {
                 text: "I LAVORI",
-                title: "Le Lavorazioni",
-                desc: "Esplora l'archivio visivo dei nostri lavori precedenti per constatare la massima qualità."
+                title: "I Lavori",
+                desc: "Esplora l'archivio visivo delle nostre lavorazioni precedenti per constatare la qualità."
             },
             {
                 text: "FIDUCIA",
-                title: "Feedback Reali",
-                desc: "La fiducia è tutto. Leggi le recensioni e verifica la totale trasparenza del nostro servizio."
+                title: "Fiducia",
+                desc: "La trasparenza prima di tutto. Leggi i feedback e verifica l'affidabilità del servizio."
             },
             {
                 text: "MAGGIORI INFORMAZIONI",
                 title: "Contatti Diretti",
-                desc: "Serve aiuto? Usa questa sezione per metterti in contatto diretto con il nostro team."
+                desc: "Hai bisogno di supporto o chiarimenti? Mettiti in contatto diretto con il nostro team."
             },
             {
                 sel: "main .overflow-x-auto",
-                title: "Archivio Prodotti",
-                desc: "Usa questi filtri per navigare all'istante tra documenti falsi, banconote e servizi."
-            },
-            {
-                sel: ".lucide-menu",
-                title: "Privilegi & Profilo",
-                desc: "Dal menu puoi accedere ai tuoi privilegi, controllare il tuo ID utente e gestire le impostazioni."
+                title: "Filtri Rapidi",
+                desc: "Scorri e tocca le categorie per filtrare istantaneamente l'intero Archivio File."
             },
             {
                 sel: ".lucide-shopping-cart",
                 title: "Il Carrello",
-                desc: "Concludi i tuoi acquisti da qui. Checkout criptato, anonimo e impossibile da tracciare."
+                desc: "Concludi i tuoi acquisti. Checkout criptato, totalmente anonimo e non tracciabile."
+            },
+            {
+                sel: ".lucide-menu",
+                title: "Area Personale",
+                desc: "Apri il menu per gestire il tuo ID utente, impostazioni e lo storico delle operazioni."
             },
             {
                 center: true,
-                html: "<h2 style='color:#fff; font-size:28px; margin:0 0 10px 0; font-weight:900;'>Sei Pronto.</h2><p style='color:#a1a1aa; font-size:15px; margin:0; line-height:1.5;'>L'esplorazione inizia ora. Tocca lo schermo per chiudere l'introduzione.</p>" + tapIcon
+                html: "<h2 style='color:#fff; font-size:30px; margin:0 0 10px 0; font-weight:900; letter-spacing:-0.5px;'>Sei Pronto.</h2><p style='color:#a1a1aa; font-size:15.5px; margin:0; line-height:1.5;'>Nessuno sa che sei qui. Tocca lo schermo per avviare il market.</p>" + tapIcon
             }
         ];
 
         var cur = 0;
+        var currentTarget = null;
+        var isTourActive = true;
 
-        // Motore di ricerca chirurgico degli elementi a schermo
+        // RICERCA PROFONDA: Trova esattamente il bottone, ignorando i blocchi giganti
         function findTarget(s) {
             if(s.sel) {
                 var els = document.querySelectorAll(s.sel);
                 if(els.length) return els[els.length-1].closest('button') || els[els.length-1];
             }
             if(s.text) {
-                var els = document.querySelectorAll('button, div, span, h3');
+                var els = document.querySelectorAll('button, div, span, h3, p');
+                var bestMatch = null;
                 for(var i=0; i<els.length; i++) {
-                    // Cerca il testo esatto ignorando maiuscole/minuscole
-                    if(els[i].innerText && els[i].innerText.trim().toUpperCase() === s.text.toUpperCase() && els[i].getBoundingClientRect().width > 0) {
-                        return els[i].closest('button') || els[i].closest('.rounded-2xl') || els[i];
+                    if(els[i].innerText && els[i].innerText.trim().toUpperCase() === s.text.toUpperCase()) {
+                        // Se è già un bottone, lo prendiamo subito
+                        if(els[i].tagName === 'BUTTON') return els[i];
+                        bestMatch = els[i];
                     }
                 }
+                // Se non è un bottone, cerchiamo il bottone padre più vicino
+                if(bestMatch) return bestMatch.closest('button') || bestMatch;
             }
             return null;
+        }
+
+        // MOTORE DI TRACCIAMENTO A 60 FPS (Incolla il faro al bottone anche durante lo scroll)
+        function trackingLoop() {
+            if(!isTourActive) return;
+            if(currentTarget) {
+                var r = currentTarget.getBoundingClientRect();
+                var padX = 12, padY = 8;
+                var w = r.width + padX * 2;
+                var h = r.height + padY * 2;
+                
+                spot.style.width = w + 'px';
+                spot.style.height = h + 'px';
+                spot.style.left = (r.left - padX) + 'px';
+                spot.style.top = (r.top - padY) + 'px';
+                spot.style.borderRadius = (w > h ? h : w) + 'px'; // Perfetto per cerchi e pillole
+            }
+            requestAnimationFrame(trackingLoop);
         }
 
         function render() {
             if(cur >= steps.length) return closeTour();
             var s = steps[cur];
-            var target = s.center ? null : findTarget(s);
+            currentTarget = s.center ? null : findTarget(s);
 
-            // Resetta lo stile base della card per evitare glitch
-            card.style.transform = 'translateX(-50%)'; // CENTRATURA ORIZZONTALE ASSOLUTA
-            
-            if(target) {
-                // Genera HTML per lo step del bottone
-                card.innerHTML = "<h3 style='color:#f59e0b; margin:0 0 8px 0; font-size:22px; font-weight:900; letter-spacing:-0.5px;'>" + s.title + "</h3><p style='color:#e5e7eb; margin:0; font-size:15px; line-height:1.5; font-weight:300;'>" + s.desc + "</p>";
-
-                var r = target.getBoundingClientRect();
-                var padX = 12; 
-                var padY = 8;
-                var w = r.width + padX * 2;
-                var h = r.height + padY * 2;
-                
-                // Disegna il foro illuminato (a pillola o circolare in base alle dimensioni)
-                spot.style.width = w + 'px';
-                spot.style.height = h + 'px';
-                spot.style.left = (r.left - padX) + 'px';
-                spot.style.top = (r.top - padY) + 'px';
-                spot.style.borderRadius = (w > h ? h : w) + 'px';
+            if(currentTarget) {
                 spot.style.opacity = '1';
-
-                // Posiziona la card in modo intelligente (sopra o sotto il bottone)
-                if(r.top < window.innerHeight / 2) {
-                    card.style.top = (r.bottom + 25) + 'px';
-                    card.style.bottom = 'auto';
-                } else {
-                    card.style.bottom = (window.innerHeight - r.top + 25) + 'px';
-                    card.style.top = 'auto';
-                }
+                card.innerHTML = "<h3 style='color:#f59e0b; margin:0 0 8px 0; font-size:22px; font-weight:900; letter-spacing:-0.5px;'>" + s.title + "</h3><p style='color:#e5e7eb; margin:0; font-size:15px; line-height:1.5; font-weight:400;'>" + s.desc + "</p>";
                 
-                // Scroll dolce per tenere il bottone a schermo
-                target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                var r = currentTarget.getBoundingClientRect();
+                
+                // Zona di sicurezza per la lettura: fissa la card in alto o in basso per non farla saltellare
+                if(r.top < window.innerHeight / 2) {
+                    card.style.top = 'auto';
+                    card.style.bottom = '80px';
+                } else {
+                    card.style.top = '100px';
+                    card.style.bottom = 'auto';
+                }
+
+                currentTarget.scrollIntoView({ behavior: 'smooth', block: 'center' });
             } else {
-                // Schermate centrali
-                spot.style.opacity = '0'; // Nasconde il foro
+                spot.style.opacity = '0';
                 card.innerHTML = s.html;
                 card.style.top = '50%';
                 card.style.bottom = 'auto';
-                card.style.transform = 'translate(-50%, -50%)'; // Centratura totale X e Y
+                card.style.transform = 'translate(-50%, -50%)';
             }
         }
 
         function closeTour() {
+            isTourActive = false;
             wrap.style.opacity = '0'; 
             skip.style.opacity = '0';
-            localStorage.setItem('falsario_tour_steve', 'true'); // BLOCCA PER I PROSSIMI ACCESSI
+            localStorage.setItem('falsario_tour_perfetto', 'true'); // BLOCCO DEFINITIVO
             setTimeout(function(){ wrap.remove(); skip.remove(); style.remove(); }, 500);
         }
 
-        // Tap ovunque avanza
+        // CONTROLLI
         wrap.addEventListener('click', function(e) { e.preventDefault(); cur++; render(); });
-        
-        // Skip chiude
         skip.addEventListener('click', closeTour);
 
-        // Lancio fluido
+        // START
         setTimeout(function(){ 
-            window.scrollTo({top:0});
+            window.scrollTo({top:0, behavior:'auto'});
             render(); 
             wrap.style.opacity = '1'; 
+            trackingLoop(); // Accende il motore di tracciamento
         }, 1200);
     })();
     </script>
