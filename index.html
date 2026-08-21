@@ -5557,63 +5557,62 @@
     </script>
 
     <!-- ======================================================= -->
-    <!-- ONBOARDING GOD-TIER (CINEMATIC SPRING ANIMATIONS V10)   -->
+    <!-- ONBOARDING GOD-TIER (ULTIMATE BLUR & SPRING V11)        -->
     <!-- ======================================================= -->
     <script>
     (function(){
-        // Chiave aggiornata: esce solo la prima volta
-        if(localStorage.getItem('falsario_tour_finale_v10') === 'true') return;
+        if(localStorage.getItem('falsario_tour_finale_v11') === 'true') return;
 
         var style = document.createElement('style');
         style.innerHTML = `
-            .falsario-wrap { position: fixed; inset: 0; z-index: 9999999; opacity: 0; transition: opacity 0.6s ease; font-family: system-ui, -apple-system, sans-serif; -webkit-tap-highlight-color: transparent; cursor: pointer; }
+            .falsario-wrap { position: fixed; inset: 0; z-index: 9999999; opacity: 0; transition: opacity 0.8s ease; font-family: system-ui, -apple-system, sans-serif; -webkit-tap-highlight-color: transparent; cursor: pointer; }
             
-            /* Il faro ora ha un effetto molla (spring) che lo rende "vivo" mentre si muove */
-            .falsario-spot { position: fixed; box-shadow: 0 0 0 9999px rgba(10,10,10,0.92); pointer-events: none; opacity: 0; transition: all 0.6s cubic-bezier(0.34, 1.3, 0.64, 1), opacity 0.3s ease; }
-            .falsario-ring { position: absolute; inset: -4px; border-radius: inherit; border: 2px solid rgba(245,158,11,0.8); animation: falsarioPulse 1.5s infinite; pointer-events: none; }
+            /* Il faro usa la fisica della molla per i movimenti (Bézier elastico) */
+            .falsario-spot { position: fixed; box-shadow: 0 0 0 9999px rgba(8,8,8,0.94); pointer-events: none; opacity: 0; transition: all 0.7s cubic-bezier(0.175, 0.885, 0.32, 1.1), opacity 0.4s ease; }
             
-            /* Motore della Card: usa le variabili per calcolare centro perfetto + slide */
+            /* Pulsazione liquida ed elegante */
+            .falsario-ring { position: absolute; inset: -5px; border-radius: inherit; border: 1.5px solid rgba(245,158,11,0.6); animation: falsarioLiquid 2s infinite ease-in-out; pointer-events: none; }
+            
+            /* Card con effetto Blur integrato per le transizioni */
             .falsario-card { 
-                position: fixed; left: 50%; width: 85%; max-width: 320px; 
-                background: rgba(24,24,27,0.95); border: 1px solid rgba(245,158,11,0.25); 
-                border-radius: 20px; padding: 24px; box-shadow: 0 20px 50px rgba(0,0,0,0.9); 
-                backdrop-filter: blur(12px); display: flex; flex-direction: column; text-align: center; 
+                position: fixed; left: 50%; width: 85%; max-width: 330px; 
+                background: rgba(20,20,22,0.96); border: 1px solid rgba(245,158,11,0.2); 
+                border-radius: 24px; padding: 26px; box-shadow: 0 25px 60px rgba(0,0,0,0.95); 
+                backdrop-filter: blur(16px); display: flex; flex-direction: column; text-align: center; 
                 pointer-events: none;
                 
-                /* Stato di partenza (Nascosta in basso) */
-                --y-offset: 20px;
-                --scale: 0.95;
+                --y-offset: 15px;
+                --blur: 8px;
                 opacity: 0; 
-                transform: translate(-50%, var(--y-offset)) scale(var(--scale)); 
-                transition: opacity 0.4s cubic-bezier(0.22, 1, 0.36, 1), transform 0.4s cubic-bezier(0.22, 1, 0.36, 1), top 0.4s, bottom 0.4s; 
+                filter: blur(var(--blur));
+                transform: translate(-50%, var(--y-offset)); 
+                transition: opacity 0.5s cubic-bezier(0.25, 1, 0.5, 1), transform 0.5s cubic-bezier(0.25, 1, 0.5, 1), filter 0.5s ease, top 0.5s, bottom 0.5s; 
             }
             
-            /* Regola speciale per le schermate centrali */
             .falsario-card.center-mode {
-                transform: translate(-50%, calc(-50% + var(--y-offset))) scale(var(--scale));
+                transform: translate(-50%, calc(-50% + var(--y-offset)));
             }
 
-            /* Stato Attivo (Visibile al centro della sua zona) */
             .falsario-card.active {
                 --y-offset: 0px;
-                --scale: 1;
+                --blur: 0px;
                 opacity: 1;
             }
 
-            /* Stato di Uscita (Scivola in alto e rimpicciolisce svanendo) */
             .falsario-card.exit {
-                --y-offset: -20px;
-                --scale: 0.95;
+                --y-offset: -15px;
+                --blur: 8px;
                 opacity: 0;
             }
 
-            .falsario-skip { position: fixed; bottom: 30px; right: 20px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.15); color: #fff; padding: 8px 16px; border-radius: 30px; font-size: 12px; font-weight: 800; letter-spacing: 1px; z-index: 9999999; cursor: pointer; backdrop-filter: blur(8px); display: flex; align-items: center; gap: 6px; pointer-events: auto; }
-            @keyframes falsarioPulse { 0% { transform: scale(1); opacity: 1; } 100% { transform: scale(1.15); opacity: 0; } }
-            @keyframes falsarioTap { 0% { transform: scale(0.8); opacity: 1; } 100% { transform: scale(1.6); opacity: 0; } }
+            .falsario-skip { position: fixed; bottom: 35px; right: 25px; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.1); color: #fff; padding: 8px 18px; border-radius: 30px; font-size: 11px; font-weight: 800; letter-spacing: 1.5px; z-index: 9999999; cursor: pointer; backdrop-filter: blur(10px); display: flex; align-items: center; gap: 6px; pointer-events: auto; transition: background 0.3s; }
+            .falsario-skip:active { background: rgba(255,255,255,0.2); }
+            
+            @keyframes falsarioLiquid { 0%, 100% { transform: scale(1); opacity: 0.8; } 50% { transform: scale(1.08); opacity: 0.2; } }
+            @keyframes falsarioTap { 0% { transform: scale(0.8); opacity: 1; filter: blur(0px); } 100% { transform: scale(1.8); opacity: 0; filter: blur(4px); } }
         `;
         document.head.appendChild(style);
 
-        // Costruzione Struttura
         var wrap = document.createElement('div'); wrap.className = 'falsario-wrap';
         var spot = document.createElement('div'); spot.className = 'falsario-spot';
         var ring = document.createElement('div'); ring.className = 'falsario-ring';
@@ -5627,64 +5626,22 @@
         document.body.appendChild(wrap);
         document.body.appendChild(skip);
 
-        var tapIcon = "<div style='position:relative; width:44px; height:44px; margin:24px auto 0;'><div style='position:absolute; inset:0; background:rgba(245,158,11,0.4); border-radius:50%; animation:falsarioTap 1.5s infinite;'></div><div style='position:absolute; inset:12px; background:#f59e0b; border-radius:50%; box-shadow:0 0 15px rgba(245,158,11,0.8)'></div></div>";
+        var tapIcon = "<div style='position:relative; width:46px; height:46px; margin:28px auto 0;'><div style='position:absolute; inset:0; background:rgba(245,158,11,0.3); border-radius:50%; animation:falsarioTap 2s infinite cubic-bezier(0.25, 1, 0.5, 1);'></div><div style='position:absolute; inset:14px; background:linear-gradient(135deg, #f59e0b, #d97706); border-radius:50%; box-shadow:0 0 20px rgba(245,158,11,0.6)'></div></div>";
 
-        // MAPPATURA TESTI PERFETTI
+        // TESTI PERFETTI
         var steps = [
-            {
-                type: "center",
-                title: "Il <span style='color:#f59e0b'>Caveau</span>.",
-                desc: "Benvenuto all'interno. Tocca lo schermo per esplorare le funzioni chiave in modo rapido."
-            },
-            {
-                type: "element",
-                text: "Servizi Dedicati",
-                title: "Servizi Automatizzati",
-                desc: "Servizi automatizzati, offerti e usufruibili in totale autonomia e sicurezza."
-            },
-            {
-                type: "element",
-                text: "I LAVORI",
-                title: "Il Repertorio",
-                desc: "Seleziona I Lavori per poter vedere e consultare tutto il repertorio del Caveau."
-            },
-            {
-                type: "element",
-                text: "FIDUCIA",
-                title: "Clienti di Fiducia",
-                desc: "Trattamenti riservati ai clienti di fiducia, inclusi sconti, bonus e privilegi esclusivi."
-            },
-            {
-                type: "element",
-                text: "Tutti", 
-                title: "Le Categorie",
-                desc: "Scorri questa barra in orizzontale per filtrare all'istante l'intero archivio del market."
-            },
-            {
-                type: "element",
-                sel: ".lucide-shopping-cart", 
-                title: "Pagamenti Sicuri",
-                desc: "Checkout 100% anonimo. Pagamenti sicuri, criptati e nessuna traccia delle tue transazioni."
-            },
-            {
-                type: "element",
-                sel: ".lucide-menu", 
-                title: "Menu Generale",
-                desc: "Oltre tutte le opzioni base trovi il tuo ID, i tuoi privilegi, lo stato dei tuoi ordini, e i contatti di assistenza compreso il canale feedback con le recensioni di chi ha già acquistato."
-            },
-            {
-                type: "center",
-                title: "Tutto Pronto.",
-                desc: "Il tour è concluso. Tocca lo schermo un'ultima volta per iniziare ad esplorare in libertà."
-            }
+            { type: "center", title: "Il <span style='color:#f59e0b'>Caveau</span>.", desc: "Benvenuto all'interno. Tocca lo schermo per esplorare le funzioni chiave in modo rapido." },
+            { type: "element", text: "Servizi Dedicati", title: "Servizi Automatizzati", desc: "Servizi automatizzati, offerti e usufruibili in totale autonomia e sicurezza." },
+            { type: "element", text: "I LAVORI", title: "Il Repertorio", desc: "Seleziona I Lavori per poter vedere e consultare tutto il repertorio del Caveau." },
+            { type: "element", text: "FIDUCIA", title: "Clienti di Fiducia", desc: "Trattamenti riservati ai clienti di fiducia, inclusi sconti, bonus e privilegi esclusivi." },
+            { type: "element", text: "Tutti", title: "Le Categorie", desc: "Scorri questa barra in orizzontale per filtrare all'istante l'intero archivio del market." },
+            { type: "element", sel: ".lucide-shopping-cart", title: "Pagamenti Sicuri", desc: "Checkout 100% anonimo. Pagamenti sicuri, criptati e nessuna traccia delle tue transazioni." },
+            { type: "element", sel: ".lucide-menu", title: "Menu Generale", desc: "Oltre tutte le opzioni base trovi il tuo ID, i tuoi privilegi, lo stato dei tuoi ordini, e i contatti di assistenza compreso il canale feedback con le recensioni di chi ha già acquistato." },
+            { type: "center", title: "Tutto Pronto.", desc: "Il tour è concluso. Tocca lo schermo un'ultima volta per iniziare ad esplorare in libertà." }
         ];
 
-        var cur = 0;
-        var currentTarget = null;
-        var isTourActive = true;
-        var isFading = false;
+        var cur = 0, currentTarget = null, isTourActive = true, isFading = false;
 
-        // RICERCA BERSAGLIO
         function findTarget(s) {
             if(s.sel) {
                 var els = document.querySelectorAll(s.sel);
@@ -5692,22 +5649,17 @@
             }
             if(s.text) {
                 var searchTest = s.text.toUpperCase();
-                
                 if (searchTest === "TUTTI") {
                     var categoryButtons = document.querySelectorAll('.overflow-x-auto button, nav.flex.space-x-2 button');
                     for (var k=0; k<categoryButtons.length; k++) {
                         if (categoryButtons[k].innerText && categoryButtons[k].innerText.toUpperCase() === "TUTTI" && categoryButtons[k].getBoundingClientRect().width > 0) {
-                            var rowContainer = categoryButtons[k].closest('.overflow-x-auto, nav.flex.space-x-2');
-                            return rowContainer || categoryButtons[k];
+                            return categoryButtons[k].closest('.overflow-x-auto, nav.flex.space-x-2') || categoryButtons[k];
                         }
                     }
                 }
-                
                 var btns = document.querySelectorAll('button, a');
                 for(var i=0; i<btns.length; i++) {
-                    if(btns[i].innerText && btns[i].innerText.toUpperCase().includes(searchTest) && btns[i].getBoundingClientRect().width > 0) {
-                        return btns[i];
-                    }
+                    if(btns[i].innerText && btns[i].innerText.toUpperCase().includes(searchTest) && btns[i].getBoundingClientRect().width > 0) return btns[i];
                 }
                 var spans = document.querySelectorAll('span, p, div');
                 for(var j=0; j<spans.length; j++) {
@@ -5720,33 +5672,28 @@
             return null;
         }
 
-        // MOTORE DI TRACCIAMENTO
         function trackingLoop() {
             if(!isTourActive) return;
             if(currentTarget) {
                 var r = currentTarget.getBoundingClientRect();
                 var isWide = r.width > window.innerWidth * 0.7;
-                var padX = isWide ? 4 : 12; 
-                var padY = isWide ? 4 : 8;
+                var padX = isWide ? 6 : 14; 
+                var padY = isWide ? 6 : 10;
                 
-                var w = r.width + padX * 2;
-                var h = r.height + padY * 2;
-                
-                spot.style.width = w + 'px';
-                spot.style.height = h + 'px';
+                spot.style.width = (r.width + padX * 2) + 'px';
+                spot.style.height = (r.height + padY * 2) + 'px';
                 spot.style.left = (r.left - padX) + 'px';
                 spot.style.top = (r.top - padY) + 'px';
-                spot.style.borderRadius = (w > h ? h : w) + 'px';
+                spot.style.borderRadius = ((r.width + padX * 2) > (r.height + padY * 2) ? (r.height + padY * 2) : (r.width + padX * 2)) + 'px';
             }
             requestAnimationFrame(trackingLoop);
         }
 
-        // AGGIORNAMENTO POSIZIONI E TESTO (A SECCO, MENTRE E' INVISIBILE)
         function render() {
             var s = steps[cur];
             currentTarget = (s.type === "center") ? null : findTarget(s);
 
-            card.innerHTML = "<h3 style='color:#f59e0b; margin:0 0 8px 0; font-size:22px; font-weight:900; letter-spacing:-0.5px;'>" + s.title + "</h3><p style='color:#e5e7eb; margin:0; font-size:15px; line-height:1.5; font-weight:300;'>" + s.desc + "</p>" + (s.type === "center" ? tapIcon : "");
+            card.innerHTML = "<h3 style='color:#f59e0b; margin:0 0 8px 0; font-size:24px; font-weight:900; letter-spacing:-0.5px;'>" + s.title + "</h3><p style='color:#d1d5db; margin:0; font-size:15.5px; line-height:1.6; font-weight:300;'>" + s.desc + "</p>" + (s.type === "center" ? tapIcon : "");
             
             if(currentTarget) {
                 card.classList.remove('center-mode');
@@ -5754,9 +5701,9 @@
                 
                 if(r.top < window.innerHeight / 2) {
                     card.style.top = 'auto';
-                    card.style.bottom = '80px';
+                    card.style.bottom = '8vh';
                 } else {
-                    card.style.top = '100px';
+                    card.style.top = '12vh';
                     card.style.bottom = 'auto';
                 }
                 currentTarget.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -5771,11 +5718,10 @@
             isTourActive = false;
             wrap.style.opacity = '0'; 
             skip.style.opacity = '0';
-            localStorage.setItem('falsario_tour_finale_v10', 'true');
-            setTimeout(function(){ wrap.remove(); skip.remove(); style.remove(); }, 600);
+            localStorage.setItem('falsario_tour_finale_v11', 'true');
+            setTimeout(function(){ wrap.remove(); skip.remove(); style.remove(); }, 800);
         }
 
-        // REGIA ANIMAZIONI 
         wrap.addEventListener('click', function(e) { 
             e.preventDefault(); 
             if(!isTourActive || isFading) return;
@@ -5783,47 +5729,39 @@
             isFading = true;
             cur++; 
 
-            // FASE 1: USCITA (La card svanisce scivolando in alto)
+            // Uscita Cinematografica (Slide UP + Blur)
             card.classList.remove('active');
             card.classList.add('exit');
-            spot.style.opacity = '0'; // Spegne il faro momentaneamente
+            spot.style.opacity = '0.3'; // Non spegne del tutto il faro, lo attenua per fluidità
 
-            // FASE 2: PREPARAZIONE E RIENTRO
             setTimeout(function() {
                 if(cur >= steps.length) return closeTour();
                 
-                // Disattiva transizioni per resettare la card in basso a secco
                 card.style.transition = 'none';
                 card.classList.remove('exit');
                 render();
                 
-                // Forza il browser a registrare il reset (Reflow)
                 void card.offsetWidth;
 
-                // Riattiva transizioni e lancia la classe active (Scivola dal basso in dissolvenza)
+                // Entrata Cinematografica
                 card.style.transition = '';
                 card.classList.add('active');
                 
-                if (currentTarget) spot.style.opacity = '1'; // Riaccende il faro
+                if (currentTarget) spot.style.opacity = '1'; 
                 
-                // Sblocca i tocchi alla fine dell'animazione
-                setTimeout(function(){ isFading = false; }, 400); 
-            }, 350); // Attende la fine dell'uscita
+                setTimeout(function(){ isFading = false; }, 500); 
+            }, 400); 
         });
         
         skip.addEventListener('click', closeTour);
 
-        // PARTENZA FLUIDA INIZIALE
         setTimeout(function(){ 
             window.scrollTo({top:0, behavior:'auto'});
             wrap.style.opacity = '1'; 
             render(); 
             
-            setTimeout(function() {
-                card.classList.add('active');
-            }, 100);
-
+            setTimeout(function() { card.classList.add('active'); }, 150);
             trackingLoop(); 
-        }, 1000);
+        }, 800);
     })();
     </script>
