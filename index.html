@@ -5557,20 +5557,40 @@
     </script>
 
     <!-- ======================================================= -->
-    <!-- ONBOARDING GOD-TIER (FADE ANIMATIONS & EXACT LOGIC V8)  -->
+    <!-- ONBOARDING GOD-TIER (FADE & SLIDE ANIMATIONS V9)        -->
     <!-- ======================================================= -->
     <script>
     (function(){
-        // Chiave di produzione aggiornata per farlo partire al primo colpo
-        if(localStorage.getItem('falsario_tour_finale_v8') === 'true') return;
+        // Chiave aggiornata: esce solo la prima volta
+        if(localStorage.getItem('falsario_tour_finale_v9') === 'true') return;
 
-        // CSS Blindato con transizioni di dissolvenza (Fade)
+        // CSS Blindato con transizioni avanzate
         var style = document.createElement('style');
         style.innerHTML = `
             .falsario-wrap { position: fixed; inset: 0; z-index: 9999999; opacity: 0; transition: opacity 0.5s ease; font-family: system-ui, -apple-system, sans-serif; -webkit-tap-highlight-color: transparent; cursor: pointer; }
             .falsario-spot { position: fixed; box-shadow: 0 0 0 9999px rgba(10,10,10,0.92); pointer-events: none; opacity: 0; transition: opacity 0.3s ease; }
             .falsario-ring { position: absolute; inset: -4px; border-radius: inherit; border: 2px solid rgba(245,158,11,0.8); animation: falsarioPulse 1.5s infinite; pointer-events: none; }
-            .falsario-card { position: fixed; left: 50%; width: 85%; max-width: 320px; background: rgba(24,24,27,0.95); border: 1px solid rgba(245,158,11,0.25); border-radius: 20px; padding: 24px; box-shadow: 0 20px 50px rgba(0,0,0,0.9); backdrop-filter: blur(12px); transform: translateX(-50%); transition: opacity 0.3s ease, transform 0.4s ease; pointer-events: none; display: flex; flex-direction: column; text-align: center; opacity: 0; }
+            
+            /* Card migliorata con animazione di trasformazione per lo slide */
+            .falsario-card { 
+                position: fixed; left: 50%; width: 85%; max-width: 320px; 
+                background: rgba(24,24,27,0.95); border: 1px solid rgba(245,158,11,0.25); 
+                border-radius: 20px; padding: 24px; box-shadow: 0 20px 50px rgba(0,0,0,0.9); 
+                backdrop-filter: blur(12px); display: flex; flex-direction: column; text-align: center; 
+                pointer-events: none;
+                
+                /* Stati di base per la transizione fluida */
+                opacity: 0; 
+                transform: translate(-50%, 15px); /* Parte leggermente più in basso */
+                transition: opacity 0.4s ease, transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1), top 0.4s, bottom 0.4s; 
+            }
+            
+            /* Classe attiva per far apparire la card con effetto slide-up */
+            .falsario-card.active {
+                opacity: 1;
+                transform: translate(-50%, 0); /* Arriva alla posizione esatta */
+            }
+
             .falsario-skip { position: fixed; bottom: 30px; right: 20px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.15); color: #fff; padding: 8px 16px; border-radius: 30px; font-size: 12px; font-weight: 800; letter-spacing: 1px; z-index: 9999999; cursor: pointer; backdrop-filter: blur(8px); display: flex; align-items: center; gap: 6px; pointer-events: auto; }
             @keyframes falsarioPulse { 0% { transform: scale(1); opacity: 1; } 100% { transform: scale(1.15); opacity: 0; } }
             @keyframes falsarioTap { 0% { transform: scale(0.8); opacity: 1; } 100% { transform: scale(1.6); opacity: 0; } }
@@ -5591,10 +5611,10 @@
         document.body.appendChild(wrap);
         document.body.appendChild(skip);
 
-        // L'animazione del tap pulsante
+        // Icona tap
         var tapIcon = "<div style='position:relative; width:44px; height:44px; margin:24px auto 0;'><div style='position:absolute; inset:0; background:rgba(245,158,11,0.4); border-radius:50%; animation:falsarioTap 1.5s infinite;'></div><div style='position:absolute; inset:12px; background:#f59e0b; border-radius:50%; box-shadow:0 0 15px rgba(245,158,11,0.8)'></div></div>";
 
-        // MAPPATURA PERFETTA E TESTI RISCRITTI CORRETTAMENTE
+        // MAPPATURA PERFETTA
         var steps = [
             {
                 type: "center",
@@ -5604,8 +5624,8 @@
             {
                 type: "element",
                 text: "Servizi Dedicati",
-                title: "Servizi Dedicati",
-                desc: "Servizi dedicati e completamente automatizzati in totale sicurezza."
+                title: "Servizi Automatizzati",
+                desc: "Servizi automatizzati, offerti e usufruibili in totale autonomia e sicurezza."
             },
             {
                 type: "element",
@@ -5621,7 +5641,7 @@
             },
             {
                 type: "element",
-                sel: ".overflow-x-auto, nav.flex.space-x-2", 
+                text: "Tutti", // Ora cerchiamo il primo bottone della barra delle categorie!
                 title: "Le Categorie",
                 desc: "Scorri questa barra in orizzontale per filtrare all'istante l'intero archivio del market."
             },
@@ -5634,8 +5654,8 @@
             {
                 type: "element",
                 sel: ".lucide-menu", 
-                title: "Menu e Assistenza",
-                desc: "Trovi il tuo ID e i privilegi. Da qui accedi anche al canale feedback, all'assistenza rapida e ai contatti."
+                title: "Menu Generale",
+                desc: "Oltre tutte le opzioni base trovi il tuo ID, i tuoi privilegi, lo stato dei tuoi ordini, e i contatti di assistenza compreso il canale feedback con le recensioni di chi ha già acquistato."
             },
             {
                 type: "center",
@@ -5649,7 +5669,7 @@
         var isTourActive = true;
         var isFading = false;
 
-        // RICERCA BERSAGLIO MIGLIORATA (Ignora icone e spazi vuoti)
+        // RICERCA BERSAGLIO MIGLIORATA
         function findTarget(s) {
             if(s.sel) {
                 var els = document.querySelectorAll(s.sel);
@@ -5660,9 +5680,21 @@
             }
             if(s.text) {
                 var searchTest = s.text.toUpperCase();
+                
+                // Se stiamo cercando "Tutti" (Categorie), cerchiamo il bottone arancione o grigio
+                if (searchTest === "TUTTI") {
+                    var categoryButtons = document.querySelectorAll('.overflow-x-auto button, nav.flex.space-x-2 button');
+                    for (var k=0; k<categoryButtons.length; k++) {
+                        if (categoryButtons[k].innerText && categoryButtons[k].innerText.toUpperCase() === "TUTTI" && categoryButtons[k].getBoundingClientRect().width > 0) {
+                            // Ritorniamo il contenitore padre per evidenziare meglio la riga se possibile, altrimenti il bottone stesso
+                            var rowContainer = categoryButtons[k].closest('.overflow-x-auto, nav.flex.space-x-2');
+                            return rowContainer || categoryButtons[k];
+                        }
+                    }
+                }
+                
                 var btns = document.querySelectorAll('button, a');
                 for(var i=0; i<btns.length; i++) {
-                    // Usa .includes() invece di "===" per trovarlo anche se ci sono icone
                     if(btns[i].innerText && btns[i].innerText.toUpperCase().includes(searchTest) && btns[i].getBoundingClientRect().width > 0) {
                         return btns[i];
                     }
@@ -5678,12 +5710,17 @@
             return null;
         }
 
-        // MOTORE DI TRACCIAMENTO
+        // MOTORE DI TRACCIAMENTO 
         function trackingLoop() {
             if(!isTourActive) return;
             if(currentTarget) {
                 var r = currentTarget.getBoundingClientRect();
-                var padX = 12, padY = 8;
+                
+                // Se il target è molto largo (es. la riga delle categorie), riduciamo il padding per non prendere le immagini
+                var isWide = r.width > window.innerWidth * 0.7;
+                var padX = isWide ? 4 : 12; 
+                var padY = isWide ? 4 : 8;
+                
                 var w = r.width + padX * 2;
                 var h = r.height + padY * 2;
                 
@@ -5707,8 +5744,8 @@
                 spot.style.opacity = '1';
                 ring.style.display = 'block';
                 var r = currentTarget.getBoundingClientRect();
-                card.style.transform = 'translateX(-50%)'; 
                 
+                // Aggiorna posizioni (top/bottom) PRIMA di aggiungere la classe active
                 if(r.top < window.innerHeight / 2) {
                     card.style.top = 'auto';
                     card.style.bottom = '80px';
@@ -5718,7 +5755,6 @@
                 }
                 currentTarget.scrollIntoView({ behavior: 'smooth', block: 'center' });
             } else {
-                // Sfondo sempre nero anche se non c'è bersaglio o se è al centro
                 spot.style.opacity = '1';
                 ring.style.display = 'none';
                 spot.style.width = '0px';
@@ -5726,10 +5762,17 @@
                 spot.style.left = '50%';
                 spot.style.top = '50%';
                 
+                // Schermate centrali
                 card.style.top = '50%';
                 card.style.bottom = 'auto';
+                // La centratura per le schermate centrali la gestiamo annullando temporaneamente le regole della transizione in Y
                 card.style.transform = 'translate(-50%, -50%)'; 
             }
+            
+            // Applica la classe per far apparire la card con l'effetto (piccolo ritardo per far calcolare al browser le nuove posizioni)
+            setTimeout(function() {
+                card.classList.add('active');
+            }, 50);
         }
 
         // CHIUSURA TOUR
@@ -5737,11 +5780,11 @@
             isTourActive = false;
             wrap.style.opacity = '0'; 
             skip.style.opacity = '0';
-            localStorage.setItem('falsario_tour_finale_v8', 'true');
+            localStorage.setItem('falsario_tour_finale_v9', 'true');
             setTimeout(function(){ wrap.remove(); skip.remove(); style.remove(); }, 500);
         }
 
-        // EVENTO TAP CON EFFETTO FADE
+        // EVENTO TAP
         wrap.addEventListener('click', function(e) { 
             e.preventDefault(); 
             if(!isTourActive || isFading) return;
@@ -5749,18 +5792,16 @@
             isFading = true;
             cur++; 
 
-            card.style.opacity = '0';
+            // Rimuove la classe per far scomparire la card e riportarla leggermente in basso
+            card.classList.remove('active');
             spot.style.opacity = '0';
 
             setTimeout(function() {
                 if(cur >= steps.length) return closeTour();
                 render();
-                card.style.opacity = '1';
                 
-                // Mantiene l'opacità a 1 per far riapparire il buco nero in dissolvenza
                 spot.style.opacity = '1';
-                
-                setTimeout(function(){ isFading = false; }, 300);
+                setTimeout(function(){ isFading = false; }, 400); // Sincronizzato con il tempo di transizione CSS
             }, 300);
         });
         
@@ -5769,9 +5810,8 @@
         // PARTENZA FLUIDA
         setTimeout(function(){ 
             window.scrollTo({top:0, behavior:'auto'});
-            render(); 
-            card.style.opacity = '1';
             wrap.style.opacity = '1'; 
+            render(); 
             trackingLoop(); 
         }, 1000);
     })();
