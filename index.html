@@ -5411,7 +5411,157 @@
         function closeSupportModal() { 
             document.getElementById('support-modal').classList.add('hidden'); 
         }
-        
+                // ==========================================================
+        // GHOST SPOTLIGHT ONBOARDING - LA FOTTUTA PERFEZIONE
+        // ==========================================================
+        const CaveauTour = {
+            steps: [
+                {
+                    target: null, // Centro schermo
+                    title: "Benvenuto nel Caveau 🎭",
+                    text: "Hai appena varcato la soglia del mercato più esclusivo. Ti rubo 30 secondi per mostrarti le regole del gioco."
+                },
+                {
+                    target: "categorie", // Sostituito dinamicamente
+                    title: "Sfoglia il Catalogo",
+                    text: "Usa questi filtri per navigare tra Documenti, Banconote e i nostri Servizi speciali. L'inventario è in continuo aggiornamento."
+                },
+                {
+                    target: "carrello", // Sostituito dinamicamente
+                    title: "Transazioni Invisibili",
+                    text: "Quando sei pronto, il tuo carrello è qui. Il checkout è 100% anonimo, criptato e supporta i metodi più sicuri."
+                },
+                {
+                    target: "menu", // Sostituito dinamicamente
+                    title: "Il tuo Hub Privato",
+                    text: "Il vero potere è qui: gestisci il tuo ID segreto, sblocca i premi del Club Esclusivo e traccia le lavorazioni in corso."
+                }
+            ],
+            currentStep: 0,
+            
+            init() {
+                // Se l'ha già visto, abortisce immediatamente
+                if(localStorage.getItem('falsario_tour_completed') === 'true') return;
+                
+                // Ritardo per far caricare le icone e i layout
+                setTimeout(() => {
+                    this.createOverlay();
+                    this.showStep(0);
+                }, 1500);
+            },
+            
+            createOverlay() {
+                this.container = document.createElement('div');
+                this.container.className = 'fixed inset-0 z-[100] pointer-events-none transition-opacity duration-700 opacity-0';
+                
+                // L'effetto "Faro nel buio" (Spotlight Hole)
+                this.spotlight = document.createElement('div');
+                this.spotlight.className = 'absolute pointer-events-none transition-all duration-700 ease-in-out shadow-[0_0_0_9999px_rgba(0,0,0,0.85)]';
+                
+                // Il Tooltip fluttuante (Glassmorphism)
+                this.tooltip = document.createElement('div');
+                this.tooltip.className = 'absolute bg-[#121212]/95 border border-amber-500/40 rounded-2xl p-5 w-[90%] max-w-[320px] shadow-[0_20px_50px_rgba(0,0,0,0.9)] pointer-events-auto transition-all duration-700 ease-in-out flex flex-col gap-3 backdrop-blur-xl transform -translate-x-1/2';
+                
+                this.container.appendChild(this.spotlight);
+                this.container.appendChild(this.tooltip);
+                document.body.appendChild(this.container);
+            },
+            
+            getTargetElement(keyword) {
+                if(keyword === "categorie") return document.querySelector('main .overflow-x-auto');
+                if(keyword === "carrello") return document.querySelector('.lucide-shopping-cart')?.closest('button');
+                if(keyword === "menu") return document.querySelector('.lucide-menu')?.closest('button');
+                return null;
+            },
+            
+            showStep(index) {
+                if (index >= this.steps.length) {
+                    this.endTour();
+                    return;
+                }
+                this.currentStep = index;
+                const step = this.steps[index];
+                
+                // Costruzione UI del Tooltip
+                this.tooltip.innerHTML = `
+                    <div class="flex justify-between items-start mb-1">
+                        <h4 class="text-amber-500 font-black text-sm uppercase tracking-widest flex items-center gap-2">
+                            <i data-lucide="${index === 0 ? 'shield-alert' : 'info'}" class="w-4 h-4"></i> ${step.title}
+                        </h4>
+                        <span class="text-[9px] text-gray-500 font-bold bg-gray-800/50 px-2 py-1 rounded-md">${index + 1}/${this.steps.length}</span>
+                    </div>
+                    <p class="text-gray-300 text-xs font-light leading-relaxed mt-1">${step.text}</p>
+                    <div class="flex justify-between items-center mt-4 pt-3 border-t border-gray-800/80">
+                        <button onclick="CaveauTour.endTour()" class="text-[10px] text-gray-500 hover:text-white font-bold tracking-widest uppercase transition px-2 py-2">Skip</button>
+                        <button onclick="CaveauTour.nextStep()" class="bg-gradient-to-r from-amber-600 to-yellow-500 hover:from-amber-500 hover:to-yellow-400 text-black px-4 py-2 rounded-lg text-[10px] font-black tracking-widest uppercase transition shadow-[0_0_15px_rgba(245,158,11,0.3)] transform hover:scale-105 active:scale-95">
+                            ${index === this.steps.length - 1 ? 'Entra' : 'Avanti ➔'}
+                        </button>
+                    </div>
+                `;
+                
+                // Inizializza subito le nuove icone del tooltip
+                if(window.lucide) lucide.createIcons({ root: this.tooltip });
+                
+                // Logica di Posizionamento (Matematica pura)
+                requestAnimationFrame(() => {
+                    this.container.classList.remove('opacity-0');
+                    
+                    const targetEl = step.target ? this.getTargetElement(step.target) : null;
+    
+                    if (targetEl) {
+                        // Allinea lo spotlight sopra l'elemento
+                        const rect = targetEl.getBoundingClientRect();
+                        const pad = 10; // Margine di respiro attorno al bottone
+                        
+                        this.spotlight.style.width = `${rect.width + pad*2}px`;
+                        this.spotlight.style.height = `${rect.height + pad*2}px`;
+                        this.spotlight.style.left = `${rect.left - pad}px`;
+                        this.spotlight.style.top = `${rect.top - pad}px`;
+                        this.spotlight.style.borderRadius = '16px';
+                        
+                        // Allinea il Tooltip in modo intelligente (sopra o sotto)
+                        this.tooltip.style.left = '50%';
+                        if (rect.top > window.innerHeight / 2) {
+                             // Elemento in basso, tooltip in alto
+                             this.tooltip.style.top = `${rect.top - pad - 20}px`;
+                             this.tooltip.style.transform = 'translate(-50%, -100%)';
+                        } else {
+                             // Elemento in alto, tooltip in basso
+                             this.tooltip.style.top = `${rect.bottom + pad + 20}px`;
+                             this.tooltip.style.transform = 'translate(-50%, 0)';
+                        }
+                        
+                        // Scroll dolce verso l'elemento se è fuori vista
+                        targetEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        
+                    } else {
+                        // Modalità Centro Schermo (Step 1)
+                        this.spotlight.style.width = '0px';
+                        this.spotlight.style.height = '0px';
+                        this.spotlight.style.left = '50%';
+                        this.spotlight.style.top = '50%';
+                        this.spotlight.style.borderRadius = '50%';
+                        
+                        this.tooltip.style.left = '50%';
+                        this.tooltip.style.top = '50%';
+                        this.tooltip.style.transform = 'translate(-50%, -50%)';
+                    }
+                });
+            },
+            
+            nextStep() {
+                this.showStep(this.currentStep + 1);
+            },
+            
+            endTour() {
+                this.container.classList.add('opacity-0');
+                localStorage.setItem('falsario_tour_completed', 'true');
+                setTimeout(() => {
+                    if(this.container.parentNode) this.container.parentNode.removeChild(this.container);
+                }, 700);
+            }
+        };
+
                         document.addEventListener("DOMContentLoaded", async () => { 
             loadProducts(); 
             // FIX CARICAMENTO ID VELOCE
@@ -5421,7 +5571,8 @@
             
             const uid = await getOrInitUserId();
             if(idEl) { idEl.innerText = uid; } // Aggiorna se mancava
-        });
+       CaveauTour.init();⁠
+         });
 
 
 
