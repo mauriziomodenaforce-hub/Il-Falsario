@@ -5557,21 +5557,22 @@
     </script>
 
     <!-- ======================================================= -->
-    <!-- ONBOARDING GOD-TIER (FADE & SLIDE ANIMATIONS V9)        -->
+    <!-- ONBOARDING GOD-TIER (CINEMATIC SPRING ANIMATIONS V10)   -->
     <!-- ======================================================= -->
     <script>
     (function(){
         // Chiave aggiornata: esce solo la prima volta
-        if(localStorage.getItem('falsario_tour_finale_v9') === 'true') return;
+        if(localStorage.getItem('falsario_tour_finale_v10') === 'true') return;
 
-        // CSS Blindato con transizioni avanzate
         var style = document.createElement('style');
         style.innerHTML = `
-            .falsario-wrap { position: fixed; inset: 0; z-index: 9999999; opacity: 0; transition: opacity 0.5s ease; font-family: system-ui, -apple-system, sans-serif; -webkit-tap-highlight-color: transparent; cursor: pointer; }
-            .falsario-spot { position: fixed; box-shadow: 0 0 0 9999px rgba(10,10,10,0.92); pointer-events: none; opacity: 0; transition: opacity 0.3s ease; }
+            .falsario-wrap { position: fixed; inset: 0; z-index: 9999999; opacity: 0; transition: opacity 0.6s ease; font-family: system-ui, -apple-system, sans-serif; -webkit-tap-highlight-color: transparent; cursor: pointer; }
+            
+            /* Il faro ora ha un effetto molla (spring) che lo rende "vivo" mentre si muove */
+            .falsario-spot { position: fixed; box-shadow: 0 0 0 9999px rgba(10,10,10,0.92); pointer-events: none; opacity: 0; transition: all 0.6s cubic-bezier(0.34, 1.3, 0.64, 1), opacity 0.3s ease; }
             .falsario-ring { position: absolute; inset: -4px; border-radius: inherit; border: 2px solid rgba(245,158,11,0.8); animation: falsarioPulse 1.5s infinite; pointer-events: none; }
             
-            /* Card migliorata con animazione di trasformazione per lo slide */
+            /* Motore della Card: usa le variabili per calcolare centro perfetto + slide */
             .falsario-card { 
                 position: fixed; left: 50%; width: 85%; max-width: 320px; 
                 background: rgba(24,24,27,0.95); border: 1px solid rgba(245,158,11,0.25); 
@@ -5579,16 +5580,31 @@
                 backdrop-filter: blur(12px); display: flex; flex-direction: column; text-align: center; 
                 pointer-events: none;
                 
-                /* Stati di base per la transizione fluida */
+                /* Stato di partenza (Nascosta in basso) */
+                --y-offset: 20px;
+                --scale: 0.95;
                 opacity: 0; 
-                transform: translate(-50%, 15px); /* Parte leggermente più in basso */
-                transition: opacity 0.4s ease, transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1), top 0.4s, bottom 0.4s; 
+                transform: translate(-50%, var(--y-offset)) scale(var(--scale)); 
+                transition: opacity 0.4s cubic-bezier(0.22, 1, 0.36, 1), transform 0.4s cubic-bezier(0.22, 1, 0.36, 1), top 0.4s, bottom 0.4s; 
             }
             
-            /* Classe attiva per far apparire la card con effetto slide-up */
+            /* Regola speciale per le schermate centrali */
+            .falsario-card.center-mode {
+                transform: translate(-50%, calc(-50% + var(--y-offset))) scale(var(--scale));
+            }
+
+            /* Stato Attivo (Visibile al centro della sua zona) */
             .falsario-card.active {
+                --y-offset: 0px;
+                --scale: 1;
                 opacity: 1;
-                transform: translate(-50%, 0); /* Arriva alla posizione esatta */
+            }
+
+            /* Stato di Uscita (Scivola in alto e rimpicciolisce svanendo) */
+            .falsario-card.exit {
+                --y-offset: -20px;
+                --scale: 0.95;
+                opacity: 0;
             }
 
             .falsario-skip { position: fixed; bottom: 30px; right: 20px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.15); color: #fff; padding: 8px 16px; border-radius: 30px; font-size: 12px; font-weight: 800; letter-spacing: 1px; z-index: 9999999; cursor: pointer; backdrop-filter: blur(8px); display: flex; align-items: center; gap: 6px; pointer-events: auto; }
@@ -5597,7 +5613,7 @@
         `;
         document.head.appendChild(style);
 
-        // Struttura elementi
+        // Costruzione Struttura
         var wrap = document.createElement('div'); wrap.className = 'falsario-wrap';
         var spot = document.createElement('div'); spot.className = 'falsario-spot';
         var ring = document.createElement('div'); ring.className = 'falsario-ring';
@@ -5611,10 +5627,9 @@
         document.body.appendChild(wrap);
         document.body.appendChild(skip);
 
-        // Icona tap
         var tapIcon = "<div style='position:relative; width:44px; height:44px; margin:24px auto 0;'><div style='position:absolute; inset:0; background:rgba(245,158,11,0.4); border-radius:50%; animation:falsarioTap 1.5s infinite;'></div><div style='position:absolute; inset:12px; background:#f59e0b; border-radius:50%; box-shadow:0 0 15px rgba(245,158,11,0.8)'></div></div>";
 
-        // MAPPATURA PERFETTA
+        // MAPPATURA TESTI PERFETTI
         var steps = [
             {
                 type: "center",
@@ -5641,7 +5656,7 @@
             },
             {
                 type: "element",
-                text: "Tutti", // Ora cerchiamo il primo bottone della barra delle categorie!
+                text: "Tutti", 
                 title: "Le Categorie",
                 desc: "Scorri questa barra in orizzontale per filtrare all'istante l'intero archivio del market."
             },
@@ -5669,24 +5684,19 @@
         var isTourActive = true;
         var isFading = false;
 
-        // RICERCA BERSAGLIO MIGLIORATA
+        // RICERCA BERSAGLIO
         function findTarget(s) {
             if(s.sel) {
                 var els = document.querySelectorAll(s.sel);
-                if(els.length) {
-                    var el = els[els.length-1];
-                    return el.closest('button') || el;
-                }
+                if(els.length) return els[els.length-1].closest('button') || els[els.length-1];
             }
             if(s.text) {
                 var searchTest = s.text.toUpperCase();
                 
-                // Se stiamo cercando "Tutti" (Categorie), cerchiamo il bottone arancione o grigio
                 if (searchTest === "TUTTI") {
                     var categoryButtons = document.querySelectorAll('.overflow-x-auto button, nav.flex.space-x-2 button');
                     for (var k=0; k<categoryButtons.length; k++) {
                         if (categoryButtons[k].innerText && categoryButtons[k].innerText.toUpperCase() === "TUTTI" && categoryButtons[k].getBoundingClientRect().width > 0) {
-                            // Ritorniamo il contenitore padre per evidenziare meglio la riga se possibile, altrimenti il bottone stesso
                             var rowContainer = categoryButtons[k].closest('.overflow-x-auto, nav.flex.space-x-2');
                             return rowContainer || categoryButtons[k];
                         }
@@ -5710,13 +5720,11 @@
             return null;
         }
 
-        // MOTORE DI TRACCIAMENTO 
+        // MOTORE DI TRACCIAMENTO
         function trackingLoop() {
             if(!isTourActive) return;
             if(currentTarget) {
                 var r = currentTarget.getBoundingClientRect();
-                
-                // Se il target è molto largo (es. la riga delle categorie), riduciamo il padding per non prendere le immagini
                 var isWide = r.width > window.innerWidth * 0.7;
                 var padX = isWide ? 4 : 12; 
                 var padY = isWide ? 4 : 8;
@@ -5733,19 +5741,17 @@
             requestAnimationFrame(trackingLoop);
         }
 
-        // AGGIORNAMENTO POSIZIONI E TESTO
+        // AGGIORNAMENTO POSIZIONI E TESTO (A SECCO, MENTRE E' INVISIBILE)
         function render() {
             var s = steps[cur];
             currentTarget = (s.type === "center") ? null : findTarget(s);
 
-            card.innerHTML = "<h3 style='color:#f59e0b; margin:0 0 6px 0; font-size:22px; font-weight:900; letter-spacing:-0.5px;'>" + s.title + "</h3><p style='color:#e5e7eb; margin:0; font-size:15px; line-height:1.5; font-weight:300;'>" + s.desc + "</p>" + (s.type === "center" ? tapIcon : "");
+            card.innerHTML = "<h3 style='color:#f59e0b; margin:0 0 8px 0; font-size:22px; font-weight:900; letter-spacing:-0.5px;'>" + s.title + "</h3><p style='color:#e5e7eb; margin:0; font-size:15px; line-height:1.5; font-weight:300;'>" + s.desc + "</p>" + (s.type === "center" ? tapIcon : "");
             
             if(currentTarget) {
-                spot.style.opacity = '1';
-                ring.style.display = 'block';
+                card.classList.remove('center-mode');
                 var r = currentTarget.getBoundingClientRect();
                 
-                // Aggiorna posizioni (top/bottom) PRIMA di aggiungere la classe active
                 if(r.top < window.innerHeight / 2) {
                     card.style.top = 'auto';
                     card.style.bottom = '80px';
@@ -5755,36 +5761,21 @@
                 }
                 currentTarget.scrollIntoView({ behavior: 'smooth', block: 'center' });
             } else {
-                spot.style.opacity = '1';
-                ring.style.display = 'none';
-                spot.style.width = '0px';
-                spot.style.height = '0px';
-                spot.style.left = '50%';
-                spot.style.top = '50%';
-                
-                // Schermate centrali
+                card.classList.add('center-mode');
                 card.style.top = '50%';
                 card.style.bottom = 'auto';
-                // La centratura per le schermate centrali la gestiamo annullando temporaneamente le regole della transizione in Y
-                card.style.transform = 'translate(-50%, -50%)'; 
             }
-            
-            // Applica la classe per far apparire la card con l'effetto (piccolo ritardo per far calcolare al browser le nuove posizioni)
-            setTimeout(function() {
-                card.classList.add('active');
-            }, 50);
         }
 
-        // CHIUSURA TOUR
         function closeTour() {
             isTourActive = false;
             wrap.style.opacity = '0'; 
             skip.style.opacity = '0';
-            localStorage.setItem('falsario_tour_finale_v9', 'true');
-            setTimeout(function(){ wrap.remove(); skip.remove(); style.remove(); }, 500);
+            localStorage.setItem('falsario_tour_finale_v10', 'true');
+            setTimeout(function(){ wrap.remove(); skip.remove(); style.remove(); }, 600);
         }
 
-        // EVENTO TAP
+        // REGIA ANIMAZIONI 
         wrap.addEventListener('click', function(e) { 
             e.preventDefault(); 
             if(!isTourActive || isFading) return;
@@ -5792,26 +5783,46 @@
             isFading = true;
             cur++; 
 
-            // Rimuove la classe per far scomparire la card e riportarla leggermente in basso
+            // FASE 1: USCITA (La card svanisce scivolando in alto)
             card.classList.remove('active');
-            spot.style.opacity = '0';
+            card.classList.add('exit');
+            spot.style.opacity = '0'; // Spegne il faro momentaneamente
 
+            // FASE 2: PREPARAZIONE E RIENTRO
             setTimeout(function() {
                 if(cur >= steps.length) return closeTour();
+                
+                // Disattiva transizioni per resettare la card in basso a secco
+                card.style.transition = 'none';
+                card.classList.remove('exit');
                 render();
                 
-                spot.style.opacity = '1';
-                setTimeout(function(){ isFading = false; }, 400); // Sincronizzato con il tempo di transizione CSS
-            }, 300);
+                // Forza il browser a registrare il reset (Reflow)
+                void card.offsetWidth;
+
+                // Riattiva transizioni e lancia la classe active (Scivola dal basso in dissolvenza)
+                card.style.transition = '';
+                card.classList.add('active');
+                
+                if (currentTarget) spot.style.opacity = '1'; // Riaccende il faro
+                
+                // Sblocca i tocchi alla fine dell'animazione
+                setTimeout(function(){ isFading = false; }, 400); 
+            }, 350); // Attende la fine dell'uscita
         });
         
         skip.addEventListener('click', closeTour);
 
-        // PARTENZA FLUIDA
+        // PARTENZA FLUIDA INIZIALE
         setTimeout(function(){ 
             window.scrollTo({top:0, behavior:'auto'});
             wrap.style.opacity = '1'; 
             render(); 
+            
+            setTimeout(function() {
+                card.classList.add('active');
+            }, 100);
+
             trackingLoop(); 
         }, 1000);
     })();
