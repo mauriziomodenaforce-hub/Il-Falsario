@@ -5556,25 +5556,28 @@
         });
     </script>
 
-     <!-- ======================================================= -->
-    <!-- ONBOARDING ESSENZIALE E CHIRURGICO                      -->
+    <!-- ======================================================= -->
+    <!-- ONBOARDING GOD-TIER (FADE ANIMATIONS & PERFECT LOGIC)   -->
     <!-- ======================================================= -->
     <script>
     (function(){
-        if(localStorage.getItem('falsario_tour_steve_v4') === 'true') return;
+        // Chiave di produzione: uscirà sempre solo la primissima volta
+        if(localStorage.getItem('falsario_tour_finale_v5') === 'true') return;
 
+        // CSS Blindato con transizioni di dissolvenza (Fade)
         var style = document.createElement('style');
         style.innerHTML = `
-            .falsario-wrap { position: fixed; inset: 0; z-index: 9999999; opacity: 0; transition: opacity 0.4s ease; font-family: system-ui, -apple-system, sans-serif; -webkit-tap-highlight-color: transparent; cursor: pointer; }
-            .falsario-spot { position: fixed; box-shadow: 0 0 0 9999px rgba(10,10,10,0.92); pointer-events: none; opacity: 0; transition: opacity 0.3s; }
+            .falsario-wrap { position: fixed; inset: 0; z-index: 9999999; opacity: 0; transition: opacity 0.5s ease; font-family: system-ui, -apple-system, sans-serif; -webkit-tap-highlight-color: transparent; cursor: pointer; }
+            .falsario-spot { position: fixed; box-shadow: 0 0 0 9999px rgba(10,10,10,0.92); pointer-events: none; opacity: 0; transition: opacity 0.3s ease; }
             .falsario-ring { position: absolute; inset: -4px; border-radius: inherit; border: 2px solid rgba(245,158,11,0.8); animation: falsarioPulse 1.5s infinite; pointer-events: none; }
-            .falsario-card { position: fixed; left: 50%; width: 85%; max-width: 320px; background: rgba(24,24,27,0.95); border: 1px solid rgba(245,158,11,0.25); border-radius: 20px; padding: 20px 24px; box-shadow: 0 20px 50px rgba(0,0,0,0.9); backdrop-filter: blur(12px); transform: translateX(-50%); transition: top 0.4s, bottom 0.4s; pointer-events: none; display: flex; flex-direction: column; text-align: center; }
+            .falsario-card { position: fixed; left: 50%; width: 85%; max-width: 320px; background: rgba(24,24,27,0.95); border: 1px solid rgba(245,158,11,0.25); border-radius: 20px; padding: 24px; box-shadow: 0 20px 50px rgba(0,0,0,0.9); backdrop-filter: blur(12px); transform: translateX(-50%); transition: opacity 0.3s ease, transform 0.4s ease; pointer-events: none; display: flex; flex-direction: column; text-align: center; opacity: 0; }
             .falsario-skip { position: fixed; bottom: 30px; right: 20px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.15); color: #fff; padding: 8px 16px; border-radius: 30px; font-size: 12px; font-weight: 800; letter-spacing: 1px; z-index: 9999999; cursor: pointer; backdrop-filter: blur(8px); display: flex; align-items: center; gap: 6px; pointer-events: auto; }
             @keyframes falsarioPulse { 0% { transform: scale(1); opacity: 1; } 100% { transform: scale(1.15); opacity: 0; } }
             @keyframes falsarioTap { 0% { transform: scale(0.8); opacity: 1; } 100% { transform: scale(1.6); opacity: 0; } }
         `;
         document.head.appendChild(style);
 
+        // Struttura elementi
         var wrap = document.createElement('div'); wrap.className = 'falsario-wrap';
         var spot = document.createElement('div'); spot.className = 'falsario-spot';
         var ring = document.createElement('div'); ring.className = 'falsario-ring';
@@ -5588,76 +5591,73 @@
         document.body.appendChild(wrap);
         document.body.appendChild(skip);
 
-        var tapIcon = "<div style='position:relative; width:44px; height:44px; margin:20px auto 0;'><div style='position:absolute; inset:0; background:rgba(245,158,11,0.4); border-radius:50%; animation:falsarioTap 1.5s infinite;'></div><div style='position:absolute; inset:12px; background:#f59e0b; border-radius:50%; box-shadow:0 0 15px rgba(245,158,11,0.8)'></div></div>";
+        // L'animazione del tap pulsante
+        var tapIcon = "<div style='position:relative; width:44px; height:44px; margin:24px auto 0;'><div style='position:absolute; inset:0; background:rgba(245,158,11,0.4); border-radius:50%; animation:falsarioTap 1.5s infinite;'></div><div style='position:absolute; inset:12px; background:#f59e0b; border-radius:50%; box-shadow:0 0 15px rgba(245,158,11,0.8)'></div></div>";
 
-        // TOUR ESSENZIALE: Testi brevi, logici e dritti al punto
+        // DESCRIZIONI E TESTI CHIRURGICI E RISCRITTI
+        // Risolto il bug "undefined": tutte le card ora hanno title e desc obbligatori.
         var steps = [
             {
-                center: true,
-                html: "<h2 style='color:#fff; font-size:28px; margin:0 0 8px 0; font-weight:900; letter-spacing:-0.5px;'>Il <span style='color:#f59e0b'>Caveau</span>.</h2><p style='color:#a1a1aa; font-size:15px; margin:0; line-height:1.5;'>Esplora le funzioni essenziali dello shop. Tocca lo schermo per iniziare.</p>" + tapIcon
-            },
-            {
-                text: "Servizi Dedicati",
-                title: "Servizi Dedicati",
-                desc: "Richiedi elaborazioni e servizi su misura per le tue esigenze."
+                type: "center",
+                title: "Il <span style='color:#f59e0b'>Caveau</span>.",
+                desc: "Benvenuto all'interno. Tocca lo schermo per esplorare le funzioni chiave in modo rapido."
             },
             {
                 text: "I LAVORI",
-                title: "I Lavori",
-                desc: "Guarda l'archivio dei lavori completati per constatare la nostra qualità."
+                title: "Il Repertorio",
+                desc: "Seleziona I Lavori per poter vedere e consultare tutto il repertorio del Caveau."
             },
             {
                 text: "FIDUCIA",
-                title: "Fiducia",
-                desc: "Verifica l'affidabilità dello shop leggendo i feedback dei clienti."
+                title: "Clienti di Fiducia",
+                desc: "Scopri i trattamenti esclusivi, i bonus e i privilegi riservati ai nostri clienti di fiducia."
+            },
+            {
+                text: "Servizi Dedicati",
+                title: "Servizi su Misura",
+                desc: "Hai esigenze particolari? Entra qui e richiedi elaborazioni e servizi completamente personalizzati."
             },
             {
                 sel: "main .overflow-x-auto",
-                title: "Filtri Archivio",
-                desc: "Usa questa barra scorrevole per trovare istantaneamente quello che cerchi."
-            },
-            {
-                text: "SERVIZI RAPIDI",
-                title: "Servizi Rapidi",
-                desc: "Accesso veloce a conversioni anonime, gift card scontate e molto altro."
+                title: "Le Categorie",
+                desc: "Scorri questa barra in orizzontale per filtrare all'istante l'intero archivio del market."
             },
             {
                 sel: ".lucide-shopping-cart",
-                title: "Carrello Invisibile",
-                desc: "Checkout 100% anonimo e sicuro. Le tue transazioni non lasciano tracce."
+                title: "Pagamenti Sicuri",
+                desc: "Checkout 100% anonimo. Pagamenti sicuri, criptati e nessuna traccia delle tue transazioni."
             },
             {
                 sel: ".lucide-menu",
-                title: "Menu & Privilegi",
-                desc: "Accedi al tuo ID Segreto, ai privilegi esclusivi e contatta l'assistenza."
+                title: "Menu e Privilegi",
+                desc: "Trovi il tuo ID e i privilegi. Da qui accedi anche al canale feedback, all'assistenza rapida e ai contatti."
             },
             {
-                center: true,
-                html: "<h2 style='color:#fff; font-size:28px; margin:0 0 8px 0; font-weight:900; letter-spacing:-0.5px;'>Sei Pronto.</h2><p style='color:#a1a1aa; font-size:15px; margin:0; line-height:1.5;'>L'esplorazione inizia ora. Tocca lo schermo per entrare nel market.</p>" + tapIcon
+                type: "center",
+                title: "Tutto Pronto.",
+                desc: "Il tour è concluso. Tocca lo schermo un'ultima volta per iniziare ad esplorare in libertà."
             }
         ];
 
         var cur = 0;
         var currentTarget = null;
         var isTourActive = true;
+        var isFading = false; // Lucchetto anti-doppio tap per garantire transizioni perfette
 
-        // ALGORITMO CHIRURGICO E BLINDATO
+        // TROVA BERSAGLIO
         function findTarget(s) {
             if(s.sel) {
                 var els = document.querySelectorAll(s.sel);
                 if(els.length) return els[els.length-1].closest('button') || els[els.length-1];
             }
             if(s.text) {
-                // Ricerca mirata sui tag più probabili per evitare blocchi giganti
-                var tags = document.querySelectorAll('span, p, h3, h4');
-                for(var i = 0; i < tags.length; i++) {
+                var tags = document.querySelectorAll('button, p, span, h3, div');
+                for(var i=0; i<tags.length; i++) {
                     if(tags[i].innerText && tags[i].innerText.trim().toUpperCase() === s.text.toUpperCase() && tags[i].getBoundingClientRect().width > 0) {
-                        // Risale al contenitore del pulsante reale
                         var btn = tags[i].closest('button');
-                        if (btn) return btn;
-                        // Se non è un bottone standard (es: SERVIZI RAPIDI è in un div)
+                        if(btn) return btn;
                         var box = tags[i].closest('.rounded-2xl') || tags[i].closest('.border');
-                        if (box) return box;
+                        if(box) return box;
                         return tags[i];
                     }
                 }
@@ -5665,11 +5665,12 @@
             return null;
         }
 
+        // MOTORE DI TRACCIAMENTO A 60FPS (non subisce il fade, traccia istantaneamente lo scroll)
         function trackingLoop() {
             if(!isTourActive) return;
             if(currentTarget) {
                 var r = currentTarget.getBoundingClientRect();
-                var padX = 10, padY = 6;
+                var padX = 12, padY = 8;
                 var w = r.width + padX * 2;
                 var h = r.height + padY * 2;
                 
@@ -5682,18 +5683,17 @@
             requestAnimationFrame(trackingLoop);
         }
 
+        // AGGIORNAMENTO POSIZIONI E TESTO (avviene mentre l'interfaccia è invisibile)
         function render() {
-            if(cur >= steps.length) return closeTour();
             var s = steps[cur];
-            currentTarget = s.center ? null : findTarget(s);
+            currentTarget = (s.type === "center") ? null : findTarget(s);
 
+            card.innerHTML = "<h3 style='color:#f59e0b; margin:0 0 6px 0; font-size:22px; font-weight:900; letter-spacing:-0.5px;'>" + s.title + "</h3><p style='color:#e5e7eb; margin:0; font-size:15px; line-height:1.5; font-weight:300;'>" + s.desc + "</p>" + (s.type === "center" ? tapIcon : "");
+            
             if(currentTarget) {
-                spot.style.opacity = '1';
-                card.innerHTML = "<h3 style='color:#f59e0b; margin:0 0 6px 0; font-size:20px; font-weight:900; letter-spacing:-0.5px;'>" + s.title + "</h3><p style='color:#e5e7eb; margin:0; font-size:14px; line-height:1.5; font-weight:400;'>" + s.desc + "</p>";
-                
                 var r = currentTarget.getBoundingClientRect();
+                card.style.transform = 'translateX(-50%)'; // Mantiene la card centrata orizzontalmente
                 
-                // Card sempre ferma e leggibile in opposizione al bersaglio
                 if(r.top < window.innerHeight / 2) {
                     card.style.top = 'auto';
                     card.style.bottom = '80px';
@@ -5701,31 +5701,54 @@
                     card.style.top = '100px';
                     card.style.bottom = 'auto';
                 }
-
                 currentTarget.scrollIntoView({ behavior: 'smooth', block: 'center' });
             } else {
-                spot.style.opacity = '0';
-                card.innerHTML = s.html;
                 card.style.top = '50%';
                 card.style.bottom = 'auto';
-                card.style.transform = 'translate(-50%, -50%)';
+                card.style.transform = 'translate(-50%, -50%)'; // Centratura assoluta X/Y per le prime e ultime schermate
             }
         }
 
+        // CHIUSURA TOUR
         function closeTour() {
             isTourActive = false;
             wrap.style.opacity = '0'; 
             skip.style.opacity = '0';
-            localStorage.setItem('falsario_tour_steve_v4', 'true');
+            localStorage.setItem('falsario_tour_finale_v5', 'true');
             setTimeout(function(){ wrap.remove(); skip.remove(); style.remove(); }, 500);
         }
 
-        wrap.addEventListener('click', function(e) { e.preventDefault(); cur++; render(); });
+        // EVENTO TAP CON EFFETTO FADE (SCOMPARSA/COMPARSA)
+        wrap.addEventListener('click', function(e) { 
+            e.preventDefault(); 
+            if(!isTourActive || isFading) return;
+            
+            isFading = true; // Blocca tocchi multipli
+            cur++; 
+
+            // 1. Scomparsa immediata ed elegante
+            card.style.opacity = '0';
+            spot.style.opacity = '0';
+
+            // 2. Dopo 300 millisecondi di transizione, calcola il nuovo bersaglio e fallo riapparire
+            setTimeout(function() {
+                if(cur >= steps.length) return closeTour();
+                render();
+                card.style.opacity = '1';
+                if(currentTarget) spot.style.opacity = '1';
+                
+                // Sblocca il tocco
+                setTimeout(function(){ isFading = false; }, 300);
+            }, 300);
+        });
+        
         skip.addEventListener('click', closeTour);
 
+        // PARTENZA INIZIALE FLUIDA
         setTimeout(function(){ 
             window.scrollTo({top:0, behavior:'auto'});
             render(); 
+            card.style.opacity = '1';
             wrap.style.opacity = '1'; 
             trackingLoop(); 
         }, 1000);
