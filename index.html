@@ -5556,27 +5556,25 @@
         });
     </script>
 
-       <!-- ======================================================= -->
-    <!-- ONBOARDING GOD-TIER (60FPS TRACKING ENGINE)             -->
+     <!-- ======================================================= -->
+    <!-- ONBOARDING ESSENZIALE E CHIRURGICO                      -->
     <!-- ======================================================= -->
     <script>
     (function(){
-        if(localStorage.getItem('falsario_tour_perfetto') === 'true') return;
+        if(localStorage.getItem('falsario_tour_steve_v4') === 'true') return;
 
-        // CSS Blindato. Nessuna interferenza.
         var style = document.createElement('style');
         style.innerHTML = `
             .falsario-wrap { position: fixed; inset: 0; z-index: 9999999; opacity: 0; transition: opacity 0.4s ease; font-family: system-ui, -apple-system, sans-serif; -webkit-tap-highlight-color: transparent; cursor: pointer; }
             .falsario-spot { position: fixed; box-shadow: 0 0 0 9999px rgba(10,10,10,0.92); pointer-events: none; opacity: 0; transition: opacity 0.3s; }
             .falsario-ring { position: absolute; inset: -4px; border-radius: inherit; border: 2px solid rgba(245,158,11,0.8); animation: falsarioPulse 1.5s infinite; pointer-events: none; }
-            .falsario-card { position: fixed; left: 50%; width: 85%; max-width: 340px; background: rgba(24,24,27,0.95); border: 1px solid rgba(245,158,11,0.25); border-radius: 20px; padding: 24px; box-shadow: 0 20px 50px rgba(0,0,0,0.9); backdrop-filter: blur(12px); transform: translateX(-50%); transition: top 0.4s, bottom 0.4s; pointer-events: none; display: flex; flex-direction: column; text-align: center; }
-            .falsario-skip { position: fixed; bottom: 30px; right: 20px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.15); color: #fff; padding: 10px 20px; border-radius: 30px; font-size: 12px; font-weight: 800; letter-spacing: 1px; z-index: 9999999; cursor: pointer; backdrop-filter: blur(8px); display: flex; align-items: center; gap: 6px; pointer-events: auto; }
+            .falsario-card { position: fixed; left: 50%; width: 85%; max-width: 320px; background: rgba(24,24,27,0.95); border: 1px solid rgba(245,158,11,0.25); border-radius: 20px; padding: 20px 24px; box-shadow: 0 20px 50px rgba(0,0,0,0.9); backdrop-filter: blur(12px); transform: translateX(-50%); transition: top 0.4s, bottom 0.4s; pointer-events: none; display: flex; flex-direction: column; text-align: center; }
+            .falsario-skip { position: fixed; bottom: 30px; right: 20px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.15); color: #fff; padding: 8px 16px; border-radius: 30px; font-size: 12px; font-weight: 800; letter-spacing: 1px; z-index: 9999999; cursor: pointer; backdrop-filter: blur(8px); display: flex; align-items: center; gap: 6px; pointer-events: auto; }
             @keyframes falsarioPulse { 0% { transform: scale(1); opacity: 1; } 100% { transform: scale(1.15); opacity: 0; } }
             @keyframes falsarioTap { 0% { transform: scale(0.8); opacity: 1; } 100% { transform: scale(1.6); opacity: 0; } }
         `;
         document.head.appendChild(style);
 
-        // Struttura DOM
         var wrap = document.createElement('div'); wrap.className = 'falsario-wrap';
         var spot = document.createElement('div'); spot.className = 'falsario-spot';
         var ring = document.createElement('div'); ring.className = 'falsario-ring';
@@ -5590,52 +5588,52 @@
         document.body.appendChild(wrap);
         document.body.appendChild(skip);
 
-        var tapIcon = "<div style='position:relative; width:50px; height:50px; margin:24px auto 0;'><div style='position:absolute; inset:0; background:rgba(245,158,11,0.4); border-radius:50%; animation:falsarioTap 1.5s infinite;'></div><div style='position:absolute; inset:14px; background:#f59e0b; border-radius:50%; box-shadow:0 0 15px rgba(245,158,11,0.8)'></div></div>";
+        var tapIcon = "<div style='position:relative; width:44px; height:44px; margin:20px auto 0;'><div style='position:absolute; inset:0; background:rgba(245,158,11,0.4); border-radius:50%; animation:falsarioTap 1.5s infinite;'></div><div style='position:absolute; inset:12px; background:#f59e0b; border-radius:50%; box-shadow:0 0 15px rgba(245,158,11,0.8)'></div></div>";
 
-        // TESTI CHIRURGICI
+        // TOUR ESSENZIALE: Testi brevi, logici e dritti al punto
         var steps = [
             {
                 center: true,
-                html: "<h2 style='color:#fff; font-size:30px; margin:0 0 10px 0; font-weight:900; letter-spacing:-0.5px;'>Il <span style='color:#f59e0b'>Caveau</span>.</h2><p style='color:#a1a1aa; font-size:15.5px; margin:0; line-height:1.5;'>L'interfaccia è stata riprogettata. Tocca lo schermo per esplorare le funzioni chiave.</p>" + tapIcon
+                html: "<h2 style='color:#fff; font-size:28px; margin:0 0 8px 0; font-weight:900; letter-spacing:-0.5px;'>Il <span style='color:#f59e0b'>Caveau</span>.</h2><p style='color:#a1a1aa; font-size:15px; margin:0; line-height:1.5;'>Esplora le funzioni essenziali dello shop. Tocca lo schermo per iniziare.</p>" + tapIcon
             },
             {
                 text: "Servizi Dedicati",
                 title: "Servizi Dedicati",
-                desc: "Hai richieste particolari? Entra qui per richiedere elaborazioni e documenti su misura per te."
+                desc: "Richiedi elaborazioni e servizi su misura per le tue esigenze."
             },
             {
                 text: "I LAVORI",
                 title: "I Lavori",
-                desc: "Esplora l'archivio visivo delle nostre lavorazioni precedenti per constatare la qualità."
+                desc: "Guarda l'archivio dei lavori completati per constatare la nostra qualità."
             },
             {
                 text: "FIDUCIA",
                 title: "Fiducia",
-                desc: "La trasparenza prima di tutto. Leggi i feedback e verifica l'affidabilità del servizio."
-            },
-            {
-                text: "MAGGIORI INFORMAZIONI",
-                title: "Contatti Diretti",
-                desc: "Hai bisogno di supporto o chiarimenti? Mettiti in contatto diretto con il nostro team."
+                desc: "Verifica l'affidabilità dello shop leggendo i feedback dei clienti."
             },
             {
                 sel: "main .overflow-x-auto",
-                title: "Filtri Rapidi",
-                desc: "Scorri e tocca le categorie per filtrare istantaneamente l'intero Archivio File."
+                title: "Filtri Archivio",
+                desc: "Usa questa barra scorrevole per trovare istantaneamente quello che cerchi."
+            },
+            {
+                text: "SERVIZI RAPIDI",
+                title: "Servizi Rapidi",
+                desc: "Accesso veloce a conversioni anonime, gift card scontate e molto altro."
             },
             {
                 sel: ".lucide-shopping-cart",
-                title: "Il Carrello",
-                desc: "Concludi i tuoi acquisti. Checkout criptato, totalmente anonimo e non tracciabile."
+                title: "Carrello Invisibile",
+                desc: "Checkout 100% anonimo e sicuro. Le tue transazioni non lasciano tracce."
             },
             {
                 sel: ".lucide-menu",
-                title: "Area Personale",
-                desc: "Apri il menu per gestire il tuo ID utente, impostazioni e lo storico delle operazioni."
+                title: "Menu & Privilegi",
+                desc: "Accedi al tuo ID Segreto, ai privilegi esclusivi e contatta l'assistenza."
             },
             {
                 center: true,
-                html: "<h2 style='color:#fff; font-size:30px; margin:0 0 10px 0; font-weight:900; letter-spacing:-0.5px;'>Sei Pronto.</h2><p style='color:#a1a1aa; font-size:15.5px; margin:0; line-height:1.5;'>Nessuno sa che sei qui. Tocca lo schermo per avviare il market.</p>" + tapIcon
+                html: "<h2 style='color:#fff; font-size:28px; margin:0 0 8px 0; font-weight:900; letter-spacing:-0.5px;'>Sei Pronto.</h2><p style='color:#a1a1aa; font-size:15px; margin:0; line-height:1.5;'>L'esplorazione inizia ora. Tocca lo schermo per entrare nel market.</p>" + tapIcon
             }
         ];
 
@@ -5643,34 +5641,35 @@
         var currentTarget = null;
         var isTourActive = true;
 
-        // RICERCA PROFONDA: Trova esattamente il bottone, ignorando i blocchi giganti
+        // ALGORITMO CHIRURGICO E BLINDATO
         function findTarget(s) {
             if(s.sel) {
                 var els = document.querySelectorAll(s.sel);
                 if(els.length) return els[els.length-1].closest('button') || els[els.length-1];
             }
             if(s.text) {
-                var els = document.querySelectorAll('button, div, span, h3, p');
-                var bestMatch = null;
-                for(var i=0; i<els.length; i++) {
-                    if(els[i].innerText && els[i].innerText.trim().toUpperCase() === s.text.toUpperCase()) {
-                        // Se è già un bottone, lo prendiamo subito
-                        if(els[i].tagName === 'BUTTON') return els[i];
-                        bestMatch = els[i];
+                // Ricerca mirata sui tag più probabili per evitare blocchi giganti
+                var tags = document.querySelectorAll('span, p, h3, h4');
+                for(var i = 0; i < tags.length; i++) {
+                    if(tags[i].innerText && tags[i].innerText.trim().toUpperCase() === s.text.toUpperCase() && tags[i].getBoundingClientRect().width > 0) {
+                        // Risale al contenitore del pulsante reale
+                        var btn = tags[i].closest('button');
+                        if (btn) return btn;
+                        // Se non è un bottone standard (es: SERVIZI RAPIDI è in un div)
+                        var box = tags[i].closest('.rounded-2xl') || tags[i].closest('.border');
+                        if (box) return box;
+                        return tags[i];
                     }
                 }
-                // Se non è un bottone, cerchiamo il bottone padre più vicino
-                if(bestMatch) return bestMatch.closest('button') || bestMatch;
             }
             return null;
         }
 
-        // MOTORE DI TRACCIAMENTO A 60 FPS (Incolla il faro al bottone anche durante lo scroll)
         function trackingLoop() {
             if(!isTourActive) return;
             if(currentTarget) {
                 var r = currentTarget.getBoundingClientRect();
-                var padX = 12, padY = 8;
+                var padX = 10, padY = 6;
                 var w = r.width + padX * 2;
                 var h = r.height + padY * 2;
                 
@@ -5678,7 +5677,7 @@
                 spot.style.height = h + 'px';
                 spot.style.left = (r.left - padX) + 'px';
                 spot.style.top = (r.top - padY) + 'px';
-                spot.style.borderRadius = (w > h ? h : w) + 'px'; // Perfetto per cerchi e pillole
+                spot.style.borderRadius = (w > h ? h : w) + 'px';
             }
             requestAnimationFrame(trackingLoop);
         }
@@ -5690,11 +5689,11 @@
 
             if(currentTarget) {
                 spot.style.opacity = '1';
-                card.innerHTML = "<h3 style='color:#f59e0b; margin:0 0 8px 0; font-size:22px; font-weight:900; letter-spacing:-0.5px;'>" + s.title + "</h3><p style='color:#e5e7eb; margin:0; font-size:15px; line-height:1.5; font-weight:400;'>" + s.desc + "</p>";
+                card.innerHTML = "<h3 style='color:#f59e0b; margin:0 0 6px 0; font-size:20px; font-weight:900; letter-spacing:-0.5px;'>" + s.title + "</h3><p style='color:#e5e7eb; margin:0; font-size:14px; line-height:1.5; font-weight:400;'>" + s.desc + "</p>";
                 
                 var r = currentTarget.getBoundingClientRect();
                 
-                // Zona di sicurezza per la lettura: fissa la card in alto o in basso per non farla saltellare
+                // Card sempre ferma e leggibile in opposizione al bersaglio
                 if(r.top < window.innerHeight / 2) {
                     card.style.top = 'auto';
                     card.style.bottom = '80px';
@@ -5717,23 +5716,18 @@
             isTourActive = false;
             wrap.style.opacity = '0'; 
             skip.style.opacity = '0';
-            localStorage.setItem('falsario_tour_perfetto', 'true'); // BLOCCO DEFINITIVO
+            localStorage.setItem('falsario_tour_steve_v4', 'true');
             setTimeout(function(){ wrap.remove(); skip.remove(); style.remove(); }, 500);
         }
 
-        // CONTROLLI
         wrap.addEventListener('click', function(e) { e.preventDefault(); cur++; render(); });
         skip.addEventListener('click', closeTour);
 
-        // START
         setTimeout(function(){ 
             window.scrollTo({top:0, behavior:'auto'});
             render(); 
             wrap.style.opacity = '1'; 
-            trackingLoop(); // Accende il motore di tracciamento
-        }, 1200);
+            trackingLoop(); 
+        }, 1000);
     })();
     </script>
-
-</body>
-</html>
