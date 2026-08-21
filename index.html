@@ -5411,60 +5411,57 @@
         function closeSupportModal() { 
             document.getElementById('support-modal').classList.add('hidden'); 
         }
+            // ==========================================================
+        // INIZIALIZZAZIONE APP E RECUPERO 100 RIGHE MANCANTI
+        // ==========================================================
+        document.addEventListener("DOMContentLoaded", async () => {
+            if (typeof loadProducts === 'function') loadProducts();
+            
+            let fastId = localStorage.getItem('falsario_user_id') || window.Telegram?.WebApp?.initDataUnsafe?.user?.id;
+            const idEl = document.getElementById('sidebar-user-id');
+            if(idEl && fastId) { idEl.innerText = fastId; }
+            
+            if (typeof getOrInitUserId === 'function') {
+                const uid = await getOrInitUserId();
+                if(idEl) { idEl.innerText = uid; }
+            }
+        });
+    </script>
+
     <!-- ======================================================= -->
-    <!-- ONBOARDING GOD-TIER (ULTIMATE BLUR & SPRING V11)        -->
+    <!-- ONBOARDING GOD-TIER (VERSIONE ELEGANTE DEFINITIVA)      -->
     <!-- ======================================================= -->
     <script>
     (function(){
-        if(localStorage.getItem('falsario_tour_finale_v11') === 'true') return;
+        // Chiave aggiornata per far partire il tour
+        if(localStorage.getItem('falsario_tour_finale_definitivo') === 'true') return;
 
         var style = document.createElement('style');
         style.innerHTML = `
-            .falsario-wrap { position: fixed; inset: 0; z-index: 9999999; opacity: 0; transition: opacity 0.8s ease; font-family: system-ui, -apple-system, sans-serif; -webkit-tap-highlight-color: transparent; cursor: pointer; }
+            .falsario-wrap { position: fixed; inset: 0; z-index: 9999999; opacity: 0; transition: opacity 0.5s ease; font-family: system-ui, -apple-system, sans-serif; -webkit-tap-highlight-color: transparent; cursor: pointer; }
+            .falsario-spot { position: fixed; box-shadow: 0 0 0 9999px rgba(10,10,10,0.92); pointer-events: none; opacity: 0; transition: all 0.5s cubic-bezier(0.25, 1, 0.5, 1); }
+            .falsario-ring { position: absolute; inset: -4px; border-radius: inherit; border: 2px solid rgba(245,158,11,0.8); animation: falsarioPulse 1.5s infinite; pointer-events: none; }
             
-            /* Il faro usa la fisica della molla per i movimenti (Bézier elastico) */
-            .falsario-spot { position: fixed; box-shadow: 0 0 0 9999px rgba(8,8,8,0.94); pointer-events: none; opacity: 0; transition: all 0.7s cubic-bezier(0.175, 0.885, 0.32, 1.1), opacity 0.4s ease; }
-            
-            /* Pulsazione liquida ed elegante */
-            .falsario-ring { position: absolute; inset: -5px; border-radius: inherit; border: 1.5px solid rgba(245,158,11,0.6); animation: falsarioLiquid 2s infinite ease-in-out; pointer-events: none; }
-            
-            /* Card con effetto Blur integrato per le transizioni */
             .falsario-card { 
                 position: fixed; left: 50%; width: 85%; max-width: 330px; 
-                background: rgba(20,20,22,0.96); border: 1px solid rgba(245,158,11,0.2); 
-                border-radius: 24px; padding: 26px; box-shadow: 0 25px 60px rgba(0,0,0,0.95); 
-                backdrop-filter: blur(16px); display: flex; flex-direction: column; text-align: center; 
+                background: rgba(20,20,22,0.96); border: 1px solid rgba(245,158,11,0.25); 
+                border-radius: 20px; padding: 24px; box-shadow: 0 20px 50px rgba(0,0,0,0.9); 
+                backdrop-filter: blur(12px); display: flex; flex-direction: column; text-align: center; 
                 pointer-events: none;
                 
-                --y-offset: 15px;
-                --blur: 8px;
                 opacity: 0; 
-                filter: blur(var(--blur));
-                transform: translate(-50%, var(--y-offset)); 
-                transition: opacity 0.5s cubic-bezier(0.25, 1, 0.5, 1), transform 0.5s cubic-bezier(0.25, 1, 0.5, 1), filter 0.5s ease, top 0.5s, bottom 0.5s; 
+                transform: translate(-50%, 15px); 
+                transition: opacity 0.4s ease, transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1), top 0.4s, bottom 0.4s; 
             }
             
-            .falsario-card.center-mode {
-                transform: translate(-50%, calc(-50% + var(--y-offset)));
-            }
+            .falsario-card.active { opacity: 1; transform: translate(-50%, 0); }
+            .falsario-card.center-mode { transform: translate(-50%, calc(-50% + 15px)); }
+            .falsario-card.center-mode.active { transform: translate(-50%, -50%); }
 
-            .falsario-card.active {
-                --y-offset: 0px;
-                --blur: 0px;
-                opacity: 1;
-            }
-
-            .falsario-card.exit {
-                --y-offset: -15px;
-                --blur: 8px;
-                opacity: 0;
-            }
-
-            .falsario-skip { position: fixed; bottom: 35px; right: 25px; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.1); color: #fff; padding: 8px 18px; border-radius: 30px; font-size: 11px; font-weight: 800; letter-spacing: 1.5px; z-index: 9999999; cursor: pointer; backdrop-filter: blur(10px); display: flex; align-items: center; gap: 6px; pointer-events: auto; transition: background 0.3s; }
-            .falsario-skip:active { background: rgba(255,255,255,0.2); }
+            .falsario-skip { position: fixed; bottom: 30px; right: 20px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.15); color: #fff; padding: 8px 16px; border-radius: 30px; font-size: 12px; font-weight: 800; letter-spacing: 1px; z-index: 9999999; cursor: pointer; backdrop-filter: blur(8px); display: flex; align-items: center; gap: 6px; pointer-events: auto; }
             
-            @keyframes falsarioLiquid { 0%, 100% { transform: scale(1); opacity: 0.8; } 50% { transform: scale(1.08); opacity: 0.2; } }
-            @keyframes falsarioTap { 0% { transform: scale(0.8); opacity: 1; filter: blur(0px); } 100% { transform: scale(1.8); opacity: 0; filter: blur(4px); } }
+            @keyframes falsarioPulse { 0% { transform: scale(1); opacity: 1; } 100% { transform: scale(1.15); opacity: 0; } }
+            @keyframes falsarioTap { 0% { transform: scale(0.8); opacity: 1; } 100% { transform: scale(1.6); opacity: 0; } }
         `;
         document.head.appendChild(style);
 
@@ -5481,9 +5478,8 @@
         document.body.appendChild(wrap);
         document.body.appendChild(skip);
 
-        var tapIcon = "<div style='position:relative; width:46px; height:46px; margin:28px auto 0;'><div style='position:absolute; inset:0; background:rgba(245,158,11,0.3); border-radius:50%; animation:falsarioTap 2s infinite cubic-bezier(0.25, 1, 0.5, 1);'></div><div style='position:absolute; inset:14px; background:linear-gradient(135deg, #f59e0b, #d97706); border-radius:50%; box-shadow:0 0 20px rgba(245,158,11,0.6)'></div></div>";
+        var tapIcon = "<div style='position:relative; width:44px; height:44px; margin:24px auto 0;'><div style='position:absolute; inset:0; background:rgba(245,158,11,0.4); border-radius:50%; animation:falsarioTap 1.5s infinite;'></div><div style='position:absolute; inset:12px; background:#f59e0b; border-radius:50%; box-shadow:0 0 15px rgba(245,158,11,0.8)'></div></div>";
 
-        // TESTI PERFETTI
         var steps = [
             { type: "center", title: "Il <span style='color:#f59e0b'>Caveau</span>.", desc: "Benvenuto all'interno. Tocca lo schermo per esplorare le funzioni chiave in modo rapido." },
             { type: "element", text: "Servizi Dedicati", title: "Servizi Automatizzati", desc: "Servizi automatizzati, offerti e usufruibili in totale autonomia e sicurezza." },
@@ -5532,8 +5528,8 @@
             if(currentTarget) {
                 var r = currentTarget.getBoundingClientRect();
                 var isWide = r.width > window.innerWidth * 0.7;
-                var padX = isWide ? 6 : 14; 
-                var padY = isWide ? 6 : 10;
+                var padX = isWide ? 4 : 12; 
+                var padY = isWide ? 4 : 8;
                 
                 spot.style.width = (r.width + padX * 2) + 'px';
                 spot.style.height = (r.height + padY * 2) + 'px';
@@ -5548,17 +5544,16 @@
             var s = steps[cur];
             currentTarget = (s.type === "center") ? null : findTarget(s);
 
-            card.innerHTML = "<h3 style='color:#f59e0b; margin:0 0 8px 0; font-size:24px; font-weight:900; letter-spacing:-0.5px;'>" + s.title + "</h3><p style='color:#d1d5db; margin:0; font-size:15.5px; line-height:1.6; font-weight:300;'>" + s.desc + "</p>" + (s.type === "center" ? tapIcon : "");
+            card.innerHTML = "<h3 style='color:#f59e0b; margin:0 0 8px 0; font-size:22px; font-weight:900; letter-spacing:-0.5px;'>" + s.title + "</h3><p style='color:#e5e7eb; margin:0; font-size:15px; line-height:1.5; font-weight:300;'>" + s.desc + "</p>" + (s.type === "center" ? tapIcon : "");
             
             if(currentTarget) {
                 card.classList.remove('center-mode');
                 var r = currentTarget.getBoundingClientRect();
-                
                 if(r.top < window.innerHeight / 2) {
                     card.style.top = 'auto';
-                    card.style.bottom = '8vh';
+                    card.style.bottom = '80px';
                 } else {
-                    card.style.top = '12vh';
+                    card.style.top = '100px';
                     card.style.bottom = 'auto';
                 }
                 currentTarget.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -5573,8 +5568,8 @@
             isTourActive = false;
             wrap.style.opacity = '0'; 
             skip.style.opacity = '0';
-            localStorage.setItem('falsario_tour_finale_v11', 'true');
-            setTimeout(function(){ wrap.remove(); skip.remove(); style.remove(); }, 800);
+            localStorage.setItem('falsario_tour_finale_definitivo', 'true');
+            setTimeout(function(){ wrap.remove(); skip.remove(); style.remove(); }, 500);
         }
 
         wrap.addEventListener('click', function(e) { 
@@ -5584,28 +5579,19 @@
             isFading = true;
             cur++; 
 
-            // Uscita Cinematografica (Slide UP + Blur)
             card.classList.remove('active');
-            card.classList.add('exit');
-            spot.style.opacity = '0.3'; // Non spegne del tutto il faro, lo attenua per fluidità
+            spot.style.opacity = '0'; 
 
             setTimeout(function() {
                 if(cur >= steps.length) return closeTour();
-                
                 card.style.transition = 'none';
-                card.classList.remove('exit');
                 render();
-                
                 void card.offsetWidth;
-
-                // Entrata Cinematografica
                 card.style.transition = '';
                 card.classList.add('active');
-                
                 if (currentTarget) spot.style.opacity = '1'; 
-                
-                setTimeout(function(){ isFading = false; }, 500); 
-            }, 400); 
+                setTimeout(function(){ isFading = false; }, 400); 
+            }, 300); 
         });
         
         skip.addEventListener('click', closeTour);
@@ -5614,10 +5600,12 @@
             window.scrollTo({top:0, behavior:'auto'});
             wrap.style.opacity = '1'; 
             render(); 
-            
-            setTimeout(function() { card.classList.add('active'); }, 150);
+            setTimeout(function() { card.classList.add('active'); }, 100);
             trackingLoop(); 
         }, 800);
     })();
     </script>
+</body>
+</html>
+
 
