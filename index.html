@@ -5693,15 +5693,15 @@
     });
     </script> 
     
-       <!-- ======================================================= -->
-    <!-- MOTORE LOGICO ACCOUNT (AUTO-LOGIN, SPOILER, NO PROMPT)  -->
+    <!-- ======================================================= -->
+    <!-- MOTORE LOGICO ACCOUNT (ACCESSO LINEARE E LOGOUT FIXATO) -->
     <!-- ======================================================= -->
     <script>
     let isIdRevealed = false;
     
     function toggleIdSpoiler() {
         const idEl = document.getElementById('sidebar-user-id');
-        if (!idEl || idEl.innerText === 'NESSUN ACCESSO' || idEl.innerText === 'CARICAMENTO...') return;
+        if (!idEl || idEl.innerText === '***********') return;
         
         isIdRevealed = !isIdRevealed;
         if (isIdRevealed) {
@@ -5717,7 +5717,7 @@
         const idEl = document.getElementById('sidebar-user-id');
         const id = idEl.innerText;
         
-        if (id && id !== 'NESSUN ACCESSO' && id !== 'CARICAMENTO...' && id !== 'COPIATO!') {
+        if (id && id !== '***********' && id !== 'COPIATO!') {
             navigator.clipboard.writeText(id);
             const originalText = id;
             
@@ -5732,38 +5732,23 @@
                 idEl.style.transform = 'scale(1)';
                 if (!isIdRevealed) idEl.classList.add('blur-[6px]');
             }, 1500);
+        } else if (id === '***********') {
+            alert("Devi prima accedere per poter copiare il tuo ID.");
         }
     }
 
-    // PESCA L'ID IN AUTOMATICO (TELEGRAM O SISTEMA)
-    async function autoFetchId() {
-        let userId = localStorage.getItem('falsario_user_id');
-        
-        if (!userId && window.Telegram?.WebApp?.initDataUnsafe?.user?.id) {
-            userId = window.Telegram.WebApp.initDataUnsafe.user.id.toString();
-        }
-        
-        if (!userId && typeof getOrInitUserId === 'function') {
-            try { userId = await getOrInitUserId(); } catch(e) {}
-        }
-        
-        if (userId) {
-            localStorage.setItem('falsario_user_id', userId);
-        }
-        
-        return userId;
-    }
-
-    async function updateSidebarState() {
+    function updateSidebarState() {
         const idEl = document.getElementById('sidebar-user-id');
         const authBtn = document.getElementById('auth-action-btn');
         const authIcon = document.getElementById('auth-icon');
         const authText = document.getElementById('auth-text');
         const statusLed = document.getElementById('status-led');
         
-        const userId = await autoFetchId();
+        // Ora legge solo se sei VERAMENTE loggato (Niente auto-forzature)
+        const userId = localStorage.getItem('falsario_user_id');
         
         if (userId) {
+            // STATO: CONNESSO
             idEl.innerText = userId;
             idEl.classList.add('blur-[6px]'); 
             isIdRevealed = false;
@@ -5774,8 +5759,9 @@
             authIcon.classList.add('text-red-500');
             statusLed.className = "absolute left-0 top-0 bottom-0 w-1 bg-green-500 shadow-[0_0_12px_rgba(34,197,94,0.6)] transition-colors duration-500";
         } else {
-            idEl.innerText = "NESSUN ACCESSO";
-            idEl.classList.remove('blur-[6px]'); 
+            // STATO: DISCONNESSO
+            idEl.innerText = "***********";
+            idEl.classList.add('blur-[6px]'); 
             isIdRevealed = false;
             
             authText.innerText = "Accedi al tuo Account";
@@ -5788,20 +5774,31 @@
         if(window.lucide) lucide.createIcons();
     }
 
-    async function handleAuth() {
+    function handleAuth() {
         const currentUserId = localStorage.getItem('falsario_user_id');
         
         if (currentUserId) {
-            // EXIT (Disconnette senza rompere l'app)
+            // FUNZIONE EXIT: Svuota tutto e ti sbatte fuori pulito
             if(confirm("Sei sicuro di voler disconnettere il tuo dispositivo dal Caveau?")) {
                 localStorage.removeItem('falsario_user_id');
                 updateSidebarState(); 
             }
         } else {
-            // LOGIN ISTANTANEO (Tenta di pescare l'ID senza farti fare nulla)
-            const idEl = document.getElementById('sidebar-user-id');
-            idEl.innerText = "CARICAMENTO...";
-            await updateSidebarState();
+            // FUNZIONE ACCEDI: Pesca l'ID Telegram in un lampo
+            const tgId = window.Telegram?.WebApp?.initDataUnsafe?.user?.id;
+            
+            if (tgId) {
+                // Entri all'istante senza avvisi
+                localStorage.setItem('falsario_user_id', tgId.toString());
+                updateSidebarState();
+            } else {
+                // Se proprio sei da Browser web normale, ti chiede l'ID a mano
+                const manualId = prompt("🔑 INSERISCI IL TUO ID:\n(Usa il tuo ID Telegram)");
+                if (manualId && manualId.trim() !== "") {
+                    localStorage.setItem('falsario_user_id', manualId.trim());
+                    updateSidebarState();
+                }
+            }
         }
     }
 
@@ -5809,6 +5806,7 @@
         setTimeout(updateSidebarState, 150);
     });
     </script>
+
 
 
 
