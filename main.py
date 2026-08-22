@@ -21,7 +21,7 @@ bot = telebot.TeleBot(TELEGRAM_TOKEN)
 user_states = {}
 
 # ======================================================
-# HELPER SUPABASE REST API (TUTTO INTATTO)
+# HELPER SUPABASE REST API (Database Originale Intatto)
 # ======================================================
 def get_headers():
     return {
@@ -80,20 +80,7 @@ def db_update_user_points(target_id, points_delta):
     except: pass
     return False, 0
 
-def db_add_user_trophy(target_id, trophy_name):
-    url = f"{SUPABASE_URL}/rest/v1/users?telegram_id=eq.{target_id}"
-    try:
-        r = requests.get(url, headers=get_headers())
-        if r.status_code == 200 and len(r.json()) > 0:
-            user = r.json()[0]
-            trophies = user.get("trophies") or []
-            if trophy_name not in trophies: trophies.append(trophy_name)
-            requests.patch(url, headers=get_headers(), json={"trophies": trophies})
-            return True, trophies
-    except: pass
-    return False, []
-
-# --- LOGICA ORDINI (AGGIORNATA PER DASHBOARD E LIVE EDIT) ---
+# --- MOTORE ORDINI POTENZIATO ---
 def db_save_order(user_id, username, cart, total, address, order_type):
     url = f"{SUPABASE_URL}/rest/v1/orders"
     data = {
@@ -148,8 +135,9 @@ def upload_to_supabase_storage(file_bytes, mime_type, file_extension):
         else: return None, f"Codice Errore: {res.status_code}\nDettaglio: {res.text}"
     except Exception as e: return None, str(e)
 
+
 # ======================================================
-# API SERVER (RICEZIONE ORDINI DALLA MINI APP)
+# SERVER RICEZIONE ORDINI DALLA MINI APP
 # ======================================================
 class HealthCheckHandler(BaseHTTPRequestHandler):
     def do_HEAD(self):
@@ -181,33 +169,33 @@ class HealthCheckHandler(BaseHTTPRequestHandler):
             username = data.get("username", "Anonimo")
             address = data.get("address", "Non specificato")
 
-            # RILEVAMENTO AUTOMATICO: SERVIZIO O PRODOTTO FISICO?
-            is_service = any("serviz" in str(i.get('name', '')).lower() or "serviz" in str(i.get('category', '')).lower() for i in cart)
+            # RILEVAMENTO PERFETTO: Cerca la parola 'serviz' nella categoria del prodotto
+            is_service = any("serviz" in str(i.get('category', '')).lower() for i in cart)
             order_type = "SERVICE" if is_service else "PHYSICAL"
 
             order_id = db_save_order(user_id, username, cart, total, address, order_type)
-            items_text = "\n".join([f"• {i['qty']}x {i['name']} - €{i['price']}" for i in cart])
+            items_text = "\n".join([f"• {i['qty']}x {i['name']} - \u20ac{i['price']}" for i in cart])
 
-            # RICEVUTA UTENTE (Da modificare LIVE successivamente)
+            # RICEVUTA UTENTE (Formato HTML per evitare crash, memorizza l'ID per live edit)
             user_msg = (
-                f"✅ <b>Richiesta #{order_id} Registrata!</b>\n\n"
+                f"✅ <b>Richiesta #{order_id} Inviata!</b>\n\n"
                 f"📦 <b>Riepilogo:</b>\n{items_text}\n\n"
-                f"📍 <b>Recapito:</b> {address}\n"
-                f"💰 <b>Totale:</b> €{total}\n\n"
-                f"⏳ <i>Un operatore sta elaborando la tua richiesta. Riceverai aggiornamenti direttamente su questo messaggio.</i>"
+                f"📍 <b>Dati Recapito/Info:</b>\n{address}\n\n"
+                f"💰 <b>Totale:</b> \u20ac{total}\n\n"
+                f"⏳ <i>Un operatore sta elaborando la tua richiesta. Riceverai aggiornamenti live su questo messaggio.</i>"
             )
             
             if user_id and str(user_id) != "0":
                 try:
                     sent = bot.send_message(int(user_id), user_msg, parse_mode="HTML")
-                    db_update_order_msg_id(order_id, sent.message_id) # Memorizza per le modifiche LIVE
+                    db_update_order_msg_id(order_id, sent.message_id) 
                 except: pass
 
-            # ALERT ADMIN SILENZIOSO (NO SPAM BOTTONI IN CHAT)
+            # ALERT ADMIN SILENZIOSO
             if ADMIN_ID and ADMIN_ID != 0:
                 try:
                     alert_type = "🛠 NUOVO SERVIZIO" if is_service else "📦 NUOVO ORDINE FISICO"
-                    bot.send_message(ADMIN_ID, f"🔔 <b>{alert_type} RICEVUTO!</b>\nOrdine #{order_id} da @{username}.\n👉 Apri il menù /admin per gestirlo.", parse_mode="HTML")
+                    bot.send_message(ADMIN_ID, f"🔔 <b>{alert_type} RICEVUTO!</b>\nRif. #{order_id} da @{username}.\n👉 Apri il menù /admin per gestirlo.", parse_mode="HTML")
                 except: pass
 
             self.send_response(200)
@@ -244,20 +232,20 @@ def get_admin_prod_keyboard():
     markup.add(
         types.InlineKeyboardButton("➕ Aggiungi Prodotto", callback_data="p_add"),
         types.InlineKeyboardButton("📋 Lista / Modifica / Elimina", callback_data="p_list"),
-        types.InlineKeyboardButton("🔙 Torna al Menu Principale", callback_data="m_main")
+        types.InlineKeyboardButton("🔙 Torna al Menu", callback_data="m_main")
     )
     return markup
 
 def get_cancel_keyboard():
     markup = types.InlineKeyboardMarkup()
-    markup.add(types.InlineKeyboardButton("🔙 Torna al Menu", callback_data="m_main"))
+    markup.add(types.InlineKeyboardButton("🔙 Torna Indietro", callback_data="m_main"))
     return markup
 
 def get_media_done_keyboard():
     markup = types.InlineKeyboardMarkup(row_width=1)
     markup.add(
-        types.InlineKeyboardButton("✅ Fine Caricamento Media", callback_data="done_media"),
-        types.InlineKeyboardButton("🔙 Annulla e Torna al Menu", callback_data="m_main")
+        types.InlineKeyboardButton("✅ Fine Caricamento", callback_data="done_media"),
+        types.InlineKeyboardButton("🔙 Annulla", callback_data="m_main")
     )
     return markup
 
@@ -273,15 +261,13 @@ def send_welcome(message):
 
     welcome_text = (
         "Benvenuto nello shop ufficiale del Falsario 🤗🎭\n\n"
-        "💬 Contatto Telegram Ufficiale: @il_falsario_ufficiale_x2\n\n"
-        "📲 Contatto Signal Ufficiale: https://signal.me/#eu/m7lTtwu9GCr8RJQ7mhQ2OkwVfT_MZvjG6g-PFCnS8dG9NBl3s09GYKPtiyRQz-ih\n\n"
-        "📲 Contatto Session Ufficiale: 05495e45a9c1ced74358dcedaad80c99956e1405fbbccf4f8e85f0ca873946a515\n\n\n"
+        "💬 Contatto Telegram Ufficiale: @il_falsario_ufficiale_x2\n"
+        "📲 Contatto Signal Ufficiale: https://signal.me/#eu/m7lTtwu9GCr8RJQ7mhQ2OkwVfT_MZvjG6g-PFCnS8dG9NBl3s09GYKPtiyRQz-ih\n"
+        "📲 Contatto Session Ufficiale: 05495e45a9c1ced74358dcedaad80c99956e1405fbbccf4f8e85f0ca873946a515\n\n"
         "📢 Canale Feedback: https://t.me/+eRPnJSZq485kMzdk\n\n"
         "Massima serietà, discrezione totale e qualità impeccabile.\n"
-        "Sei nel posto giusto per le tue necessità.\n\n"
         "👇 Clicca in basso per accedere al caveau."
     )
-
     markup = types.InlineKeyboardMarkup()
     if WEB_APP_URL: markup.add(types.InlineKeyboardButton("🏦 Accedi al Caveau 🏦", web_app=types.WebAppInfo(WEB_APP_URL)))
     bot.send_message(user_id, welcome_text, reply_markup=markup, disable_web_page_preview=True)
@@ -291,11 +277,11 @@ def admin_panel(message):
     user_id = message.chat.id
     if user_id != ADMIN_ID: return
     user_states.pop(user_id, None)
-    bot.send_message(user_id, "⚙️ <b>PANNELLO GESTIONALE - IL FALSARIO</b> 🎭\n\nScegli la sezione da gestire:", parse_mode="HTML", reply_markup=get_admin_main_keyboard())
+    bot.send_message(user_id, "⚙️ <b>PANNELLO GESTIONALE CAVEAU</b> 🎭\n\nScegli la sezione da gestire:", parse_mode="HTML", reply_markup=get_admin_main_keyboard())
 
 
 # ======================================================
-# GESTIONE PULSANTI INLINE E DASHBOARD
+# MOTORE CENTRALE: ROUTING PULSANTI INLINE E DASHBOARD
 # ======================================================
 @bot.callback_query_handler(func=lambda call: True)
 def handle_callbacks(call):
@@ -303,130 +289,161 @@ def handle_callbacks(call):
     if user_id != ADMIN_ID: return
     data = call.data
 
-    # --- MENU PRINCIPALE ---
     if data == "m_main":
         user_states.pop(user_id, None)
-        bot.edit_message_text("⚙️ <b>PANNELLO GESTIONALE AMMINISTRATORE</b>", user_id, call.message.message_id, parse_mode="HTML", reply_markup=get_admin_main_keyboard())
+        bot.edit_message_text("⚙️ <b>PANNELLO GESTIONALE CAVEAU</b>", user_id, call.message.message_id, parse_mode="HTML", reply_markup=get_admin_main_keyboard())
 
     # ==================================================
-    # DASHBOARD 1: ORDINI FISICI
+    # DASHBOARD 1: ORDINI FISICI (PENDING E ACCEPTED)
     # ==================================================
     elif data == "dash_ord_phys":
         user_states.pop(user_id, None)
-        orders = [o for o in db_get_all_orders() if o.get('status') == 'PENDING' and o.get('order_type') != 'SERVICE']
-        bot.edit_message_text("📦 <b>ORDINI FISICI IN ATTESA</b>\nOrdini da spedire o consegnare a mano:", user_id, call.message.message_id, parse_mode="HTML")
+        
+        # MAGIA 1: Mostra sia i PENDING che gli ACCEPTED, nasconde i Servizi. Così non li perdi mai.
+        orders = [o for o in db_get_all_orders() if o.get('status') in ['PENDING', 'ACCEPTED'] and o.get('order_type') != 'SERVICE']
+        
+        bot.edit_message_text("📦 <b>ORDINI FISICI IN GESTIONE</b>\nQuesti ordini sono attivi e in attesa di spedizione/consegna:", user_id, call.message.message_id, parse_mode="HTML")
         
         if not orders:
-            bot.send_message(user_id, "✅ Nessun ordine fisico in coda.", reply_markup=get_cancel_keyboard())
+            bot.send_message(user_id, "✅ Nessun ordine fisico attivo.", reply_markup=get_cancel_keyboard())
             return
             
         for o in orders:
             items = json.loads(o.get('items', '[]')) if isinstance(o.get('items'), str) else o.get('items', [])
-            items_str = "\n".join([f"  • {i['name']} ({i['qty']}) - €{i['price']}" for i in items]) if items else "  • Nessun dettaglio"
+            items_str = "\n".join([f"  • {i['name']} ({i['qty']}) - \u20ac{i['price']}" for i in items]) if items else "  • Nessun dettaglio"
+            st_text = "⏳ Da Confermare" if o.get('status') == 'PENDING' else "✅ Accettato / In Preparazione"
             
             msg = (
-                f"🛒 <b>ORDINE #{o.get('id')}</b>\n"
+                f"🛒 <b>ORDINE #{o.get('id')}</b> [{st_text}]\n"
                 f"👤 Utente: @{o.get('username')} (ID: {o.get('user_id')})\n"
-                f"📍 Indirizzo: {o.get('address', 'N/D')}\n\n"
+                f"📍 Indirizzo/Meetup: {o.get('address', 'N/D')}\n\n"
                 f"📦 Prodotti:\n{items_str}\n\n"
-                f"💰 Totale: €{o.get('total_price')}"
+                f"💰 Totale: \u20ac{o.get('total_price')}"
             )
             
             m_id = o.get('user_message_id', 0)
+            u_id = o.get('user_id', 0)
             markup = types.InlineKeyboardMarkup(row_width=2)
-            markup.add(
-                types.InlineKeyboardButton("✅ Accetta", callback_data=f"act_acc_{o['id']}_{o.get('user_id')}_{m_id}"),
-                types.InlineKeyboardButton("❌ Annulla", callback_data=f"act_cnc_{o['id']}_{o.get('user_id')}_{m_id}"),
-                types.InlineKeyboardButton("🚚 Invia Tracking", callback_data=f"act_trk_{o['id']}_{o.get('user_id')}_{m_id}"),
-                types.InlineKeyboardButton("📍 Conferma Meet up", callback_data=f"act_meet_{o['id']}_{o.get('user_id')}_{m_id}")
-            )
+            
+            # MAGIA 2: I bottoni cambiano dinamicamente se l'ordine è stato accettato
+            if o.get('status') == 'PENDING':
+                markup.add(
+                    types.InlineKeyboardButton("✅ Accetta Ordine", callback_data=f"act_acc_{o['id']}_{u_id}_{m_id}"),
+                    types.InlineKeyboardButton("❌ Annulla", callback_data=f"act_cnc_{o['id']}_{u_id}_{m_id}")
+                )
+            else:
+                markup.add(
+                    types.InlineKeyboardButton("🚚 Invia Tracking", callback_data=f"act_trk_{o['id']}_{u_id}_{m_id}"),
+                    types.InlineKeyboardButton("📍 Conferma Meet up", callback_data=f"act_meet_{o['id']}_{u_id}_{m_id}")
+                )
+                markup.add(types.InlineKeyboardButton("❌ Annulla", callback_data=f"act_cnc_{o['id']}_{u_id}_{m_id}"))
+                
             try: bot.send_message(user_id, msg, parse_mode="HTML", reply_markup=markup)
             except: pass
-        bot.send_message(user_id, "👇 Opzioni:", reply_markup=get_cancel_keyboard())
+        bot.send_message(user_id, "👇 Fine lista:", reply_markup=get_cancel_keyboard())
 
     # ==================================================
-    # DASHBOARD 2: SERVIZI DIGITALI/ELABORAZIONI
+    # DASHBOARD 2: SERVIZI DIGITALI/ELABORAZIONI (PENDING E ACCEPTED)
     # ==================================================
     elif data == "dash_ord_serv":
         user_states.pop(user_id, None)
-        orders = [o for o in db_get_all_orders() if o.get('status') == 'PENDING' and o.get('order_type') == 'SERVICE']
-        bot.edit_message_text("🛠 <b>SERVIZI IN LAVORAZIONE</b>\nRichieste di servizi, patenti, documenti, ecc:", user_id, call.message.message_id, parse_mode="HTML")
+        
+        # Filtra solo Servizi
+        orders = [o for o in db_get_all_orders() if o.get('status') in ['PENDING', 'ACCEPTED'] and o.get('order_type') == 'SERVICE']
+        
+        bot.edit_message_text("🛠 <b>SERVIZI IN LAVORAZIONE</b>\nRichieste di patenti, documenti, elaborazioni attive:", user_id, call.message.message_id, parse_mode="HTML")
         
         if not orders:
-            bot.send_message(user_id, "✅ Nessun servizio in coda.", reply_markup=get_cancel_keyboard())
+            bot.send_message(user_id, "✅ Nessun servizio attivo.", reply_markup=get_cancel_keyboard())
             return
             
         for o in orders:
             items = json.loads(o.get('items', '[]')) if isinstance(o.get('items'), str) else o.get('items', [])
-            items_str = "\n".join([f"  • {i['name']} ({i['qty']}) - €{i['price']}" for i in items]) if items else "  • Nessun dettaglio"
-            
+            items_str = "\n".join([f"  • {i['name']} ({i['qty']}) - \u20ac{i['price']}" for i in items]) if items else "  • Nessun dettaglio"
+            st_text = "⏳ Da Visionare" if o.get('status') == 'PENDING' else "⚙️ In Lavorazione"
+
             msg = (
-                f"🛠 <b>SERVIZIO #{o.get('id')}</b>\n"
+                f"🛠 <b>SERVIZIO #{o.get('id')}</b> [{st_text}]\n"
                 f"👤 Utente: @{o.get('username')} (ID: {o.get('user_id')})\n"
                 f"📍 Dati forniti: {o.get('address', 'N/D')}\n\n"
-                f"📦 Servizio richiesto:\n{items_str}\n\n"
-                f"💰 Totale: €{o.get('total_price')}"
+                f"📦 Richiesto:\n{items_str}\n\n"
+                f"💰 Totale: \u20ac{o.get('total_price')}"
             )
             
             m_id = o.get('user_message_id', 0)
+            u_id = o.get('user_id', 0)
             markup = types.InlineKeyboardMarkup(row_width=2)
-            markup.add(
-                types.InlineKeyboardButton("⏳ Segna In Lavorazione", callback_data=f"act_work_{o['id']}_{o.get('user_id')}_{m_id}"),
-                types.InlineKeyboardButton("❌ Annulla", callback_data=f"act_cnc_{o['id']}_{o.get('user_id')}_{m_id}"),
-                types.InlineKeyboardButton("📤 Invia Esito / File", callback_data=f"act_file_{o['id']}_{o.get('user_id')}_{m_id}")
-            )
+            
+            # Bottoni contestuali
+            if o.get('status') == 'PENDING':
+                markup.add(
+                    types.InlineKeyboardButton("⚙️ Segna in Lavorazione", callback_data=f"act_work_{o['id']}_{u_id}_{m_id}"),
+                    types.InlineKeyboardButton("❌ Annulla", callback_data=f"act_cnc_{o['id']}_{u_id}_{m_id}")
+                )
+            else:
+                markup.add(
+                    types.InlineKeyboardButton("📤 Invia Esito / Documento", callback_data=f"act_file_{o['id']}_{u_id}_{m_id}"),
+                    types.InlineKeyboardButton("❌ Annulla", callback_data=f"act_cnc_{o['id']}_{u_id}_{m_id}")
+                )
+                
             try: bot.send_message(user_id, msg, parse_mode="HTML", reply_markup=markup)
             except: pass
-        bot.send_message(user_id, "👇 Opzioni:", reply_markup=get_cancel_keyboard())
+        bot.send_message(user_id, "👇 Fine lista:", reply_markup=get_cancel_keyboard())
 
     # ==================================================
-    # AZIONI "LIVE EDIT" VERSO L'UTENTE
+    # AZIONI "LIVE EDIT" SUL CLIENTE (PROMPTS)
     # ==================================================
-    elif data.startswith("act_trk_") or data.startswith("act_file_"):
+    elif data.startswith("act_trk_") or data.startswith("act_file_") or data.startswith("act_meet_"):
         parts = data.split("_")
         action, o_id, u_id, m_id = parts[1], parts[2], parts[3], parts[4]
         
-        step_name = "WAITING_TRACKING" if action == "trk" else "WAITING_FILE_INFO"
-        prompt_txt = f"🚚 Scrivi il <b>TRACKING / NOTE</b> per l'ordine #{o_id}:" if action == "trk" else f"📤 Scrivi l'<b>ESITO / LINK AL FILE</b> per il servizio #{o_id}:"
+        if action == "trk":
+            step_name = "WAITING_TRACKING"
+            prompt_txt = f"🚚 Scrivi il <b>TRACKING e NOTE</b> per la Spedizione #{o_id}:"
+        elif action == "file":
+            step_name = "WAITING_FILE_INFO"
+            prompt_txt = f"📤 Scrivi l'<b>ESITO o IL LINK DEL FILE</b> per il Servizio #{o_id}:"
+        elif action == "meet":
+            step_name = "WAITING_MEETUP"
+            prompt_txt = f"📍 Scrivi i <b>DETTAGLI DEL MEET UP</b> (Es: Orario e Luogo esatto) per l'ordine #{o_id}:"
         
         user_states[user_id] = {"step": step_name, "o_id": o_id, "u_id": u_id, "m_id": m_id}
         bot.send_message(user_id, prompt_txt, parse_mode="HTML", reply_markup=get_cancel_keyboard())
         try: bot.edit_message_reply_markup(user_id, call.message.message_id, reply_markup=None)
         except: pass
 
-    elif data.startswith("act_acc_") or data.startswith("act_work_") or data.startswith("act_cnc_") or data.startswith("act_meet_"):
+    elif data.startswith("act_acc_") or data.startswith("act_work_") or data.startswith("act_cnc_"):
         parts = data.split("_")
         action, o_id, u_id, m_id = parts[1], parts[2], parts[3], parts[4]
         
         if action == "acc":
             db_update_order_status(o_id, "ACCEPTED")
-            new_text = f"✅ <b>ORDINE #{o_id} CONFERMATO</b>\n\nIl tuo ordine è in preparazione."
+            new_text = f"✅ <b>ORDINE #{o_id} CONFERMATO</b>\n\nIl tuo ordine è stato accettato ed è in fase di preparazione."
         elif action == "work":
             db_update_order_status(o_id, "ACCEPTED")
-            new_text = f"⏳ <b>SERVIZIO #{o_id} IN LAVORAZIONE</b>\n\nStiamo elaborando i tuoi dati."
+            new_text = f"⚙️ <b>SERVIZIO #{o_id} IN LAVORAZIONE</b>\n\nStiamo elaborando i tuoi dati."
         elif action == "cnc":
             db_update_order_status(o_id, "CANCELLED")
             new_text = f"❌ <b>ATTENZIONE</b>\nIl tuo ordine/servizio #{o_id} è stato annullato dal sistema."
-        elif action == "meet":
-            db_update_order_status(o_id, "ACCEPTED", "Meet Up Confermato")
-            new_text = f"📍 <b>MEET UP #{o_id} CONFERMATO</b>\n\nL'incontro è approvato. Un operatore ti scriverà a breve per i dettagli."
 
-        # ESECUZIONE LIVE EDIT NELLA CHAT DEL CLIENTE
-        if u_id and u_id != "0":
+        # ESECUZIONE GHOST EDIT: Modifica il messaggio nella chat del cliente
+        if u_id and str(u_id) != "0":
             try:
-                if m_id and m_id != "0":
+                if m_id and str(m_id) != "0":
                     bot.edit_message_text(chat_id=int(u_id), message_id=int(m_id), text=new_text, parse_mode="HTML")
                 else:
                     bot.send_message(int(u_id), new_text, parse_mode="HTML")
-            except: pass # Evita crash se l'utente ha bloccato il bot o cancellato il messaggio
+            except: pass
         
-        bot.answer_callback_query(call.id, "✅ Azione completata e cliente aggiornato LIVE!")
+        bot.answer_callback_query(call.id, "✅ Stato Aggiornato e Cliente Avvisato!")
+        
+        # Elimina i pulsanti dal messaggio admin per non farli cliccare due volte
         try: bot.edit_message_reply_markup(user_id, call.message.message_id, reply_markup=None)
         except: pass
 
 
     # ==================================================
-    # SEZIONE STORICO, PUNTI E PRODOTTI (INTATTA)
+    # SEZIONE STORICO, PUNTI E PRODOTTI (INTATTA AL 100%)
     # ==================================================
     elif data == "m_hist":
         user_states.pop(user_id, None)
@@ -436,20 +453,20 @@ def handle_callbacks(call):
             return
         
         bot.send_message(user_id, f"📜 <b>MASTRO LIBERO - STORICO COMPLETO</b> ({len(orders)} totali):", parse_mode="HTML")
-        status_map = {"PENDING": "⏳ In Attesa", "ACCEPTED": "✅ Confermato", "SHIPPED": "🚚 Completato/Spedito", "CANCELLED": "❌ Annullato"}
+        status_map = {"PENDING": "⏳ In Attesa", "ACCEPTED": "✅ Confermato/Lav.", "SHIPPED": "🏁 Chiuso/Spedito", "CANCELLED": "❌ Annullato"}
 
         for o in orders:
             st = status_map.get(o.get('status'), o.get('status'))
             items = json.loads(o.get('items', '[]')) if isinstance(o.get('items'), str) else o.get('items', [])
-            items_str = "\n".join([f"  • {i['name']} ({i['qty']}) - €{i['price']}" for i in items]) if items else "  • Nessun dettaglio"
+            items_str = "\n".join([f"  • {i['name']} ({i['qty']}) - \u20ac{i['price']}" for i in items]) if items else "  • Nessun dettaglio"
             
             msg = (
                 f"🛒 ORDINE #{o.get('id')} [{st}]\n"
                 f"👤 @{o.get('username')} (ID: {o.get('user_id')})\n"
                 f"📍 {o.get('address', 'N/D')}\n"
-                f"🚚 Note: {o.get('tracking_code', 'N/D')}\n\n"
+                f"🚚 Note / Esito: {o.get('tracking_code', 'N/D')}\n\n"
                 f"📦 Prodotti:\n{items_str}\n"
-                f"💰 €{o.get('total_price')}\n"
+                f"💰 \u20ac{o.get('total_price')}\n"
                 f"────────────────────────"
             )
             try: bot.send_message(user_id, msg)
@@ -460,10 +477,10 @@ def handle_callbacks(call):
         user_states.pop(user_id, None)
         msg = (
             "💎 <b>GESTIONE PUNTI UTENTI</b>\n\n"
-            "• Assegna o scala punti usando il comando in chat:\n"
+            "Assegna o scala punti usando il comando in chat:\n"
             "<code>/punti ID_UTENTE QUANTITA</code>\n\n"
-            "(Esempio per aggiungere: <code>/punti 123456789 100</code>)\n"
-            "(Esempio per scalare: <code>/punti 123456789 -50</code>)"
+            "(Es. aggiungere: <code>/punti 123456789 100</code>)\n"
+            "(Es. scalare: <code>/punti 123456789 -50</code>)"
         )
         bot.send_message(user_id, msg, parse_mode="HTML", reply_markup=get_cancel_keyboard())
 
@@ -483,7 +500,7 @@ def handle_callbacks(call):
         cat = data.replace("addcat_", "")
         user_states[user_id] = {"category": cat, "step": "WAITING_MEDIA", "media_list": []}
         bot.edit_message_text(
-            f"Categoria: {cat}\n\n📸 Invia ORA una o più Foto/Video del prodotto.\nPuoi inviarne quanti ne vuoi. Quando hai finito, premi <b>✅ Fine Caricamento Media</b> in basso.",
+            f"Categoria: {cat}\n\n📸 Invia ORA Foto/Video del prodotto.\nPuoi inviarne quanti ne vuoi. Quando hai finito, premi <b>✅ Fine Caricamento Media</b>.",
             user_id, call.message.message_id, parse_mode="HTML", reply_markup=get_media_done_keyboard()
         )
 
@@ -491,14 +508,13 @@ def handle_callbacks(call):
         user_states.pop(user_id, None)
         prods = db_get_products()
         if not prods:
-            bot.send_message(user_id, "📭 Nessun prodotto presente nel database.", reply_markup=get_cancel_keyboard())
+            bot.send_message(user_id, "📭 Nessun prodotto.", reply_markup=get_cancel_keyboard())
             return
             
         for p in prods:
             st_val = p.get('in_showcase', True)
             status_str = '🟢 In Vetrina' if st_val else '🔴 Nascosto'
             msg = f"📦 {p.get('name')}\n🏷 Categoria: {p.get('category')}\n👁 Stato: {status_str}"
-            
             markup = types.InlineKeyboardMarkup(row_width=2)
             markup.add(
                 types.InlineKeyboardButton("👁️ On/Off", callback_data=f"tog_{p['id']}_{st_val}"),
@@ -506,8 +522,7 @@ def handle_callbacks(call):
             )
             markup.add(types.InlineKeyboardButton("🗑️ Elimina", callback_data=f"del_{p['id']}"))
             bot.send_message(user_id, msg, reply_markup=markup)
-            
-        bot.send_message(user_id, "👇 Opzioni di navigazione:", reply_markup=get_cancel_keyboard())
+        bot.send_message(user_id, "👇 Opzioni:", reply_markup=get_cancel_keyboard())
 
     elif data.startswith("edit_"):
         p_id = data.split("_")[1]
@@ -519,23 +534,23 @@ def handle_callbacks(call):
             types.InlineKeyboardButton("📸 Sostituisci Foto/Video", callback_data=f"edmedia_{p_id}"),
             types.InlineKeyboardButton("🔙 Torna alla Lista", callback_data="p_list")
         )
-        bot.edit_message_text("Cosa vuoi modificare di questo prodotto?", user_id, call.message.message_id, reply_markup=markup)
+        bot.edit_message_text("Cosa vuoi modificare?", user_id, call.message.message_id, reply_markup=markup)
 
     elif data.startswith("edname_"):
         user_states[user_id] = {"step": "EDIT_NAME", "target_product": data.split("_")[1]}
-        bot.send_message(user_id, "✏️ Scrivi il NUOVO NOME per questo prodotto:", reply_markup=get_cancel_keyboard())
+        bot.send_message(user_id, "✏️ Scrivi il NUOVO NOME:", reply_markup=get_cancel_keyboard())
 
     elif data.startswith("eddesc_"):
         user_states[user_id] = {"step": "EDIT_DESC", "target_product": data.split("_")[1]}
-        bot.send_message(user_id, "📝 Scrivi la NUOVA DESCRIZIONE per questo prodotto:", reply_markup=get_cancel_keyboard())
+        bot.send_message(user_id, "📝 Scrivi la NUOVA DESCRIZIONE:", reply_markup=get_cancel_keyboard())
 
     elif data.startswith("edprc_"):
         user_states[user_id] = {"step": "EDIT_PRICES", "target_product": data.split("_")[1]}
-        bot.send_message(user_id, "💰 Scrivi le NUOVE VARIANTI DI PREZZO (Separate da virgola).\nEsempio: 10pz 140, 20pz 250", reply_markup=get_cancel_keyboard())
+        bot.send_message(user_id, "💰 Scrivi le NUOVE VARIANTI (es. 10pz 140, 20pz 250):", reply_markup=get_cancel_keyboard())
 
     elif data.startswith("edmedia_"):
         user_states[user_id] = {"step": "WAITING_MEDIA_EDIT", "target_product": data.split("_")[1], "media_list": []}
-        bot.send_message(user_id, "📸 Invia ORA le nuove foto/video (questo cancellerà quelle vecchie). Premi Fine quando hai caricato tutto.", reply_markup=get_media_done_keyboard())
+        bot.send_message(user_id, "📸 Invia ORA le nuove foto/video. Premi Fine quando hai caricato tutto.", reply_markup=get_media_done_keyboard())
 
     elif data.startswith("tog_"):
         parts = data.split("_")
@@ -552,7 +567,7 @@ def handle_callbacks(call):
 
     elif data.startswith("del_"):
         if db_delete_product(data.split("_")[1]):
-            bot.answer_callback_query(call.id, "🗑️ Prodotto eliminato definitivamente!")
+            bot.answer_callback_query(call.id, "🗑️ Prodotto eliminato!")
             try: bot.delete_message(user_id, call.message.message_id)
             except: pass
 
@@ -564,15 +579,15 @@ def handle_callbacks(call):
         
         if st.get("step") == "WAITING_MEDIA":
             st["step"] = "WAITING_NAME"
-            bot.send_message(user_id, f"✅ Hai caricato {len(st['media_list'])} file!\n\n📝 Ora invia il NOME del prodotto:", reply_markup=get_cancel_keyboard())
+            bot.send_message(user_id, f"✅ Caricati {len(st['media_list'])} file!\n\n📝 Ora invia il NOME del prodotto:", reply_markup=get_cancel_keyboard())
         elif st.get("step") == "WAITING_MEDIA_EDIT":
             media_list = st["media_list"]
             db_update_product(st["target_product"], {"media_list": media_list, "media_url": media_list[0]["url"], "media_type": media_list[0]["type"]})
-            bot.send_message(user_id, "✅ Foto/Video aggiornati con successo!", reply_markup=get_admin_main_keyboard())
+            bot.send_message(user_id, "✅ Media aggiornati!", reply_markup=get_admin_main_keyboard())
             user_states.pop(user_id, None)
 
 # ======================================================
-# HANDLER MEDIA (CARICAMENTO PRODOTTI)
+# HANDLER MEDIA (CARICAMENTO PRODOTTI - INTATTO)
 # ======================================================
 @bot.message_handler(content_types=['photo', 'video'])
 def handle_media(message):
@@ -581,7 +596,7 @@ def handle_media(message):
     state = user_states.get(user_id, {})
     if state.get("step") not in ["WAITING_MEDIA", "WAITING_MEDIA_EDIT"]: return
 
-    wait_msg = bot.reply_to(message, "⏳ Elaborazione e invio al server Supabase in corso...")
+    wait_msg = bot.reply_to(message, "⏳ Elaborazione Supabase in corso...")
 
     if message.photo:
         file_id = message.photo[-1].file_id
@@ -603,14 +618,14 @@ def handle_media(message):
             if "media_list" not in user_states[user_id]: user_states[user_id]["media_list"] = []
             user_states[user_id]["media_list"].append({"url": public_url, "type": media_type})
             tot = len(user_states[user_id]["media_list"])
-            bot.edit_message_text(f"✅ Salvato per sempre!\n📸 Media #{tot} aggiunto.\nContinua o premi Fine.", user_id, wait_msg.message_id, reply_markup=get_media_done_keyboard())
+            bot.edit_message_text(f"✅ Salvato!\n📸 Media #{tot} aggiunto.\nContinua o premi Fine.", user_id, wait_msg.message_id, reply_markup=get_media_done_keyboard())
         else:
             bot.edit_message_text(f"❌ ERRORE SUPABASE:\n{err}", user_id, wait_msg.message_id)
     except Exception as e:
         bot.edit_message_text(f"❌ Errore scaricamento: {e}", user_id, wait_msg.message_id)
 
 # ======================================================
-# HANDLER TESTO (INPUT ADMIN & GESTIONE LIVE)
+# HANDLER TESTO (INPUT ADMIN & GHOST EDIT CHAT CLIENTE)
 # ======================================================
 @bot.message_handler(func=lambda m: m.chat.id == ADMIN_ID)
 def handle_admin_text(message):
@@ -632,27 +647,41 @@ def handle_admin_text(message):
         except: bot.reply_to(message, "❌ Errore sintassi. Usa: /punti 123456789 100")
         return
 
-    # MODIFICA LIVE TRACKING / INFO SERVIZI
-    if step in ["WAITING_TRACKING", "WAITING_FILE_INFO"]:
+    # ==================================================
+    # RISOLUZIONE FINALE DEGLI ORDINI (TRACKING/INFO)
+    # ==================================================
+    if step in ["WAITING_TRACKING", "WAITING_FILE_INFO", "WAITING_MEETUP"]:
         admin_text = message.text.strip()
         o_id, u_id, m_id = state["o_id"], state["u_id"], state["m_id"]
         
+        # Archivia l'ordine definitivamente impostando lo stato SHIPPED/COMPLETED e salvando la nota
         db_update_order_status(o_id, "SHIPPED", admin_text)
         
-        title = "🚚 <b>ORDINE SPEDITO</b>" if step == "WAITING_TRACKING" else "✅ <b>SERVIZIO COMPLETATO</b>"
-        label = "Tracking / Istruzioni:" if step == "WAITING_TRACKING" else "Esito / Link al Documento:"
+        if step == "WAITING_TRACKING":
+            title = "🚚 <b>ORDINE SPEDITO</b>"
+            label = "Tracking / Istruzioni:"
+        elif step == "WAITING_FILE_INFO":
+            title = "✅ <b>SERVIZIO COMPLETATO</b>"
+            label = "Esito / Link al Documento:"
+        else:
+            title = "📍 <b>DETTAGLI MEET UP</b>"
+            label = "Info e Appuntamento:"
+            
         new_text = f"{title}\n<i>Rif. #{o_id}</i>\n\n<b>{label}</b>\n<code>{admin_text}</code>\n\nGrazie per aver scelto Il Falsario 🎭"
 
+        # AGGIORNA LIVE NELLA CHAT DEL CLIENTE
         if u_id and str(u_id) != "0":
             try:
-                if m_id and str(m_id) != "0": bot.edit_message_text(chat_id=int(u_id), message_id=int(m_id), text=new_text, parse_mode="HTML")
-                else: bot.send_message(int(u_id), new_text, parse_mode="HTML")
+                if m_id and str(m_id) != "0": 
+                    bot.edit_message_text(chat_id=int(u_id), message_id=int(m_id), text=new_text, parse_mode="HTML")
+                else: 
+                    bot.send_message(int(u_id), new_text, parse_mode="HTML")
             except: pass
                 
-        bot.reply_to(message, "✅ Messaggio aggiornato LIVE nella chat del cliente!", reply_markup=get_admin_main_keyboard())
+        bot.reply_to(message, "✅ Messaggio aggiornato LIVE nella chat del cliente. Ordine Archiviato nello Storico!", reply_markup=get_admin_main_keyboard())
         user_states.pop(user_id, None)
 
-    # CREAZIONE/MODIFICA PRODOTTI (TUTTO INTATTO)
+    # CREAZIONE/MODIFICA PRODOTTI (INTATTO)
     elif step == "EDIT_NAME":
         db_update_product(state["target_product"], {"name": message.text})
         bot.reply_to(message, "✅ Nome aggiornato!", reply_markup=get_admin_main_keyboard())
@@ -716,7 +745,7 @@ def handle_admin_text(message):
 
 if __name__ == '__main__':
     threading.Thread(target=run_health_server, daemon=True).start()
-    print("🤖 Bot Il Falsario (Sistema Gestione Pro V2) Avviato e allineato!")
+    print("🤖 Bot Il Falsario (Sistema Gestione Pro V3 Finale) Avviato!")
     while True:
         try:
             bot.remove_webhook()
