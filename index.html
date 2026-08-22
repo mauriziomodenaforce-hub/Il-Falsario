@@ -5694,14 +5694,28 @@
     </script> 
     
     <!-- ======================================================= -->
-    <!-- MOTORE LOGICO ACCOUNT (ACCESSO LINEARE E LOGOUT FIXATO) -->
+    <!-- MOTORE LOGICO ACCOUNT (LOGICA PERFETTA V5)              -->
     <!-- ======================================================= -->
     <script>
     let isIdRevealed = false;
     
+    // 1. Recupera l'ID base (da Telegram o ne crea uno per il dispositivo)
+    function getDeviceId() {
+        let tgId = window.Telegram?.WebApp?.initDataUnsafe?.user?.id;
+        if (tgId) return tgId.toString();
+        
+        let fallback = localStorage.getItem('falsario_device_base_id');
+        if (!fallback) {
+            fallback = Math.floor(100000000 + Math.random() * 900000000).toString();
+            localStorage.setItem('falsario_device_base_id', fallback);
+        }
+        return fallback;
+    }
+    
+    // 2. Gestione Spoiler
     function toggleIdSpoiler() {
         const idEl = document.getElementById('sidebar-user-id');
-        if (!idEl || idEl.innerText === '***********') return;
+        if (!idEl) return;
         
         isIdRevealed = !isIdRevealed;
         if (isIdRevealed) {
@@ -5713,11 +5727,12 @@
         }
     }
 
+    // 3. Copia ID (Funziona sempre, loggato o no)
     function copySidebarId() {
         const idEl = document.getElementById('sidebar-user-id');
         const id = idEl.innerText;
         
-        if (id && id !== '***********' && id !== 'COPIATO!') {
+        if (id && id !== 'COPIATO!') {
             navigator.clipboard.writeText(id);
             const originalText = id;
             
@@ -5732,11 +5747,10 @@
                 idEl.style.transform = 'scale(1)';
                 if (!isIdRevealed) idEl.classList.add('blur-[6px]');
             }, 1500);
-        } else if (id === '***********') {
-            alert("Devi prima accedere per poter copiare il tuo ID.");
         }
     }
 
+    // 4. Aggiornamento Interfaccia Grafica
     function updateSidebarState() {
         const idEl = document.getElementById('sidebar-user-id');
         const authBtn = document.getElementById('auth-action-btn');
@@ -5744,27 +5758,25 @@
         const authText = document.getElementById('auth-text');
         const statusLed = document.getElementById('status-led');
         
-        // Ora legge solo se sei VERAMENTE loggato (Niente auto-forzature)
-        const userId = localStorage.getItem('falsario_user_id');
+        // Controlla se sei loggato o sei solo un "visitatore" con il suo ID base
+        const loggedInId = localStorage.getItem('falsario_logged_in_id');
+        const displayId = loggedInId || getDeviceId(); // Mostra l'ID loggato o quello base
         
-        if (userId) {
-            // STATO: CONNESSO
-            idEl.innerText = userId;
-            idEl.classList.add('blur-[6px]'); 
-            isIdRevealed = false;
-            
+        // Imposta il numero e riattiva lo spoiler
+        idEl.innerText = displayId;
+        idEl.classList.add('blur-[6px]'); 
+        isIdRevealed = false;
+        
+        if (loggedInId) {
+            // SEI DENTRO (LED Verde, Tasto Exit)
             authText.innerText = "Disconnetti Account (Exit)";
             authBtn.className = "w-full flex items-center justify-between px-2 text-red-400 hover:text-red-300 font-medium text-sm transition-colors group py-1";
             authIcon.setAttribute('data-lucide', 'log-out');
             authIcon.classList.add('text-red-500');
             statusLed.className = "absolute left-0 top-0 bottom-0 w-1 bg-green-500 shadow-[0_0_12px_rgba(34,197,94,0.6)] transition-colors duration-500";
         } else {
-            // STATO: DISCONNESSO
-            idEl.innerText = "***********";
-            idEl.classList.add('blur-[6px]'); 
-            isIdRevealed = false;
-            
-            authText.innerText = "Accedi al tuo Account";
+            // SEI FUORI (LED Rosso, Tasto Accedi)
+            authText.innerText = "Accedi tramite il tuo ID";
             authBtn.className = "w-full flex items-center justify-between px-2 text-gray-400 hover:text-white font-medium text-sm transition-colors group py-1";
             authIcon.setAttribute('data-lucide', 'log-in');
             authIcon.classList.remove('text-red-500');
@@ -5774,30 +5786,24 @@
         if(window.lucide) lucide.createIcons();
     }
 
+    // 5. Azione Tasto Accedi / Esci
     function handleAuth() {
-        const currentUserId = localStorage.getItem('falsario_user_id');
+        const loggedInId = localStorage.getItem('falsario_logged_in_id');
         
-        if (currentUserId) {
-            // FUNZIONE EXIT: Svuota tutto e ti sbatte fuori pulito
-            if(confirm("Sei sicuro di voler disconnettere il tuo dispositivo dal Caveau?")) {
-                localStorage.removeItem('falsario_user_id');
+        if (loggedInId) {
+            // LOGOUT PULITO
+            if(confirm("Sei sicuro di voler uscire dal tuo account?")) {
+                localStorage.removeItem('falsario_logged_in_id');
                 updateSidebarState(); 
             }
         } else {
-            // FUNZIONE ACCEDI: Pesca l'ID Telegram in un lampo
-            const tgId = window.Telegram?.WebApp?.initDataUnsafe?.user?.id;
+            // LOGIN LIBERO: Ti propone l'ID del dispositivo, ma puoi cancellarlo e metterne un altro
+            const deviceId = getDeviceId();
+            const insertedId = prompt("🔑 INSERISCI IL TUO ID PER ACCEDERE:\n(Lascia precompilato per usare l'ID di questo dispositivo, oppure cancellalo e incolla un altro ID)", deviceId);
             
-            if (tgId) {
-                // Entri all'istante senza avvisi
-                localStorage.setItem('falsario_user_id', tgId.toString());
+            if (insertedId && insertedId.trim() !== "") {
+                localStorage.setItem('falsario_logged_in_id', insertedId.trim());
                 updateSidebarState();
-            } else {
-                // Se proprio sei da Browser web normale, ti chiede l'ID a mano
-                const manualId = prompt("🔑 INSERISCI IL TUO ID:\n(Usa il tuo ID Telegram)");
-                if (manualId && manualId.trim() !== "") {
-                    localStorage.setItem('falsario_user_id', manualId.trim());
-                    updateSidebarState();
-                }
             }
         }
     }
@@ -5806,6 +5812,7 @@
         setTimeout(updateSidebarState, 150);
     });
     </script>
+
 
 
 
