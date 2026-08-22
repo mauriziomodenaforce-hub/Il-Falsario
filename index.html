@@ -5428,35 +5428,47 @@
         });
     </script>
 
-    <!-- ======================================================= -->
-    <!-- ONBOARDING GOD-TIER (VERSIONE ELEGANTE DEFINITIVA)      -->
+     <!-- ======================================================= -->
+    <!-- ONBOARDING GOD-TIER (V14 - FULL TOUR EDITION)           -->
     <!-- ======================================================= -->
     <script>
     (function(){
-        // Chiave aggiornata per far partire il tour
-        if(localStorage.getItem('falsario_tour_finale_definitivo') === 'true') return;
+        // Chiave V14: partirà in automatico per farti vedere le nuove aggiunte
+        if(localStorage.getItem('falsario_tour_finale_v14') === 'true') return;
 
+        // CSS Bilanciato: elegante e stabile
         var style = document.createElement('style');
         style.innerHTML = `
             .falsario-wrap { position: fixed; inset: 0; z-index: 9999999; opacity: 0; transition: opacity 0.5s ease; font-family: system-ui, -apple-system, sans-serif; -webkit-tap-highlight-color: transparent; cursor: pointer; }
-            .falsario-spot { position: fixed; box-shadow: 0 0 0 9999px rgba(10,10,10,0.92); pointer-events: none; opacity: 0; transition: all 0.5s cubic-bezier(0.25, 1, 0.5, 1); }
+            
+            .falsario-spot { position: fixed; box-shadow: 0 0 0 9999px rgba(10,10,10,0.92); pointer-events: none; opacity: 0; transition: all 0.4s ease; }
             .falsario-ring { position: absolute; inset: -4px; border-radius: inherit; border: 2px solid rgba(245,158,11,0.8); animation: falsarioPulse 1.5s infinite; pointer-events: none; }
             
+            /* Card fluida: Slide up e dissolvenza */
             .falsario-card { 
-                position: fixed; left: 50%; width: 85%; max-width: 330px; 
-                background: rgba(20,20,22,0.96); border: 1px solid rgba(245,158,11,0.25); 
+                position: fixed; left: 50%; width: 85%; max-width: 320px; 
+                background: rgba(24,24,27,0.95); border: 1px solid rgba(245,158,11,0.25); 
                 border-radius: 20px; padding: 24px; box-shadow: 0 20px 50px rgba(0,0,0,0.9); 
-                backdrop-filter: blur(12px); display: flex; flex-direction: column; text-align: center; 
+                backdrop-filter: blur(10px); display: flex; flex-direction: column; text-align: center; 
                 pointer-events: none;
                 
                 opacity: 0; 
-                transform: translate(-50%, 15px); 
+                transform: translate(-50%, 20px); 
                 transition: opacity 0.4s ease, transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1), top 0.4s, bottom 0.4s; 
             }
             
-            .falsario-card.active { opacity: 1; transform: translate(-50%, 0); }
-            .falsario-card.center-mode { transform: translate(-50%, calc(-50% + 15px)); }
-            .falsario-card.center-mode.active { transform: translate(-50%, -50%); }
+            .falsario-card.active {
+                opacity: 1;
+                transform: translate(-50%, 0);
+            }
+
+            .falsario-card.center-mode {
+                transform: translate(-50%, calc(-50% + 20px));
+            }
+            
+            .falsario-card.center-mode.active {
+                transform: translate(-50%, -50%);
+            }
 
             .falsario-skip { position: fixed; bottom: 30px; right: 20px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.15); color: #fff; padding: 8px 16px; border-radius: 30px; font-size: 12px; font-weight: 800; letter-spacing: 1px; z-index: 9999999; cursor: pointer; backdrop-filter: blur(8px); display: flex; align-items: center; gap: 6px; pointer-events: auto; }
             
@@ -5480,11 +5492,23 @@
 
         var tapIcon = "<div style='position:relative; width:44px; height:44px; margin:24px auto 0;'><div style='position:absolute; inset:0; background:rgba(245,158,11,0.4); border-radius:50%; animation:falsarioTap 1.5s infinite;'></div><div style='position:absolute; inset:12px; background:#f59e0b; border-radius:50%; box-shadow:0 0 15px rgba(245,158,11,0.8)'></div></div>";
 
+        // ELENCO COMPLETO DEI PASSAGGI (Con le 3 nuove aggiunte)
         var steps = [
             { type: "center", title: "Il <span style='color:#f59e0b'>Caveau</span>.", desc: "Benvenuto all'interno. Tocca lo schermo per esplorare le funzioni chiave in modo rapido." },
+            
+            // NUOVI STEP INSERITI QUI (In ordine di discesa)
+            { type: "element", text: "Spedizioni (Ship)", title: "Spedizioni Blindate", desc: "Spedizioni sicure, veloci e 100% anonime. Ricevi i tuoi ordini ovunque senza lasciare tracce." },
+            { type: "element", text: "Consegne a Mano", title: "Incontri Riservati", desc: "Scambio diretto sul posto. Incontri sicuri nelle zone prestabilite per chi preferisce il massimo della discrezione." },
+            
+            // STEP GIA' ESISTENTI
             { type: "element", text: "Servizi Dedicati", title: "Servizi Automatizzati", desc: "Servizi automatizzati, offerti e usufruibili in totale autonomia e sicurezza." },
             { type: "element", text: "I LAVORI", title: "Il Repertorio", desc: "Seleziona I Lavori per poter vedere e consultare tutto il repertorio del Caveau." },
             { type: "element", text: "FIDUCIA", title: "Clienti di Fiducia", desc: "Trattamenti riservati ai clienti di fiducia, inclusi sconti, bonus e privilegi esclusivi." },
+            
+            // NUOVO STEP AGGIUNTO
+            { type: "element", text: "MAGGIORI INFORMAZIONI", title: "Le Regole del Gioco", desc: "Espandi questa sezione per scoprire tutti i dettagli sul nostro modus operandi, regole e garanzie." },
+            
+            // CONTINUAZIONE
             { type: "element", text: "Tutti", title: "Le Categorie", desc: "Scorri questa barra in orizzontale per filtrare all'istante l'intero archivio del market." },
             { type: "element", sel: ".lucide-shopping-cart", title: "Pagamenti Sicuri", desc: "Checkout 100% anonimo. Pagamenti sicuri, criptati e nessuna traccia delle tue transazioni." },
             { type: "element", sel: ".lucide-menu", title: "Menu Generale", desc: "Oltre tutte le opzioni base trovi il tuo ID, i tuoi privilegi, lo stato dei tuoi ordini, e i contatti di assistenza compreso il canale feedback con le recensioni di chi ha già acquistato." },
@@ -5500,6 +5524,7 @@
             }
             if(s.text) {
                 var searchTest = s.text.toUpperCase();
+                
                 if (searchTest === "TUTTI") {
                     var categoryButtons = document.querySelectorAll('.overflow-x-auto button, nav.flex.space-x-2 button');
                     for (var k=0; k<categoryButtons.length; k++) {
@@ -5508,6 +5533,7 @@
                         }
                     }
                 }
+                
                 var btns = document.querySelectorAll('button, a');
                 for(var i=0; i<btns.length; i++) {
                     if(btns[i].innerText && btns[i].innerText.toUpperCase().includes(searchTest) && btns[i].getBoundingClientRect().width > 0) return btns[i];
@@ -5549,6 +5575,7 @@
             if(currentTarget) {
                 card.classList.remove('center-mode');
                 var r = currentTarget.getBoundingClientRect();
+                
                 if(r.top < window.innerHeight / 2) {
                     card.style.top = 'auto';
                     card.style.bottom = '80px';
@@ -5568,7 +5595,7 @@
             isTourActive = false;
             wrap.style.opacity = '0'; 
             skip.style.opacity = '0';
-            localStorage.setItem('falsario_tour_finale_definitivo', 'true');
+            localStorage.setItem('falsario_tour_finale_v14', 'true');
             setTimeout(function(){ wrap.remove(); skip.remove(); style.remove(); }, 500);
         }
 
@@ -5584,12 +5611,17 @@
 
             setTimeout(function() {
                 if(cur >= steps.length) return closeTour();
+                
                 card.style.transition = 'none';
                 render();
+                
                 void card.offsetWidth;
+
                 card.style.transition = '';
                 card.classList.add('active');
+                
                 if (currentTarget) spot.style.opacity = '1'; 
+                
                 setTimeout(function(){ isFading = false; }, 400); 
             }, 300); 
         });
@@ -5600,12 +5632,9 @@
             window.scrollTo({top:0, behavior:'auto'});
             wrap.style.opacity = '1'; 
             render(); 
+            
             setTimeout(function() { card.classList.add('active'); }, 100);
             trackingLoop(); 
         }, 800);
     })();
     </script>
-</body>
-</html>
-
-
