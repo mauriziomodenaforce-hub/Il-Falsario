@@ -5638,3 +5638,63 @@
         }, 800);
     })();
     </script>
+        <!-- ======================================================= -->
+    <!-- FIX: TASTO "I LAVORI" PUNTATO SU "TUTTI"                -->
+    <!-- ======================================================= -->
+    <script>
+    document.addEventListener("DOMContentLoaded", function() {
+        // Diamo un attimo di tempo al DOM per caricare bene tutti i bottoni
+        setTimeout(function() {
+            var btns = document.querySelectorAll('button, a');
+            var lavoriBtn = null;
+            
+            // 1. Troviamo il tasto "I LAVORI" ignorando le icone
+            for(var i = 0; i < btns.length; i++) {
+                if(btns[i].innerText && btns[i].innerText.toUpperCase().includes("I LAVORI")) {
+                    lavoriBtn = btns[i];
+                    break;
+                }
+            }
+
+            if(lavoriBtn) {
+                // 2. Disattiviamo il vecchio salto "a caso"
+                lavoriBtn.removeAttribute('onclick');
+                
+                // 3. Assegniamo la nuova rotta chirurgica
+                lavoriBtn.onclick = function(e) {
+                    e.preventDefault(); 
+                    e.stopPropagation();
+                    
+                    var catBtns = document.querySelectorAll('button');
+                    var tuttiBtn = null;
+                    
+                    // Cerchiamo esattamente il tasto "Tutti"
+                    for(var j = 0; j < catBtns.length; j++) {
+                        if(catBtns[j].innerText && catBtns[j].innerText.trim().toUpperCase() === "TUTTI") {
+                            tuttiBtn = catBtns[j];
+                            break;
+                        }
+                    }
+
+                    if(tuttiBtn) {
+                        // Simula il click per resettare i filtri sul catalogo intero
+                        tuttiBtn.click();
+                        
+                        // Scivola fluidamente centrando la barra delle categorie
+                        tuttiBtn.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    } else {
+                        // Fallback di sicurezza: se non trova il tasto "Tutti", cerca la scritta "Archivio File"
+                        var headers = document.querySelectorAll('h2, h3, h4, span, div');
+                        for(var k=0; k<headers.length; k++){
+                            if(headers[k].innerText && headers[k].innerText.toUpperCase().includes("ARCHIVIO FILE")){
+                                headers[k].scrollIntoView({ behavior: 'smooth', block: 'center' });
+                                break;
+                            }
+                        }
+                    }
+                };
+            }
+        }, 800);
+    });
+    </script>
+
