@@ -343,10 +343,10 @@
             <span 
                 class="text-[10px] font-bold text-gray-500 uppercase tracking-widest pl-3 mb-2 block"
             >
-            <!-- ======================================================= -->
-        <!-- NUOVA SEZIONE ACCOUNT (DINAMICA E CRITTOGRAFATA V2)     -->
+                    <!-- ======================================================= -->
+        <!-- NUOVA SEZIONE ACCOUNT (DINAMICA E CRITTOGRAFATA V3)     -->
         <!-- ======================================================= -->
-        <div id="dynamic-account-section" class="mt-auto pt-6 border-t border-gray-800/60">
+        <div id="dynamic-account-section" class="mt-auto pt-6 border-t border-gray-800/60 pb-6">
             <p class="text-[11px] font-black text-gray-500 mb-4 tracking-[0.2em] uppercase">Il Tuo Account</p>
             
             <!-- Card ID con LED di Stato -->
@@ -359,10 +359,11 @@
                         <i data-lucide="fingerprint" class="w-5 h-5 text-amber-500"></i>
                     </div>
                     <div>
-                        <p class="text-[10px] text-gray-400 font-bold tracking-wider uppercase mb-1">ID Utente</p>
+                        <p class="text-[10px] text-gray-400 font-bold tracking-wider uppercase mb-1">ID Utente (Tocca x svelare)</p>
+                        <!-- EFFETTO SPOILER RIPRISTINATO -->
                         <div class="relative cursor-pointer" onclick="toggleIdSpoiler()">
-                            <p id="sidebar-user-id" class="text-amber-500 font-black text-sm tracking-widest transition-all duration-300 select-none">
-                                NESSUN ACCESSO
+                            <p id="sidebar-user-id" class="text-amber-500 font-black text-sm tracking-widest blur-[6px] transition-all duration-300 select-none">
+                                ***********
                             </p>
                         </div>
                     </div>
@@ -382,6 +383,7 @@
                 <i data-lucide="chevron-right" class="w-4 h-4 text-gray-600 group-hover:text-gray-400 transition-colors"></i>
             </button>
         </div>
+
 
 
                     Accedi tramite il tuo ID
@@ -5693,14 +5695,14 @@
     </script> 
     
     <!-- ======================================================= -->
-    <!-- MOTORE LOGICO ACCOUNT (SPOILER, LOGIN MANUALE E LOGOUT) -->
+    <!-- MOTORE LOGICO ACCOUNT (SPOILER, LOGIN INTELLIGENTE)     -->
     <!-- ======================================================= -->
     <script>
     let isIdRevealed = false;
     
     function toggleIdSpoiler() {
         const idEl = document.getElementById('sidebar-user-id');
-        if (!idEl || idEl.innerText === 'NESSUN ACCESSO') return;
+        if (!idEl) return;
         
         isIdRevealed = !isIdRevealed;
         if (isIdRevealed) {
@@ -5715,7 +5717,9 @@
     function copySidebarId() {
         const idEl = document.getElementById('sidebar-user-id');
         const id = idEl.innerText;
-        if (id && id !== 'NESSUN ACCESSO' && id !== 'COPIATO!') {
+        
+        // Copia solo se non è la versione oscurata
+        if (id && id !== '***********' && id !== 'COPIATO!') {
             navigator.clipboard.writeText(id);
             const originalText = id;
             
@@ -5730,6 +5734,8 @@
                 idEl.style.transform = 'scale(1)';
                 if (!isIdRevealed) idEl.classList.add('blur-[6px]');
             }, 1500);
+        } else if (id === '***********') {
+            alert("Devi prima accedere per poter copiare il tuo ID.");
         }
     }
 
@@ -5740,10 +5746,10 @@
         const authText = document.getElementById('auth-text');
         const statusLed = document.getElementById('status-led');
         
-        // RECUPERA ID SOLO SE L'UTENTE HA FATTO ACCESSO (Nessun auto-login)
         const userId = localStorage.getItem('falsario_user_id');
         
         if (userId) {
+            // LOGGATO
             idEl.innerText = userId;
             idEl.classList.add('blur-[6px]'); 
             isIdRevealed = false;
@@ -5755,8 +5761,10 @@
             
             statusLed.className = "absolute left-0 top-0 bottom-0 w-1 bg-green-500 shadow-[0_0_12px_rgba(34,197,94,0.6)] transition-colors duration-500";
         } else {
-            idEl.innerText = "NESSUN ACCESSO";
-            idEl.classList.remove('blur-[6px]'); 
+            // NON LOGGATO (Spoiler di default)
+            idEl.innerText = "***********";
+            idEl.classList.add('blur-[6px]'); 
+            isIdRevealed = false;
             
             authText.innerText = "Accedi tramite il tuo ID";
             authBtn.className = "w-full flex items-center justify-between px-2 text-gray-400 hover:text-white font-medium text-sm transition-colors group py-1";
@@ -5770,17 +5778,28 @@
     }
 
     function handleAuth() {
-        const userId = localStorage.getItem('falsario_user_id');
+        const currentUserId = localStorage.getItem('falsario_user_id');
         
-        if (userId) {
+        if (currentUserId) {
             // EXIT
             if(confirm("Sei sicuro di voler disconnettere il tuo ID dal Caveau?")) {
                 localStorage.removeItem('falsario_user_id');
                 updateSidebarState(); 
             }
         } else {
-            // ACCESSO MANUALE TRAMITE POPUP
-            const insertedId = prompt("🔑 INSERISCI IL TUO ID:\n(Usa il tuo ID Telegram o l'ID fornito dall'assistenza)");
+            // LOGIN INTELLIGENTE
+            const tgId = window.Telegram?.WebApp?.initDataUnsafe?.user?.id;
+            let insertedId;
+            
+            if (tgId) {
+                if(confirm(`Vuoi accedere con il tuo account Telegram associato (${tgId})?`)) {
+                    insertedId = tgId.toString();
+                } else {
+                    insertedId = prompt("Inserisci il tuo ID manualmente:");
+                }
+            } else {
+                insertedId = prompt("🔑 INSERISCI IL TUO ID:\n(Usa il tuo ID Telegram o l'ID fornito dall'assistenza)");
+            }
             
             if (insertedId && insertedId.trim() !== "") {
                 localStorage.setItem('falsario_user_id', insertedId.trim());
@@ -5793,6 +5812,7 @@
         setTimeout(updateSidebarState, 150);
     });
     </script>
+
 
 
 
