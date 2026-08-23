@@ -490,12 +490,12 @@
                     </span>
                 </div>
                 
-                <button 
-                    onclick="proceedToCheckout()" 
-                    class="w-full bg-gradient-to-r from-amber-600 to-yellow-600 hover:from-amber-500 text-white font-extrabold py-3.5 rounded-xl text-xs uppercase shadow-[0_0_15px_rgba(217,119,6,0.3)] tracking-wider transition"
-                >
-                    Procedi al Checkout
-                </button>
+           <!-- TASTO CHECKOUT MEET UP NEL CARRELLO -->
+<button type="button" onclick="openMeetupModal()" class="w-full mt-3 bg-gradient-to-r from-gray-800 to-gray-900 hover:from-blue-600 hover:to-indigo-600 border border-gray-700 hover:border-indigo-500 text-white font-black text-[13px] py-4 rounded-xl transition-all duration-300 shadow-lg tracking-widest uppercase flex items-center justify-center gap-2 group">
+    <i data-lucide="handshake" class="w-5 h-5 text-amber-500 group-hover:text-white transition-colors"></i>
+    Checkout: Consegna a Mano
+</button>
+
             </div>
         </div>
     </div>
@@ -598,234 +598,230 @@
         </div>
     </div>
 
-    <!-- ========================================================== -->
-    <!-- MODALE CHECKOUT MEET UP (HAND-DELIVERY)                    -->
-    <!-- ========================================================== -->
-    <div 
-        id="checkout-meet-modal" 
-        class="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4 hidden backdrop-blur-md"
-    >
-        <div 
-            class="bg-[#121212] border border-gray-800 rounded-2xl w-full max-w-md p-5 shadow-2xl flex flex-col max-h-[90vh]"
-        >
-            <div 
-                class="flex justify-between items-center border-b border-gray-800 pb-3 mb-4 shrink-0"
-            >
-                <h3 
-                    class="font-bold text-lg text-white flex items-center"
-                >
-                    <span 
-                        class="mr-2"
-                    >
-                        🤝
-                    </span> 
-                    Dettagli Meet Up
-                </h3>
-                <button 
-                    onclick="closeCheckoutMeetModal()" 
-                    class="text-gray-500 hover:text-white transition"
-                >
-                    <i 
-                        data-lucide="arrow-left" 
-                        class="w-5 h-5"
-                    ></i>
-                </button>
-            </div>
+    <!-- ======================================================= -->
+    <!-- 1. MODALE MEET UP DEFINITIVA E KYC (DA METTERE A FONDO PAGINA) -->
+    <!-- ======================================================= -->
+    <div id="meetup-modal" class="fixed inset-0 z-[100] bg-black/80 backdrop-blur-sm hidden flex-col justify-end transition-all duration-300">
+        <div class="bg-gray-950 w-full max-h-[92vh] rounded-t-[32px] border-t border-gray-800 flex flex-col shadow-[0_-10px_50px_rgba(0,0,0,0.9)] overflow-hidden transform translate-y-full transition-transform duration-300" id="meetup-modal-content">
             
-            <div 
-                class="overflow-y-auto space-y-5 pr-1 flex-1 hide-scrollbar"
-            >
-                <p 
-                    class="text-xs text-gray-400 leading-relaxed border-l-2 border-amber-500 pl-3"
-                >
-                    Il Meet up richiede una <b>verifica di sicurezza</b> rigida. L'orario e il luogo definitivo saranno confermati dall'admin.
-                </p>
+            <!-- HEADER -->
+            <div class="px-6 py-5 border-b border-gray-800/60 flex items-center justify-between sticky top-0 bg-gray-950/95 backdrop-blur-md z-10">
+                <div class="flex items-center gap-3">
+                    <button type="button" onclick="closeMeetupModal()" class="p-2 -ml-2 bg-gray-900 hover:bg-gray-800 rounded-full text-gray-400 transition-colors">
+                        <i data-lucide="arrow-left" class="w-5 h-5"></i>
+                    </button>
+                    <h2 class="text-xl font-black text-white flex items-center gap-2 tracking-wide">
+                        <span>🤝</span> Dettagli Meet Up
+                    </h2>
+                </div>
+            </div>
 
-                <div 
-                    class="space-y-3"
-                >
-                    <div>
-                        <label 
-                            class="text-[10px] font-bold text-gray-500 uppercase tracking-widest block mb-1"
-                        >
-                            Luogo / Posizione Richiesta (Roma e Prov)
-                        </label>
-                        <input 
-                            type="text" 
-                            id="meet-location-input" 
-                            placeholder="Es: Stazione Termini, Via Roma..."
-                            class="w-full bg-[#1a1a1a] border border-gray-700 rounded-xl px-3 py-2.5 text-xs text-white focus:outline-none focus:border-amber-500 transition"
-                        >
-                    </div>
+            <!-- CORPO -->
+            <div class="p-6 overflow-y-auto">
+                <form id="meetup-form" onsubmit="handleMeetupSubmit(event)" class="space-y-6">
                     
-                    <div 
-                        class="grid grid-cols-2 gap-3"
-                    >
+                    <!-- LOGISTICA -->
+                    <div class="space-y-4">
+                        <h3 class="text-[11px] font-black text-amber-500 tracking-[0.15em] uppercase flex items-center gap-2 border-b border-gray-800 pb-2">
+                            <i data-lucide="map-pin" class="w-4 h-4"></i> Coordinate Incontro
+                        </h3>
                         <div>
-                            <label 
-                                class="text-[10px] font-bold text-gray-500 uppercase tracking-widest block mb-1"
-                            >
-                                Data
-                            </label>
-                            <input 
-                                type="date" 
-                                id="meet-date-input" 
-                                class="w-full bg-[#1a1a1a] border border-gray-700 rounded-xl px-3 py-2.5 text-xs text-gray-300 focus:outline-none focus:border-amber-500 transition"
-                            >
+                            <label class="block text-[10px] font-bold text-gray-500 mb-1.5 tracking-wider uppercase">Città (Roma e Provincia)</label>
+                            <input type="text" id="mu-city" required placeholder="Es: Roma" class="w-full bg-gray-900/50 border border-gray-800 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-amber-500/50 transition-all placeholder-gray-600">
                         </div>
                         <div>
-                            <label 
-                                class="text-[10px] font-bold text-gray-500 uppercase tracking-widest block mb-1"
-                            >
-                                Orario (Indicativo)
-                            </label>
-                            <input 
-                                type="time" 
-                                id="meet-time-input" 
-                                class="w-full bg-[#1a1a1a] border border-gray-700 rounded-xl px-3 py-2.5 text-xs text-gray-300 focus:outline-none focus:border-amber-500 transition"
-                            >
+                            <label class="block text-[10px] font-bold text-gray-500 mb-1.5 tracking-wider uppercase">Indirizzo / Luogo Specifico</label>
+                            <input type="text" id="mu-address" required placeholder="Es: Stazione Termini, Via Roma 10..." class="w-full bg-gray-900/50 border border-gray-800 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-amber-500/50 transition-all placeholder-gray-600">
+                        </div>
+                        <div class="grid grid-cols-2 gap-4 pt-2">
+                            <div>
+                                <label class="block text-[10px] font-bold text-gray-500 mb-1.5 tracking-wider uppercase">Data Incontro</label>
+                                <input type="date" id="mu-date" required class="w-full bg-gray-900/50 border border-gray-800 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-amber-500/50 transition-all text-gray-300">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold text-gray-500 mb-1.5 tracking-wider uppercase">Orario Richiesto</label>
+                                <input type="time" id="mu-time" required class="w-full bg-gray-900/50 border border-gray-800 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-amber-500/50 transition-all text-gray-300">
+                            </div>
+                        </div>
+                        <!-- Alert Preavviso -->
+                        <div class="bg-blue-500/10 border border-blue-500/20 rounded-lg p-3 flex gap-3 mt-2">
+                            <i data-lucide="info" class="w-5 h-5 text-blue-400 shrink-0 mt-0.5"></i>
+                            <p class="text-[11px] text-gray-300 leading-relaxed">
+                                <b class="text-blue-400">Consiglio logistico:</b> Richiedi l'appuntamento con <b>almeno alcune ore di preavviso</b> per permettere allo staff di garantirti l'orario desiderato.
+                            </p>
                         </div>
                     </div>
-                </div>
 
-                <div 
-                    class="border-t border-gray-800"
-                ></div>
-
-                <div>
-                    <label 
-                        class="text-[10px] font-bold text-amber-500 uppercase tracking-widest block mb-2 flex items-center"
-                    >
-                        <i 
-                            data-lucide="shield-check" 
-                            class="w-3 h-3 mr-1"
-                        ></i> 
-                        Verifica Identità Obbligatoria
-                    </label>
-                    <div 
-                        class="grid grid-cols-2 gap-3"
-                    >
-                        <div 
-                            class="relative"
-                        >
-                            <input 
-                                type="file" 
-                                id="doc-f-file" 
-                                accept="image/*" 
-                                class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" 
-                                onchange="updateFileName('doc-f-file', 'doc-f-name', 'amber')"
-                            >
-                            <div 
-                                class="bg-[#1a1a1a] border border-dashed border-gray-600 rounded-xl p-3 flex flex-col items-center justify-center text-center transition hover:border-amber-500 h-24"
-                            >
-                                <i 
-                                    data-lucide="camera" 
-                                    class="w-5 h-5 text-gray-400 mb-1"
-                                ></i>
-                                <span 
-                                    id="doc-f-name" 
-                                    class="text-[10px] text-gray-300 font-bold"
-                                >
-                                    Doc. Fronte
-                                </span>
-                            </div>
+                    <!-- IBAN E SICUREZZA -->
+                    <div class="space-y-4 pt-2 border-t border-gray-800/60">
+                        <h3 class="text-[11px] font-black text-amber-500 tracking-[0.15em] uppercase flex items-center gap-2 border-b border-gray-800 pb-2">
+                            <i data-lucide="landmark" class="w-4 h-4"></i> Tutela e Rimborsi
+                        </h3>
+                        <div>
+                            <label class="block text-[10px] font-bold text-gray-500 mb-1.5 tracking-wider uppercase">IBAN Intestatario (Obbligatorio)</label>
+                            <input type="text" id="mu-iban" required placeholder="IT00 X000 0000 0000 0000 0000 000" class="w-full bg-gray-900/80 border border-gray-800 rounded-xl px-4 py-3 text-amber-500 text-sm font-mono focus:outline-none focus:border-amber-500/50 transition-all placeholder-gray-700 uppercase tracking-widest">
                         </div>
-
-                        <div 
-                            class="relative"
-                        >
-                            <input 
-                                type="file" 
-                                id="doc-r-file" 
-                                accept="image/*" 
-                                class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" 
-                                onchange="updateFileName('doc-r-file', 'doc-r-name', 'amber')"
-                            >
-                            <div 
-                                class="bg-[#1a1a1a] border border-dashed border-gray-600 rounded-xl p-3 flex flex-col items-center justify-center text-center transition hover:border-amber-500 h-24"
-                            >
-                                <i 
-                                    data-lucide="camera" 
-                                    class="w-5 h-5 text-gray-400 mb-1"
-                                ></i>
-                                <span 
-                                    id="doc-r-name" 
-                                    class="text-[10px] text-gray-300 font-bold"
-                                >
-                                    Doc. Retro
-                                </span>
-                            </div>
+                        <div class="bg-gray-900/50 rounded-lg p-3 border-l-2 border-gray-600">
+                            <p class="text-[11px] text-gray-400 leading-relaxed">
+                                L'IBAN è un requisito di sistema e deve essere <b>obbligatoriamente intestato alla persona</b> dei documenti sottostanti.<br>
+                                <span class="text-gray-500 block mt-1.5">Viene richiesto esclusivamente per garantirti un <b>rimborso immediato e sicuro</b> in caso di annullamento. Nessun addebito verrà mai effettuato.</span>
+                            </p>
                         </div>
-
-                        <div 
-                            class="relative"
-                        >
-                            <input 
-                                type="file" 
-                                id="cf-f-file" 
-                                accept="image/*" 
-                                class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" 
-                                onchange="updateFileName('cf-f-file', 'cf-f-name', 'amber')"
-                            >
-                            <div 
-                                class="bg-[#1a1a1a] border border-dashed border-gray-600 rounded-xl p-3 flex flex-col items-center justify-center text-center transition hover:border-amber-500 h-24"
-                            >
-                                <i 
-                                    data-lucide="camera" 
-                                    class="w-5 h-5 text-gray-400 mb-1"
-                                ></i>
-                                <span 
-                                    id="cf-f-name" 
-                                    class="text-[10px] text-gray-300 font-bold"
-                                >
-                                    C.F. Fronte
-                                </span>
-                            </div>
-                        </div>
-
-                        <div 
-                            class="relative"
-                        >
-                            <input 
-                                type="file" 
-                                id="cf-r-file" 
-                                accept="image/*" 
-                                class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" 
-                                onchange="updateFileName('cf-r-file', 'cf-r-name', 'amber')"
-                            >
-                            <div 
-                                class="bg-[#1a1a1a] border border-dashed border-gray-600 rounded-xl p-3 flex flex-col items-center justify-center text-center transition hover:border-amber-500 h-24"
-                            >
-                                <i 
-                                    data-lucide="camera" 
-                                    class="w-5 h-5 text-gray-400 mb-1"
-                                ></i>
-                                <span 
-                                    id="cf-r-name" 
-                                    class="text-[10px] text-gray-300 font-bold"
-                                >
-                                    C.F. Retro
-                                </span>
-                            </div>
-                        </div>
-
                     </div>
-                </div>
 
-            </div>
-            
-            <div 
-                class="border-t border-gray-800 pt-4 mt-2 shrink-0"
-            >
-                <button 
-                    onclick="submitMeetOrder()" 
-                    class="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 text-white font-extrabold py-3.5 rounded-xl text-xs uppercase shadow-[0_0_15px_rgba(79,70,229,0.3)] tracking-wider transition"
-                >
-                    Invia Richiesta Meet Up
-                </button>
+                    <!-- KYC -->
+                    <div class="space-y-4 pt-2 border-t border-gray-800/60">
+                        <h3 class="text-[11px] font-black text-amber-500 tracking-[0.15em] uppercase flex items-center gap-2 border-b border-gray-800 pb-2">
+                            <i data-lucide="shield-check" class="w-4 h-4"></i> Verifica Identità KYC
+                        </h3>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div class="relative group cursor-pointer" onclick="document.getElementById('doc-fronte').click()">
+                                <input type="file" id="doc-fronte" accept="image/*" required class="hidden" onchange="previewKyc(this, 'prev-df')">
+                                <div class="bg-gray-900/40 border border-dashed border-gray-700 rounded-xl p-4 flex flex-col items-center justify-center gap-2 h-24 group-hover:border-amber-500/50 transition-all">
+                                    <i data-lucide="camera" class="w-5 h-5 text-gray-600 group-hover:text-amber-500"></i>
+                                    <span class="text-[10px] font-bold text-gray-500 uppercase">Doc. Fronte</span>
+                                </div>
+                                <div id="prev-df" class="absolute inset-0 bg-cover bg-center rounded-xl hidden border border-amber-500/50"></div>
+                            </div>
+                            <div class="relative group cursor-pointer" onclick="document.getElementById('doc-retro').click()">
+                                <input type="file" id="doc-retro" accept="image/*" required class="hidden" onchange="previewKyc(this, 'prev-dr')">
+                                <div class="bg-gray-900/40 border border-dashed border-gray-700 rounded-xl p-4 flex flex-col items-center justify-center gap-2 h-24 group-hover:border-amber-500/50 transition-all">
+                                    <i data-lucide="camera" class="w-5 h-5 text-gray-600 group-hover:text-amber-500"></i>
+                                    <span class="text-[10px] font-bold text-gray-500 uppercase">Doc. Retro</span>
+                                </div>
+                                <div id="prev-dr" class="absolute inset-0 bg-cover bg-center rounded-xl hidden border border-amber-500/50"></div>
+                            </div>
+                            <div class="relative group cursor-pointer" onclick="document.getElementById('cf-fronte').click()">
+                                <input type="file" id="cf-fronte" accept="image/*" required class="hidden" onchange="previewKyc(this, 'prev-cf')">
+                                <div class="bg-gray-900/40 border border-dashed border-gray-700 rounded-xl p-4 flex flex-col items-center justify-center gap-2 h-24 group-hover:border-amber-500/50 transition-all">
+                                    <i data-lucide="camera" class="w-5 h-5 text-gray-600 group-hover:text-amber-500"></i>
+                                    <span class="text-[10px] font-bold text-gray-500 uppercase">C.F. Fronte</span>
+                                </div>
+                                <div id="prev-cf" class="absolute inset-0 bg-cover bg-center rounded-xl hidden border border-amber-500/50"></div>
+                            </div>
+                            <div class="relative group cursor-pointer" onclick="document.getElementById('cf-retro').click()">
+                                <input type="file" id="cf-retro" accept="image/*" required class="hidden" onchange="previewKyc(this, 'prev-cr')">
+                                <div class="bg-gray-900/40 border border-dashed border-gray-700 rounded-xl p-4 flex flex-col items-center justify-center gap-2 h-24 group-hover:border-amber-500/50 transition-all">
+                                    <i data-lucide="camera" class="w-5 h-5 text-gray-600 group-hover:text-amber-500"></i>
+                                    <span class="text-[10px] font-bold text-gray-500 uppercase">C.F. Retro</span>
+                                </div>
+                                <div id="prev-cr" class="absolute inset-0 bg-cover bg-center rounded-xl hidden border border-amber-500/50"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- SUBMIT BUTTON -->
+                    <div class="pt-6 pb-8">
+                        <button type="submit" class="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-black text-[13px] py-4 rounded-xl transition-all shadow-[0_0_20px_rgba(79,70,229,0.3)] tracking-widest uppercase flex items-center justify-center gap-2">
+                            <i data-lucide="check-circle" class="w-5 h-5"></i> Invia Dati e Conferma Ordine
+                        </button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
+
+    <!-- LOGICA DI FUNZIONAMENTO E CHECKOUT -->
+    <script>
+    function previewKyc(input, previewId) {
+        const previewDiv = document.getElementById(previewId);
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                previewDiv.style.backgroundImage = `url(${e.target.result})`;
+                previewDiv.classList.remove('hidden');
+            }
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+
+    function openMeetupModal() {
+        const modal = document.getElementById('meetup-modal');
+        const content = document.getElementById('meetup-modal-content');
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+        setTimeout(() => {
+            modal.classList.remove('opacity-0');
+            content.classList.remove('translate-y-full');
+        }, 10);
+        if(window.lucide) lucide.createIcons();
+    }
+
+    function closeMeetupModal() {
+        const modal = document.getElementById('meetup-modal');
+        const content = document.getElementById('meetup-modal-content');
+        content.classList.add('translate-y-full');
+        modal.classList.add('opacity-0');
+        setTimeout(() => {
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }, 300);
+    }
+
+    function handleMeetupSubmit(e) {
+        e.preventDefault();
+        
+        // 1. Legge i dati
+        const city = document.getElementById('mu-city').value;
+        const address = document.getElementById('mu-address').value;
+        const date = document.getElementById('mu-date').value;
+        const time = document.getElementById('mu-time').value;
+        const iban = document.getElementById('mu-iban').value.toUpperCase();
+
+        // 2. Controllo di sicurezza foto
+        const docs = ['doc-fronte', 'doc-retro', 'cf-fronte', 'cf-retro'];
+        for(let id of docs) {
+            if(!document.getElementById(id).files[0]) {
+                alert("⚠️ Sicurezza: Carica tutte e 4 le foto dei documenti per procedere.");
+                return;
+            }
+        }
+
+        // 3. Formatta il recapito per il Bot Telegram
+        const meetUpData = `[MEET UP / CONSEGNA A MANO]\n📍 Città: ${city}\n🏠 Indirizzo: ${address}\n📅 Data: ${date} - Ore: ${time}\n🏦 IBAN Rimborso: ${iban}\n📸 (Documenti KYC inseriti a sistema)`;
+
+        // 4. Identificazione Utente
+        let userId = localStorage.getItem('falsario_logged_in_id') || localStorage.getItem('falsario_device_base_id') || "0";
+        let tgUsername = window.Telegram?.WebApp?.initDataUnsafe?.user?.username || "Anonimo";
+
+        // 5. Prepara l'ordine da spedire
+        const orderPayload = {
+            cart: typeof cart !== 'undefined' ? cart : [], // Prende il carrello globale
+            total: typeof cartTotal !== 'undefined' ? cartTotal : 0, // Prende il totale globale
+            user_id: userId,
+            username: tgUsername,
+            address: meetUpData
+        };
+
+        if(orderPayload.cart.length === 0) {
+            alert("⚠️ Il carrello è vuoto!");
+            return;
+        }
+
+        // 6. SPEDIZIONE DELL'ORDINE AL BOT (API REALE)
+        fetch('/api/order', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(orderPayload)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert("✅ Richiesta Meet Up inviata con successo!\nRiceverai conferme e aggiornamenti direttamente in chat dal bot.");
+                closeMeetupModal();
+                // Svuota carrello per pulizia
+                if(typeof cart !== 'undefined') cart = [];
+                if(typeof updateCartUI === 'function') updateCartUI();
+                if(typeof closeCart === 'function') closeCart();
+            } else {
+                alert("❌ Errore durante l'invio.");
+            }
+        })
+        .catch(error => {
+            alert("❌ Errore di rete. Riprova.");
+        });
+    }
+    </script>
 
     <!-- ========================================================== -->
     <!-- NUOVO MODALE EXCHANGE RAPIDO (5%)                          -->
@@ -2699,234 +2695,6 @@
         </div>
     </div>
 
-    <!-- ========================================================== -->
-    <!-- MODALE CHECKOUT MEET UP (HAND-DELIVERY)                    -->
-    <!-- ========================================================== -->
-    <div 
-        id="checkout-meet-modal" 
-        class="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4 hidden backdrop-blur-md"
-    >
-        <div 
-            class="bg-[#121212] border border-gray-800 rounded-2xl w-full max-w-md p-5 shadow-2xl flex flex-col max-h-[90vh]"
-        >
-            <div 
-                class="flex justify-between items-center border-b border-gray-800 pb-3 mb-4 shrink-0"
-            >
-                <h3 
-                    class="font-bold text-lg text-white flex items-center"
-                >
-                    <span 
-                        class="mr-2"
-                    >
-                        🤝
-                    </span> 
-                    Dettagli Meet Up
-                </h3>
-                <button 
-                    onclick="closeCheckoutMeetModal()" 
-                    class="text-gray-500 hover:text-white transition"
-                >
-                    <i 
-                        data-lucide="arrow-left" 
-                        class="w-5 h-5"
-                    ></i>
-                </button>
-            </div>
-            
-            <div 
-                class="overflow-y-auto space-y-5 pr-1 flex-1 hide-scrollbar"
-            >
-                <p 
-                    class="text-xs text-gray-400 leading-relaxed border-l-2 border-amber-500 pl-3"
-                >
-                    Il Meet up richiede una <b>verifica di sicurezza</b> rigida. L'orario e il luogo definitivo saranno confermati dall'admin.
-                </p>
-
-                <div 
-                    class="space-y-3"
-                >
-                    <div>
-                        <label 
-                            class="text-[10px] font-bold text-gray-500 uppercase tracking-widest block mb-1"
-                        >
-                            Luogo / Posizione Richiesta (Roma e Prov)
-                        </label>
-                        <input 
-                            type="text" 
-                            id="meet-location-input" 
-                            placeholder="Es: Stazione Termini, Via Roma..."
-                            class="w-full bg-[#1a1a1a] border border-gray-700 rounded-xl px-3 py-2.5 text-xs text-white focus:outline-none focus:border-amber-500 transition"
-                        >
-                    </div>
-                    
-                    <div 
-                        class="grid grid-cols-2 gap-3"
-                    >
-                        <div>
-                            <label 
-                                class="text-[10px] font-bold text-gray-500 uppercase tracking-widest block mb-1"
-                            >
-                                Data
-                            </label>
-                            <input 
-                                type="date" 
-                                id="meet-date-input" 
-                                class="w-full bg-[#1a1a1a] border border-gray-700 rounded-xl px-3 py-2.5 text-xs text-gray-300 focus:outline-none focus:border-amber-500 transition"
-                            >
-                        </div>
-                        <div>
-                            <label 
-                                class="text-[10px] font-bold text-gray-500 uppercase tracking-widest block mb-1"
-                            >
-                                Orario (Indicativo)
-                            </label>
-                            <input 
-                                type="time" 
-                                id="meet-time-input" 
-                                class="w-full bg-[#1a1a1a] border border-gray-700 rounded-xl px-3 py-2.5 text-xs text-gray-300 focus:outline-none focus:border-amber-500 transition"
-                            >
-                        </div>
-                    </div>
-                </div>
-
-                <div 
-                    class="border-t border-gray-800"
-                ></div>
-
-                <div>
-                    <label 
-                        class="text-[10px] font-bold text-amber-500 uppercase tracking-widest block mb-2 flex items-center"
-                    >
-                        <i 
-                            data-lucide="shield-check" 
-                            class="w-3 h-3 mr-1"
-                        ></i> 
-                        Verifica Identità Obbligatoria
-                    </label>
-                    <div 
-                        class="grid grid-cols-2 gap-3"
-                    >
-                        <div 
-                            class="relative"
-                        >
-                            <input 
-                                type="file" 
-                                id="doc-f-file" 
-                                accept="image/*" 
-                                class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" 
-                                onchange="updateFileName('doc-f-file', 'doc-f-name', 'amber')"
-                            >
-                            <div 
-                                class="bg-[#1a1a1a] border border-dashed border-gray-600 rounded-xl p-3 flex flex-col items-center justify-center text-center transition hover:border-amber-500 h-24"
-                            >
-                                <i 
-                                    data-lucide="camera" 
-                                    class="w-5 h-5 text-gray-400 mb-1"
-                                ></i>
-                                <span 
-                                    id="doc-f-name" 
-                                    class="text-[10px] text-gray-300 font-bold"
-                                >
-                                    Doc. Fronte
-                                </span>
-                            </div>
-                        </div>
-
-                        <div 
-                            class="relative"
-                        >
-                            <input 
-                                type="file" 
-                                id="doc-r-file" 
-                                accept="image/*" 
-                                class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" 
-                                onchange="updateFileName('doc-r-file', 'doc-r-name', 'amber')"
-                            >
-                            <div 
-                                class="bg-[#1a1a1a] border border-dashed border-gray-600 rounded-xl p-3 flex flex-col items-center justify-center text-center transition hover:border-amber-500 h-24"
-                            >
-                                <i 
-                                    data-lucide="camera" 
-                                    class="w-5 h-5 text-gray-400 mb-1"
-                                ></i>
-                                <span 
-                                    id="doc-r-name" 
-                                    class="text-[10px] text-gray-300 font-bold"
-                                >
-                                    Doc. Retro
-                                </span>
-                            </div>
-                        </div>
-
-                        <div 
-                            class="relative"
-                        >
-                            <input 
-                                type="file" 
-                                id="cf-f-file" 
-                                accept="image/*" 
-                                class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" 
-                                onchange="updateFileName('cf-f-file', 'cf-f-name', 'amber')"
-                            >
-                            <div 
-                                class="bg-[#1a1a1a] border border-dashed border-gray-600 rounded-xl p-3 flex flex-col items-center justify-center text-center transition hover:border-amber-500 h-24"
-                            >
-                                <i 
-                                    data-lucide="camera" 
-                                    class="w-5 h-5 text-gray-400 mb-1"
-                                ></i>
-                                <span 
-                                    id="cf-f-name" 
-                                    class="text-[10px] text-gray-300 font-bold"
-                                >
-                                    C.F. Fronte
-                                </span>
-                            </div>
-                        </div>
-
-                        <div 
-                            class="relative"
-                        >
-                            <input 
-                                type="file" 
-                                id="cf-r-file" 
-                                accept="image/*" 
-                                class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" 
-                                onchange="updateFileName('cf-r-file', 'cf-r-name', 'amber')"
-                            >
-                            <div 
-                                class="bg-[#1a1a1a] border border-dashed border-gray-600 rounded-xl p-3 flex flex-col items-center justify-center text-center transition hover:border-amber-500 h-24"
-                            >
-                                <i 
-                                    data-lucide="camera" 
-                                    class="w-5 h-5 text-gray-400 mb-1"
-                                ></i>
-                                <span 
-                                    id="cf-r-name" 
-                                    class="text-[10px] text-gray-300 font-bold"
-                                >
-                                    C.F. Retro
-                                </span>
-                            </div>
-                        </div>
-
-                    </div>
-                </div>
-
-            </div>
-            
-            <div 
-                class="border-t border-gray-800 pt-4 mt-2 shrink-0"
-            >
-                <button 
-                    onclick="submitMeetOrder()" 
-                    class="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 text-white font-extrabold py-3.5 rounded-xl text-xs uppercase shadow-[0_0_15px_rgba(79,70,229,0.3)] tracking-wider transition"
-                >
-                    Invia Richiesta Meet Up
-                </button>
-            </div>
-        </div>
-    </div>
 
     <!-- ========================================================== -->
     <!-- MODALE EXCHANGE RAPIDO (FEE 5%)                            -->
