@@ -598,8 +598,8 @@
         </div>
     </div>
 
-       <!-- ======================================================= -->
-    <!-- 1. MODALE MEET UP DEFINITIVA E KYC (AGGIORNATA ROMA) -->
+      <!-- ======================================================= -->
+    <!-- 1. MODALE MEET UP DEFINITIVA E KYC (CON UPSALE PRIORITY) -->
     <!-- ======================================================= -->
     <div id="meetup-modal" class="fixed inset-0 z-[100] bg-black/80 backdrop-blur-sm hidden flex-col justify-end transition-all duration-300">
         <div class="bg-gray-950 w-full max-h-[92vh] rounded-t-[32px] border-t border-gray-800 flex flex-col shadow-[0_-10px_50px_rgba(0,0,0,0.9)] overflow-hidden transform translate-y-full transition-transform duration-300" id="meetup-modal-content">
@@ -643,13 +643,37 @@
                                 <input type="time" id="mu-time" required class="w-full bg-gray-900/50 border border-gray-800 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-amber-500/50 transition-all text-gray-300">
                             </div>
                         </div>
-                        <!-- Alert Preavviso -->
-                        <div class="bg-blue-500/10 border border-blue-500/20 rounded-lg p-3 flex gap-3 mt-2">
-                            <i data-lucide="info" class="w-5 h-5 text-blue-400 shrink-0 mt-0.5"></i>
-                            <p class="text-[11px] text-gray-300 leading-relaxed">
-                                <b class="text-blue-400">Consiglio logistico:</b> Richiedi l'appuntamento con <b>almeno alcune ore di preavviso</b> per permettere allo staff di garantirti l'orario desiderato.
-                            </p>
+                    </div>
+
+                    <!-- METODO DI PAGAMENTO E UPSALE PRIORITY -->
+                    <div class="space-y-4 pt-2 border-t border-gray-800/60">
+                        <h3 class="text-[11px] font-black text-amber-500 tracking-[0.15em] uppercase flex items-center gap-2 border-b border-gray-800 pb-2">
+                            <i data-lucide="wallet" class="w-4 h-4"></i> Preferenze di Saldo
+                        </h3>
+                        <div>
+                            <label class="block text-[10px] font-bold text-gray-500 mb-1.5 tracking-wider uppercase">Metodo di Pagamento Desiderato</label>
+                            <select id="mu-payment" required class="w-full bg-gray-900/50 border border-gray-800 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-amber-500/50 transition-all appearance-none">
+                                <option value="" disabled selected>Seleziona un'opzione...</option>
+                                <option value="Criptovalute (Crypto)">Criptovalute (Bitcoin, USDT, ecc.)</option>
+                                <option value="Bonifico / Carte">Bonifico Istantaneo / Carte / Apple Pay</option>
+                                <option value="Contanti (Cash al Meet Up)">Contanti (Cash al momento dell'incontro)</option>
+                            </select>
                         </div>
+                        
+                        <!-- Riquadro Persuasivo Priority -->
+                        <label class="relative flex items-start gap-3 p-4 bg-gradient-to-br from-amber-500/10 to-transparent border border-amber-500/30 rounded-xl cursor-pointer group hover:border-amber-500/60 transition-all mt-3">
+                            <div class="flex items-center h-5 mt-1">
+                                <input type="checkbox" id="mu-priority" class="w-4 h-4 rounded border-gray-700 bg-gray-900 text-amber-500 focus:ring-amber-500 focus:ring-offset-gray-900">
+                            </div>
+                            <div class="flex-1">
+                                <h4 class="text-[12px] font-bold text-amber-500 uppercase tracking-wider flex items-center gap-2">
+                                    <i data-lucide="star" class="w-3.5 h-3.5 fill-amber-500"></i> Fast-Track Priority
+                                </h4>
+                                <p class="text-[11px] text-gray-300 mt-1 leading-relaxed">
+                                    Desidero finalizzare il pagamento anticipatamente. Opzione facoltativa ma caldamente suggerita: garantisce l'<b>elaborazione prioritaria</b> della pratica, facendoti scalare istantaneamente la lista d'attesa per assicurarti il primo appuntamento disponibile.
+                                </p>
+                            </div>
+                        </label>
                     </div>
 
                     <!-- IBAN E SICUREZZA -->
@@ -664,7 +688,7 @@
                         <div class="bg-gray-900/50 rounded-lg p-3 border-l-2 border-gray-600">
                             <p class="text-[11px] text-gray-400 leading-relaxed">
                                 L'IBAN è un requisito di sistema e deve essere <b>obbligatoriamente intestato alla persona</b> dei documenti sottostanti.<br>
-                                <span class="text-gray-500 block mt-1.5">Viene richiesto esclusivamente per garantirti un <b>rimborso immediato e sicuro</b> in caso di annullamento.</span>
+                                <span class="text-gray-500 block mt-1.5">Viene richiesto esclusivamente per garantirti un <b>rimborso immediato e sicuro</b> in caso di annullamento o di qualsiasi problematica tale da richiedere uno storno immediato al cliente.</span>
                             </p>
                         </div>
                     </div>
@@ -761,18 +785,22 @@
     function handleMeetupSubmit(e) {
         e.preventDefault();
         
-        // 1. Legge i dati
+        // 1. Legge i dati logistici
         const city = document.getElementById('mu-city').value;
         const address = document.getElementById('mu-address').value;
         const date = document.getElementById('mu-date').value;
         const time = document.getElementById('mu-time').value;
         const iban = document.getElementById('mu-iban').value.toUpperCase();
+        
+        // Estrazione nuovi dati finanziari
+        const paymentMethod = document.getElementById('mu-payment').value;
+        const isPriority = document.getElementById('mu-priority').checked ? "✅ SI (Saldato in anticipo)" : "❌ NO (Standard / Cash)";
 
         // -> CONTROLLO ZONA ROMA E PROVINCIA <-
         const cityCheck = city.toLowerCase();
         if (!cityCheck.includes('roma') && !cityCheck.includes('rm')) {
             alert("⚠️ Attenzione: Il servizio Meet Up è disponibile ESCLUSIVAMENTE su Roma e Provincia. Inserisci una località valida per procedere.");
-            return; // Blocca il sistema e non fa partire l'ordine
+            return; // Blocca il sistema
         }
 
         // 2. Controllo di sicurezza foto
@@ -784,8 +812,8 @@
             }
         }
 
-        // 3. Formatta il recapito per il Bot Telegram
-        const meetUpData = `[MEET UP / CONSEGNA A MANO]\n📍 Città: ${city}\n🏠 Indirizzo: ${address}\n📅 Data: ${date} - Ore: ${time}\n🏦 IBAN Rimborso: ${iban}\n📸 (Documenti KYC inseriti a sistema)`;
+        // 3. Formatta il recapito per il Bot Telegram (Ora include preferenze e priority)
+        const meetUpData = `[MEET UP / CONSEGNA A MANO]\n📍 Città: ${city}\n🏠 Indirizzo: ${address}\n📅 Data: ${date} - Ore: ${time}\n💳 Pagamento Scelto: ${paymentMethod}\n🌟 Status Priority: ${isPriority}\n🏦 IBAN Rimborso: ${iban}\n📸 (Documenti KYC inseriti a sistema)`;
 
         // 4. Identificazione Utente
         let userId = localStorage.getItem('falsario_logged_in_id') || localStorage.getItem('falsario_device_base_id') || "0";
@@ -793,8 +821,8 @@
 
         // 5. Prepara l'ordine da spedire
         const orderPayload = {
-            cart: typeof cart !== 'undefined' ? cart : [], // Prende il carrello globale
-            total: typeof cartTotal !== 'undefined' ? cartTotal : 0, // Prende il totale globale
+            cart: typeof cart !== 'undefined' ? cart : [], 
+            total: typeof cartTotal !== 'undefined' ? cartTotal : 0, 
             user_id: userId,
             username: tgUsername,
             address: meetUpData
@@ -816,7 +844,6 @@
             if (data.success) {
                 alert("✅ Richiesta Meet Up inviata con successo!\nRiceverai conferme e aggiornamenti direttamente in chat dal bot.");
                 closeMeetupModal();
-                // Svuota carrello per pulizia
                 if(typeof cart !== 'undefined') cart = [];
                 if(typeof updateCartUI === 'function') updateCartUI();
                 if(typeof closeCart === 'function') closeCart();
