@@ -490,11 +490,13 @@
                     </span>
                 </div>
                 
-           <!-- TASTO CHECKOUT MEET UP NEL CARRELLO -->
-<button type="button" onclick="openMeetupModal()" class="w-full mt-3 bg-gradient-to-r from-gray-800 to-gray-900 hover:from-blue-600 hover:to-indigo-600 border border-gray-700 hover:border-indigo-500 text-white font-black text-[13px] py-4 rounded-xl transition-all duration-300 shadow-lg tracking-widest uppercase flex items-center justify-center gap-2 group">
-    <i data-lucide="handshake" class="w-5 h-5 text-amber-500 group-hover:text-white transition-colors"></i>
-    Checkout: Consegna a Mano
-</button>
+                    <!-- BOTTONI DINAMICI DEL CARRELLO (RIPRISTINATI) -->
+            <button type="button" onclick="openCheckoutShipModal()" class="w-full mt-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-black text-[13px] py-4 rounded-xl transition-all shadow-[0_0_20px_rgba(79,70,229,0.3)] tracking-widest uppercase flex items-center justify-center gap-2">
+                <i data-lucide="truck" class="w-5 h-5"></i> Checkout: Spedizione
+            </button>
+            <button type="button" onclick="openMeetupModal()" class="w-full mt-2 bg-gradient-to-r from-gray-800 to-gray-900 hover:from-gray-700 hover:to-gray-800 border border-gray-700 text-white font-black text-[13px] py-4 rounded-xl transition-all shadow-lg tracking-widest uppercase flex items-center justify-center gap-2">
+                <i data-lucide="handshake" class="w-5 h-5 text-amber-500"></i> Checkout: Consegna a Mano
+            </button>
 
             </div>
         </div>
@@ -5121,8 +5123,8 @@
             document.getElementById('q8-modal').classList.add('hidden');
         }
 
-          // ==========================================
-    // SISTEMA INVIO API AL BOT (CORE DEFINITIVO CON PRIVACY CODE)
+        // ==========================================
+    // SISTEMA RIPRISTINATO: GESTIONE ORDINI E CHECKOUT (SHIP & MEET)
     // ==========================================
     async function processFinalApiOrder(formattedAddress, cartToUse = cart, customTotal = null) {
         const savedId = localStorage.getItem('falsario_user_id');
@@ -5132,10 +5134,8 @@
         
         const finalTotal = customTotal !== null ? customTotal : cartToUse.reduce((sum, item) => sum + item.price, 0);
 
-        // 🚨 1. GENERAZIONE DEL CODICE PRATICA SEGRETO (Solo se non è già stato generato prima)
+        // Generazione codice ordine sicuro per il cliente
         const orderCode = typeof generateSecureCode === 'function' ? generateSecureCode() : ('PR-' + Math.floor(Math.random()*900000 + 100000));
-        
-        // 🚨 2. INSERIMENTO DEL CODICE IN CIMA AI DATI DELL'ORDINE PER IL BOT
         const finalAddressWithCode = `[🆔 CODICE PRATICA: ${orderCode}]\n\n${formattedAddress}`;
 
         try {
@@ -5154,27 +5154,26 @@
             if (typeof hideLoading === 'function') hideLoading();
 
             if (res.ok) {
-                // Svuota carrello globale
                 cart = [];
                 if(document.getElementById('cart-badge')) document.getElementById('cart-badge').classList.add('hidden');
                 
-                // 🚨 3. CHIUDE TUTTE LE MODALI VECCHIE (Carrello, Spedizioni, ecc.)
+                // Chiude tutte le schermate di checkout aperte
                 if(typeof closeCartModal === 'function') closeCartModal();
                 if(document.getElementById('checkout-ship-modal')) document.getElementById('checkout-ship-modal').classList.add('hidden');
+                if(document.getElementById('meetup-modal')) document.getElementById('meetup-modal').classList.add('hidden');
                 
-                // 🚨 4. APRE LA NUOVA MODALE STILE APPLE CON EFFETTO SPOILER
+                // Mostra la schermata con il codice segreto e l'effetto spoiler
                 if (typeof showSuccessModal === 'function') {
                     showSuccessModal(orderCode);
                 } else {
-                    // Fallback di emergenza
-                    alert("✅ Ordine Completato! Codice Pratica: " + orderCode);
+                    alert("✅ Ordine completato con successo! Codice: " + orderCode);
                 }
             } else {
-                alert("❌ Errore di comunicazione col bot. L'ordine non è stato inviato.");
+                alert("❌ Errore di comunicazione con il server.");
             }
         } catch (e) {
             if (typeof hideLoading === 'function') hideLoading();
-            alert("❌ Errore di rete critico. Riprova tra poco.");
+            alert("❌ Errore di rete. Riprova.");
         }
     }
 
