@@ -5668,6 +5668,43 @@
     document.addEventListener("DOMContentLoaded", () => {
         setTimeout(updateSidebarState, 150);
     });
+    
+        // ==========================================
+    // FUNZIONE DI RICERCA STATO PRATICA (AGGIORNATA)
+    // ==========================================
+    async function trackOrder() {
+        const inputField = document.getElementById('tracking-code-input');
+        const code = inputField ? inputField.value.trim() : '';
+
+        if (!code) {
+            alert("⚠️ Per favore, inserisci un codice pratica valido.");
+            return;
+        }
+
+        try {
+            // Mostra un feedback visivo di caricamento
+            const searchBtn = event.target;
+            const originalText = searchBtn.innerHTML;
+            searchBtn.innerHTML = `<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i> Ricerca in corso...`;
+
+            const res = await fetch(`https://il-falsario.onrender.com/api/order/${encodeURIComponent(code)}`);
+            
+            searchBtn.innerHTML = originalText;
+            if(window.lucide) lucide.createIcons();
+
+            if (res.ok) {
+                const orderData = res.json ? await res.json() : null;
+                // Qui mostri i dettagli dell'ordine trovato nella modale
+                alert(`✅ Pratica trovata con successo per il codice: ${code}`);
+            } else {
+                alert(`❌ Nessuna pratica trovata con il codice "${code}". Controlla che sia corretto.`);
+            }
+        } catch (err) {
+            console.error(err);
+            alert("❌ Errore di connessione durante la ricerca.");
+        }
+    }
+    
     </script>
 
 
