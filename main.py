@@ -8,14 +8,13 @@ import requests
 import telebot
 from telebot import types
 
-# ======================================================
-# VARIABILI D'AMBIENTE
-# ======================================================
-TELEGRAM_TOKEN = os.environ.get('TELEGRAM_TOKEN', '8833925901:AAG8tjYJgWvKEniJgf_exmt_Ij6t2mG3YLU').strip()
-WEB_APP_URL = os.environ.get('WEB_APP_URL', 'https://il-falsario.onrender.com').strip()
-SUPABASE_URL = os.environ.get('SUPABASE_URL', 'https://niyhpvtiefisycxbkjie.supabase.co').strip().rstrip('/')
-SUPABASE_KEY = os.environ.get('SUPABASE_KEY', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5peWhwdnRpZWZpc3ljeGJramllIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY4MjQ2MDUsImV4cCI6MjEwMjQwMDYwNX0.ODucTrP0dzByGNhyyIYv-S-kIH5cTs8X_Url-7jXRMY').strip()
-ADMIN_ID = int(os.environ.get('ADMIN_ID', 8716217678))
+# --- VARIABILI D'AMBIENTE ---
+TELEGRAM_TOKEN = os.environ.get('TELEGRAM_TOKEN', '').strip()
+WEB_APP_URL = os.environ.get('WEB_APP_URL', '').strip()
+SUPABASE_URL = "https://flantdsxamdbppgskbbi.supabase.co"
+SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZsYW50ZHN4YW1kYnBwZ3NrYmJpIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4NzU5NTkzNywiZXhwIjoyMTAzMTcxOTM3fQ.NwjDQNskc4rpKpNf8Mw5uJ4MiOFHPSRJr2iYWFqvRUg"
+ADMIN_ID = int(os.environ.get('ADMIN_ID', 0))
+
 
 bot = telebot.TeleBot(TELEGRAM_TOKEN)
 user_states = {}
