@@ -154,6 +154,30 @@ class HealthCheckHandler(BaseHTTPRequestHandler):
     def do_GET(self):
         self.send_response(200)
         self.send_header('Access-Control-Allow-Origin', '*')
+        
+        # 1. ROTTA PER I PRODOTTI (Farà riapparire i prodotti nei Market)
+        if '/api/products' in self.path or '/products' in self.path:
+            self.send_header('Content-Type', 'application/json')
+            self.end_headers()
+            all_prods = db_get_products()
+            showcase_prods = [p for p in all_prods if p.get('in_showcase', True)]
+            self.wfile.write(json.dumps(showcase_prods).encode('utf-8'))
+            return
+            
+        # 2. ROTTA PER CERCA PRATICA (Farà funzionare il nuovo tasto di tracking)
+        if self.path.startswith('/api/order/'):
+            self.send_header('Content-Type', 'application/json')
+            self.end_headers()
+            order_id = self.path.split('/')[-1]
+            orders = db_get_all_orders()
+            order = next((o for o in orders if str(o.get('id')) == str(order_id) or str(o.get('tracking_code')) == str(order_id)), None)
+            if order:
+                self.wfile.write(json.dumps(order).encode('utf-8'))
+            else:
+                self.wfile.write(json.dumps({"error": "Not found"}).encode('utf-8'))
+            return
+
+        # 3. ROTTA DEFAULT (Health Check)
         self.end_headers()
         self.wfile.write(b"Bot & Admin Panel 100% Active")
 
