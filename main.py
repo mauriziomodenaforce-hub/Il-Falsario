@@ -121,12 +121,8 @@ def db_update_order_status(order_id, status, tracking=""):
 
 # --- NUOVA FUNZIONE: UPLOAD IMMAGINI/VIDEO SU SUPABASE STORAGE ---
 def upload_to_supabase_storage(file_bytes, mime_type, file_extension):
-    # Genera un nome unico per il file così non ci sono doppioni
     filename = f"media_{int(time.time())}_{uuid.uuid4().hex[:6]}.{file_extension}"
-    
-    # URL di destinazione nel tuo bucket 'prodotti'
     url = f"{SUPABASE_URL}/storage/v1/object/prodotti/{filename}"
-    
     headers = {
         "apikey": SUPABASE_KEY,
         "Authorization": f"Bearer {SUPABASE_KEY}",
@@ -135,13 +131,13 @@ def upload_to_supabase_storage(file_bytes, mime_type, file_extension):
     try:
         res = requests.post(url, headers=headers, data=file_bytes)
         if res.status_code in [200, 201]:
-            # Restituisce il link pubblico definitivo puntando a 'prodotti'!
-            return f"{SUPABASE_URL}/storage/v1/object/public/prodotti/{filename}"
+            public_url = f"{SUPABASE_URL}/storage/v1/object/public/prodotti/{filename}"
+            return public_url
         else:
-            print(f"Errore Storage: {res.text}")
+            print(f"Errore Storage Supabase ({res.status_code}): {res.text}")
             return None
     except Exception as e:
-        print(f"Errore connessione Storage: {e}")
+        print(f"Eccezione Storage: {e}")
         return None
 
 
