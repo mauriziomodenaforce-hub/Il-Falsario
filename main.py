@@ -119,20 +119,31 @@ def db_update_order_status(order_id, status, tracking=""):
     try: return requests.patch(url, headers=get_headers(), json=payload).status_code in [200, 204]
     except: return False
 
-# ======================================================
-# STORAGE SUPABASE
-# ======================================================
+# --- NUOVA FUNZIONE: UPLOAD IMMAGINI/VIDEO SU SUPABASE STORAGE ---
 def upload_to_supabase_storage(file_bytes, mime_type, file_extension):
+    # Genera un nome unico per il file così non ci sono doppioni
     filename = f"media_{int(time.time())}_{uuid.uuid4().hex[:6]}.{file_extension}"
+    
+    # URL di destinazione nel tuo bucket 'prodotti'
     url = f"{SUPABASE_URL}/storage/v1/object/prodotti/{filename}"
-    headers = {"apikey": SUPABASE_KEY, "Authorization": f"Bearer {SUPABASE_KEY}", "Content-Type": mime_type}
+    
+    headers = {
+        "apikey": SUPABASE_KEY,
+        "Authorization": f"Bearer {SUPABASE_KEY}",
+        "Content-Type": mime_type
+    }
     try:
         res = requests.post(url, headers=headers, data=file_bytes)
         if res.status_code in [200, 201]:
-            public_url = f"{SUPABASE_URL}/storage/v1/object/public/prodotti/{filename}"
-            return public_url, "OK"
-        else: return None, f"Codice Errore: {res.status_code}\nDettaglio: {res.text}"
-    except Exception as e: return None, str(e)
+            # Restituisce il link pubblico definitivo puntando a 'prodotti'!
+            return f"{SUPABASE_URL}/storage/v1/object/public/prodotti/{filename}"
+        else:
+            print(f"Errore Storage: {res.text}")
+            return None
+    except Exception as e:
+        print(f"Errore connessione Storage: {e}")
+        return None
+
 
 # ======================================================
 # SERVER RICEZIONE ORDINI
