@@ -3795,78 +3795,50 @@
         </div>
     </div>
 
-    <!-- ========================================================== -->
-    <!-- MODALE TRACKING LAVORAZIONI                                -->
-    <!-- ========================================================== -->
-    <div 
-        id="tracking-modal" 
-        class="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4 hidden backdrop-blur-md transition-all"
-    >
-        <div 
-            class="bg-[#121212] border border-gray-800 rounded-2xl w-full max-w-sm p-5 space-y-4 shadow-2xl"
-        >
-            <div 
-                class="flex justify-between items-center border-b border-gray-800 pb-3"
-            >
-                <h3 
-                    class="font-bold text-lg text-white flex items-center"
-                >
-                    <i 
-                        data-lucide="map" 
-                        class="w-5 h-5 text-gray-400 mr-2"
-                    ></i> 
-                    Stato Lavorazioni
-                </h3>
-                <button 
-                    onclick="closeTrackingModal()" 
-                    class="text-gray-500 hover:text-white transition"
-                >
-                    <i 
-                        data-lucide="x" 
-                        class="w-5 h-5"
-                    ></i>
-                </button>
-            </div>
+     <!-- ======================================================= -->
+    <!-- MODALE STATO LAVORAZIONI (DESIGN ULTRAPROFESSIONALE) -->
+    <!-- ======================================================= -->
+    <div id="status-modal" class="fixed inset-0 z-[100] bg-black/85 backdrop-blur-md hidden flex-col items-center justify-center p-4 transition-all duration-300 opacity-0">
+        <div class="bg-gray-950 border border-gray-800/80 rounded-[28px] w-full max-w-[380px] p-6 shadow-[0_0_50px_rgba(0,0,0,0.8)] relative transform scale-95 transition-transform duration-300" id="status-modal-content">
             
-            <div 
-                class="space-y-3"
-            >
-                <label 
-                    class="text-[10px] font-bold text-gray-500 uppercase tracking-widest block"
-                >
-                    Codice Pratica
-                </label>
-                <div 
-                    class="flex space-x-2"
-                >
-                    <input 
-                        type="number" 
-                        id="tracking-order-id" 
-                        placeholder="Es. 12" 
-                        class="w-full bg-[#1a1a1a] border border-gray-800 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-gray-500 transition"
-                    >
-                    <button 
-                        onclick="searchOrderTracking()" 
-                        class="bg-gray-700 hover:bg-gray-600 text-white font-bold px-4 py-2 rounded-xl text-xs uppercase transition"
-                    >
-                        Cerca
-                    </button>
+            <!-- Pulsante Chiusura Superiore -->
+            <button onclick="closeStatusModal()" class="absolute top-5 right-5 p-2 bg-gray-900 hover:bg-gray-800 rounded-full text-gray-400 hover:text-white transition-colors">
+                <i data-lucide="x" class="w-4 h-4"></i>
+            </button>
+
+            <!-- Header con Icona -->
+            <div class="flex items-center gap-3 mb-6">
+                <div class="w-10 h-10 rounded-2xl bg-gradient-to-br from-amber-500/20 to-amber-500/5 border border-amber-500/30 flex items-center justify-center text-amber-500">
+                    <i data-lucide="map" class="w-5 h-5"></i>
+                </div>
+                <div>
+                    <h2 class="text-lg font-black text-white tracking-wide uppercase">Stato Lavorazioni</h2>
+                    <p class="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Tracciamento Sicuro Pratica</p>
                 </div>
             </div>
-            
-            <div 
-                id="tracking-result" 
-                class="hidden border-t border-gray-800 pt-3 space-y-2 transition-all"
-            ></div>
-            
-            <button 
-                onclick="closeTrackingModal()" 
-                class="w-full bg-[#1a1a1a] border border-gray-800 hover:bg-gray-900 text-gray-300 font-bold py-3 rounded-xl text-xs uppercase tracking-wider transition"
-            >
-                Chiudi
-            </button>
+
+            <!-- Corpo Input -->
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-[10px] font-bold text-gray-500 mb-2 tracking-[0.15em] uppercase">Inserisci Codice Pratica</label>
+                    <input type="text" id="status-code-input" placeholder="Es. PR-8F2X9A" class="w-full bg-gray-900/60 border border-gray-800 focus:border-amber-500/60 rounded-xl px-4 py-3.5 text-white font-mono text-sm tracking-widest uppercase focus:outline-none transition-all placeholder-gray-600">
+                </div>
+
+                <!-- Tasto Cerca -->
+                <button onclick="searchOrderStatus()" class="w-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-black font-black text-[12px] py-4 rounded-xl transition-all shadow-[0_0_20px_rgba(245,158,11,0.2)] tracking-widest uppercase flex items-center justify-center gap-2">
+                    <i data-lucide="search" class="w-4 h-4"></i> Cerca Pratica
+                </button>
+            </div>
+
+            <!-- Tasto Chiudi in basso -->
+            <div class="mt-4 pt-4 border-t border-gray-900 text-center">
+                <button onclick="closeStatusModal()" class="text-gray-500 hover:text-gray-300 text-[11px] font-bold tracking-widest uppercase transition-colors">
+                    Chiudi Finestra
+                </button>
+            </div>
         </div>
     </div>
+
 
     <!-- ========================================================== -->
     <!-- MODALE CONTATTO DIRETTO                                    -->
