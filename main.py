@@ -132,13 +132,13 @@ def upload_to_supabase_storage(file_bytes, mime_type, file_extension):
         res = requests.post(url, headers=headers, data=file_bytes)
         if res.status_code in [200, 201]:
             public_url = f"{SUPABASE_URL}/storage/v1/object/public/prodotti/{filename}"
-            return public_url
+            return public_url, "OK"
         else:
             print(f"Errore Storage Supabase ({res.status_code}): {res.text}")
-            return None
+            return None, f"Errore HTTP {res.status_code}"
     except Exception as e:
         print(f"Eccezione Storage: {e}")
-        return None
+        return None, str(e)
 
 
 # ======================================================
