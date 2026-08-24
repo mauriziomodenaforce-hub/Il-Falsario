@@ -261,8 +261,7 @@ def get_media_done_keyboard():
 def send_welcome(message):
     user_id = message.chat.id
     username = message.from_user.username
-        threading.Thread(target=db_register_user, args=(user_id, username), daemon=True).start()
-
+    threading.Thread(target=db_register_user, args=(user_id, username), daemon=True).start()
 
     welcome_text = (
         "Benvenuto nello shop ufficiale del Falsario 🤗🎭\n\n"
