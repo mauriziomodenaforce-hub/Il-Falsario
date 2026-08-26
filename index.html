@@ -5711,6 +5711,94 @@
     
     </script>
 
+<!-- SCRIPT SOSTITUTIVO LOCALE (NESSUN SUPABASE) -->
+<script>
+// Disattiviamo Supabase
+db = null;
+
+// 1. Riscriviamo il caricamento prodotti usando la nostra API
+async function loadProducts() {
+    try {
+        const res = await fetch('/api/products');
+        allProducts = await res.json();
+        filterCategory('ALL');
+    } catch (err) {
+        document.getElementById('products-grid').innerHTML = `<div class="text-center py-4 text-gray-500 text-sm">Nessun file presente.</div>`;
+    }
+}
+
+// 2. Riscriviamo l'upload per usare la nostra API interna
+async function uploadFileToSupabase(file) {
+    if (!file) return null;
+    return new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = async () => {
+            try {
+                const res = await fetch('/api/upload', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ data: reader.result })
+                });
+                const result = await res.json();
+                resolve(result.url || null);
+            } catch(e) { resolve("[Errore upload]"); }
+        };
+    });
+}
+
+// 3. Riscriviamo la lettura dei punti per i trofei
+async function openTrophiesModal() {
+    document.getElementById('trophies-modal').classList.remove('hidden'); 
+    const uid = localStorage.getItem('falsario_user_id');
+    let points = 50; 
+    
+    if (uid) {
+        try {
+            const res = await fetch(`/api/user/${uid}`);
+            if(res.ok) {
+                const data = await res.json();
+                points = data.points || 50;
+            }
+        } catch(e) {}
+    }
+    document.getElementById('user-points-val').innerText = points;
+    
+    let rankTitle = "Cliente Standard 🥉";
+    let progressPercent = Math.min(100, (points / 150) * 100);
+    let nextTargetText = "Ogni 500€ di spesa ricevi 50 punti. Sblocca sconti perenni!";
+    
+    if (points >= 500) { rankTitle = "VIP Black Diamond 💎"; progressPercent = 100; nextTargetText = "Massimo livello attivo!"; } 
+    else if (points >= 300) { rankTitle = "Cliente Gold 🥇"; progressPercent = (points / 500) * 100; nextTargetText = `Mancano ${500 - points} pt per VIP.`; } 
+    else if (points >= 150) { rankTitle = "Cliente Silver 🥈"; progressPercent = (points / 300) * 100; nextTargetText = `Mancano ${300 - points} pt per Gold.`; }
+    
+    document.getElementById('user-rank-title').innerText = rankTitle;
+    document.getElementById('rank-progress-bar').style.width = `${progressPercent}%`;
+    document.getElementById('rank-next-target').innerText = nextTargetText;
+
+    const updateTrophy = (boxId, iconId, titleId, badgeId, threshold) => {
+        const b = document.getElementById(boxId), i = document.getElementById(iconId), t = document.getElementById(titleId), d = document.getElementById(badgeId);
+        if (points >= threshold) {
+            b.className = "bg-[#1a1a1a] border border-amber-600/30 p-3 rounded-xl text-xs flex items-center justify-between mb-2";
+            i.setAttribute("data-lucide", "check-circle-2"); i.className = "w-4 h-4 text-amber-500";
+            if(t) t.className = "font-bold text-amber-50"; 
+            d.className = "text-[9px] bg-amber-500/20 text-amber-400 px-2 py-1 rounded font-bold"; d.innerText = "ATTIVO";
+        } else {
+            b.className = "bg-[#121212] border border-gray-800 p-3 rounded-xl text-xs text-gray-500 flex items-center justify-between mb-2 opacity-80";
+            i.setAttribute("data-lucide", "lock"); i.className = "w-4 h-4 text-gray-500";
+            if(t) t.className = "font-bold text-gray-300"; 
+            d.className = "text-[9px] bg-amber-600/20 text-amber-400 px-2 py-1 rounded font-bold animate-pulse"; d.innerText = "SBLOCCA";
+        }
+    };
+    updateTrophy('trophy-2-box', 'trophy-2-icon', 'trophy-2-title', 'trophy-2-badge', 150);
+    updateTrophy('trophy-3-box', 'trophy-3-icon', 'trophy-3-title', 'trophy-3-badge', 300);
+    updateTrophy('trophy-4-box', 'trophy-4-icon', 'trophy-4-title', 'trophy-4-badge', 500);
+    if(window.lucide) lucide.createIcons();
+}
+</script>
+</body>
+</html>
+
 
 
 
