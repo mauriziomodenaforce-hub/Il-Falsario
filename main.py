@@ -3,6 +3,8 @@ import json
 import time
 import threading
 import uuid
+import sqlite3
+import base64
 from http.server import HTTPServer, BaseHTTPRequestHandler
 import requests
 import telebot
@@ -11,145 +13,140 @@ from telebot import types
 # --- VARIABILI D'AMBIENTE ---
 TELEGRAM_TOKEN = os.environ.get('TELEGRAM_TOKEN', '').strip()
 WEB_APP_URL = os.environ.get('WEB_APP_URL', '').strip()
-SUPABASE_URL = "https://flantdsxamdbppgskbbi.supabase.co"
-SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZsYW50ZHN4YW1kYnBwZ3NrYmJpIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4NzU5NTkzNywiZXhwIjoyMTAzMTcxOTM3fQ.NwjDQNskc4rpKpNf8Mw5uJ4MiOFHPSRJr2iYWFqvRUg"
 ADMIN_ID = int(os.environ.get('ADMIN_ID', 0))
 
+DB_PATH = "falsario.db"
+MEDIA_DIR = "/var/www/html/media"
+os.makedirs(MEDIA_DIR, exist_ok=True)
 
 bot = telebot.TeleBot(TELEGRAM_TOKEN)
 user_states = {}
 
 # ======================================================
-# HELPER SUPABASE REST API (Database Originale)
+# DATABASE LOCALE PRIVATO (No Supabase)
 # ======================================================
-def get_headers():
-    return {
-        "apikey": SUPABASE_KEY,
-        "Authorization": f"Bearer {SUPABASE_KEY}",
-        "Content-Type": "application/json",
-        "Prefer": "return=representation"
-    }
+def get_db():
+    conn = sqlite3.connect(DB_PATH, check_same_thread=False)
+    conn.row_factory = sqlite3.Row
+    return conn
+
+def init_db():
+    conn = get_db()
+    c = conn.cursor()
+    c.execute('''CREATE TABLE IF NOT EXISTS users (telegram_id INTEGER PRIMARY KEY, username TEXT, points INTEGER DEFAULT 50)''')
+    c.execute('''CREATE TABLE IF NOT EXISTS products (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, category TEXT, description TEXT, price_options TEXT, media_list TEXT, media_url TEXT, media_type TEXT, in_showcase INTEGER DEFAULT 1, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)''')
+    c.execute('''CREATE TABLE IF NOT EXISTS orders (id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER, username TEXT, items TEXT, total_price REAL, address TEXT, status TEXT, order_type TEXT, tracking_code TEXT, user_message_id INTEGER, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)''')
+    conn.commit()
+    conn.close()
+
+init_db()
 
 def db_register_user(user_id, username):
-    url = f"{SUPABASE_URL}/rest/v1/users"
-    headers = get_headers()
-    headers["Prefer"] = "resolution=merge-duplicates"
-    data = {"telegram_id": user_id, "username": username or "Anonimo", "points": 50, "trophies": []}
-    try: requests.post(url, headers=headers, json=data)
-    except: pass
+    conn = get_db()
+    conn.execute("INSERT OR IGNORE INTO users (telegram_id, username, points) VALUES (?, ?, ?)", (user_id, username or "Anonimo", 50))
+    conn.commit()
+    conn.close()
 
 def db_add_product(product_data):
-    url = f"{SUPABASE_URL}/rest/v1/products"
     try:
-        r = requests.post(url, headers=get_headers(), json=product_data)
-        if r.status_code in [200, 201]: return True, "OK"
-        else: return False, f"Errore HTTP {r.status_code}: {r.text}"
+        conn = get_db()
+        conn.execute('''INSERT INTO products (name, category, description, price_options, media_list, media_url, media_type, in_showcase) 
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?)''', 
+                     (product_data.get('name'), product_data.get('category'), product_data.get('description'), 
+                      json.dumps(product_data.get('price_options', [])), json.dumps(product_data.get('media_list', [])), 
+                      product_data.get('media_url'), product_data.get('media_type'), 1 if product_data.get('in_showcase', True) else 0))
+        conn.commit()
+        conn.close()
+        return True, "OK"
     except Exception as e: return False, str(e)
 
 def db_update_product(prod_id, update_data):
-    url = f"{SUPABASE_URL}/rest/v1/products?id=eq.{prod_id}"
-    try: return requests.patch(url, headers=get_headers(), json=update_data).status_code in [200, 204]
+    try:
+        conn = get_db()
+        for key, val in update_data.items():
+            if isinstance(val, list) or isinstance(val, dict): val = json.dumps(val)
+            elif isinstance(val, bool): val = 1 if val else 0
+            conn.execute(f"UPDATE products SET {key} = ? WHERE id = ?", (val, prod_id))
+        conn.commit()
+        conn.close()
+        return True
     except: return False
 
 def db_get_products():
-    url = f"{SUPABASE_URL}/rest/v1/products?select=*&order=created_at.desc"
-    try:
-        r = requests.get(url, headers=get_headers())
-        if r.status_code == 200: return r.json()
-        return []
-    except: return []
+    conn = get_db()
+    rows = conn.execute("SELECT * FROM products ORDER BY created_at DESC").fetchall()
+    conn.close()
+    return [dict(r) for r in rows]
 
 def db_toggle_product(prod_id, current_status):
     return db_update_product(prod_id, {"in_showcase": not current_status})
 
 def db_delete_product(prod_id):
-    url = f"{SUPABASE_URL}/rest/v1/products?id=eq.{prod_id}"
-    try: return requests.delete(url, headers=get_headers()).status_code in [200, 204]
-    except: return False
+    conn = get_db()
+    conn.execute("DELETE FROM products WHERE id = ?", (prod_id,))
+    conn.commit()
+    conn.close()
+    return True
 
 def db_update_user_points(target_id, points_delta):
-    url = f"{SUPABASE_URL}/rest/v1/users?telegram_id=eq.{target_id}"
-    try:
-        r = requests.get(url, headers=get_headers())
-        if r.status_code == 200 and len(r.json()) > 0:
-            current_p = r.json()[0].get("points", 0)
-            new_p = max(0, current_p + points_delta)
-            requests.patch(url, headers=get_headers(), json={"points": new_p})
-            return True, new_p
-    except: pass
+    conn = get_db()
+    row = conn.execute("SELECT points FROM users WHERE telegram_id = ?", (target_id,)).fetchone()
+    if row:
+        new_p = max(0, row['points'] + points_delta)
+        conn.execute("UPDATE users SET points = ? WHERE telegram_id = ?", (new_p, target_id))
+        conn.commit()
+        conn.close()
+        return True, new_p
+    conn.close()
     return False, 0
 
-# --- MOTORE ORDINI POTENZIATO ---
 def db_save_order(user_id, username, cart, total, address, order_type):
-    url = f"{SUPABASE_URL}/rest/v1/orders"
-    data = {
-        "user_id": user_id,
-        "username": username or "Anonimo",
-        "items": cart,
-        "total_price": total,
-        "address": address,
-        "status": "PENDING",
-        "order_type": order_type
-    }
-    try:
-        r = requests.post(url, headers=get_headers(), json=data)
-        if r.status_code in [200, 201]:
-            res = r.json()
-            if res: return res[0]["id"]
-    except: pass
-    return 999
+    conn = get_db()
+    c = conn.cursor()
+    c.execute('''INSERT INTO orders (user_id, username, items, total_price, address, status, order_type) 
+                 VALUES (?, ?, ?, ?, ?, ?, ?)''', 
+              (user_id, username, json.dumps(cart), total, address, "PENDING", order_type))
+    order_id = c.lastrowid
+    conn.commit()
+    conn.close()
+    return order_id
 
 def db_update_order_msg_id(order_id, msg_id):
-    url = f"{SUPABASE_URL}/rest/v1/orders?id=eq.{order_id}"
-    try: requests.patch(url, headers=get_headers(), json={"user_message_id": msg_id})
-    except: pass
+    conn = get_db()
+    conn.execute("UPDATE orders SET user_message_id = ? WHERE id = ?", (msg_id, order_id))
+    conn.commit()
+    conn.close()
 
 def db_get_all_orders():
-    url = f"{SUPABASE_URL}/rest/v1/orders?select=*&order=created_at.desc"
-    try:
-        r = requests.get(url, headers=get_headers())
-        if r.status_code == 200: return r.json()
-        return []
-    except: return []
+    conn = get_db()
+    rows = conn.execute("SELECT * FROM orders ORDER BY created_at DESC").fetchall()
+    conn.close()
+    return [dict(r) for r in rows]
 
 def db_update_order_status(order_id, status, tracking=""):
-    url = f"{SUPABASE_URL}/rest/v1/orders?id=eq.{order_id}"
-    payload = {"status": status}
-    if tracking: payload["tracking_code"] = tracking
-    try: return requests.patch(url, headers=get_headers(), json=payload).status_code in [200, 204]
-    except: return False
+    conn = get_db()
+    if tracking: conn.execute("UPDATE orders SET status = ?, tracking_code = ? WHERE id = ?", (status, tracking, order_id))
+    else: conn.execute("UPDATE orders SET status = ? WHERE id = ?", (status, order_id))
+    conn.commit()
+    conn.close()
 
-# --- NUOVA FUNZIONE: UPLOAD IMMAGINI/VIDEO SU SUPABASE STORAGE ---
-def upload_to_supabase_storage(file_bytes, mime_type, file_extension):
-    filename = f"media_{int(time.time())}_{uuid.uuid4().hex[:6]}.{file_extension}"
-    # QUI HO RIMESSO 'products' AL POSTO DI 'prodotti'
-    url = f"{SUPABASE_URL}/storage/v1/object/products/{filename}"
-    headers = {
-        "apikey": SUPABASE_KEY,
-        "Authorization": f"Bearer {SUPABASE_KEY}",
-        "Content-Type": mime_type
-    }
+# --- UPLOAD IMMAGINI/VIDEO LOCALE ---
+def upload_to_local_storage(file_bytes, mime_type, file_extension):
     try:
-        res = requests.post(url, headers=headers, data=file_bytes)
-        if res.status_code in [200, 201]:
-            # ANCHE QUI HO RIMESSO 'products'
-            public_url = f"{SUPABASE_URL}/storage/v1/object/public/products/{filename}"
-            return public_url, "OK"
-        else:
-            return None, f"Codice Errore {res.status_code}: {res.text}"
+        filename = f"media_{int(time.time())}_{uuid.uuid4().hex[:6]}.{file_extension}"
+        filepath = os.path.join(MEDIA_DIR, filename)
+        with open(filepath, 'wb') as f:
+            f.write(file_bytes)
+        public_url = f"{WEB_APP_URL}/media/{filename}"
+        return public_url, "OK"
     except Exception as e:
-        return None, f"Eccezione: {str(e)}"
+        return None, str(e)
 
 
 # ======================================================
-# SERVER RICEZIONE ORDINI
+# API LOCALI E WEBHOOK
 # ======================================================
-class HealthCheckHandler(BaseHTTPRequestHandler):
-    def do_HEAD(self):
-        self.send_response(200)
-        self.send_header('Access-Control-Allow-Origin', '*')
-        self.end_headers()
-
+class WebhookAPIHandler(BaseHTTPRequestHandler):
     def do_OPTIONS(self):
         self.send_response(200)
         self.send_header('Access-Control-Allow-Origin', '*')
@@ -160,45 +157,68 @@ class HealthCheckHandler(BaseHTTPRequestHandler):
     def do_GET(self):
         self.send_response(200)
         self.send_header('Access-Control-Allow-Origin', '*')
+        self.send_header('Content-Type', 'application/json')
+        self.end_headers()
         
-        # 1. ROTTA PER I PRODOTTI (Farà riapparire i prodotti nei Market)
-        if '/api/products' in self.path or '/products' in self.path:
-            self.send_header('Content-Type', 'application/json')
-            self.end_headers()
+        if '/api/products' in self.path:
             all_prods = db_get_products()
-            showcase_prods = [p for p in all_prods if p.get('in_showcase', True)]
+            showcase_prods = [p for p in all_prods if p.get('in_showcase', 1) == 1]
             self.wfile.write(json.dumps(showcase_prods).encode('utf-8'))
-            return
             
-        # 2. ROTTA PER CERCA PRATICA (Farà funzionare il nuovo tasto di tracking)
-        if self.path.startswith('/api/order/'):
-            self.send_header('Content-Type', 'application/json')
-            self.end_headers()
+        elif self.path.startswith('/api/order/'):
             order_id = self.path.split('/')[-1]
             orders = db_get_all_orders()
             order = next((o for o in orders if str(o.get('id')) == str(order_id) or str(o.get('tracking_code')) == str(order_id)), None)
-            if order:
-                self.wfile.write(json.dumps(order).encode('utf-8'))
-            else:
-                self.wfile.write(json.dumps({"error": "Not found"}).encode('utf-8'))
-            return
-
-        # 3. ROTTA DEFAULT (Health Check)
-        self.end_headers()
-        self.wfile.write(b"Bot & Admin Panel 100% Active")
+            if order: self.wfile.write(json.dumps(order).encode('utf-8'))
+            else: self.wfile.write(json.dumps({"error": "Not found"}).encode('utf-8'))
+            
+        elif self.path.startswith('/api/user/'):
+            user_id = self.path.split('/')[-1]
+            conn = get_db()
+            row = conn.execute("SELECT points FROM users WHERE telegram_id = ?", (user_id,)).fetchone()
+            conn.close()
+            if row: self.wfile.write(json.dumps({"points": row['points']}).encode('utf-8'))
+            else: self.wfile.write(json.dumps({"points": 50}).encode('utf-8'))
+        else:
+            self.wfile.write(b'{"status": "ok"}')
 
     def do_POST(self):
-        if self.path == '/api/order':
-            content_length = int(self.headers['Content-Length'])
-            data = json.loads(self.rfile.read(content_length).decode('utf-8'))
+        content_length = int(self.headers.get('Content-Length', 0))
+        if content_length == 0:
+            self.send_response(400)
+            self.end_headers()
+            return
+            
+        post_data = self.rfile.read(content_length).decode('utf-8')
+        try: data = json.loads(post_data)
+        except: data = {}
 
+        self.send_response(200)
+        self.send_header('Content-Type', 'application/json')
+        self.send_header('Access-Control-Allow-Origin', '*')
+        self.end_headers()
+
+        if self.path == '/api/upload':
+            b64_str = data.get("data", "")
+            if "," in b64_str: b64_str = b64_str.split(",")[1]
+            try:
+                img_data = base64.b64decode(b64_str)
+                filename = f"receipt_{int(time.time())}_{uuid.uuid4().hex[:6]}.jpg"
+                filepath = os.path.join(MEDIA_DIR, filename)
+                with open(filepath, 'wb') as f: f.write(img_data)
+                public_url = f"{WEB_APP_URL}/media/{filename}"
+                self.wfile.write(json.dumps({"url": public_url}).encode('utf-8'))
+            except Exception as e:
+                self.wfile.write(json.dumps({"error": str(e)}).encode('utf-8'))
+            return
+
+        if self.path == '/api/order':
             cart = data.get("cart", [])
             total = data.get("total", 0)
             user_id = data.get("user_id")
             username = data.get("username", "Anonimo")
             address = data.get("address", "Non specificato")
 
-            # RILEVAMENTO AUTOMATICO SERVIZIO / FISICO
             is_service = any("serviz" in str(i.get('category', '')).lower() for i in cart)
             order_type = "SERVICE" if is_service else "PHYSICAL"
 
@@ -225,18 +245,11 @@ class HealthCheckHandler(BaseHTTPRequestHandler):
                     bot.send_message(ADMIN_ID, f"🔔 <b>{alert_type} RICEVUTO!</b>\nRif. #{order_id} da @{username}.\n👉 Apri /admin per gestirlo.", parse_mode="HTML")
                 except: pass
 
-            self.send_response(200)
-            self.send_header('Content-Type', 'application/json')
-            self.send_header('Access-Control-Allow-Origin', '*')
-            self.end_headers()
             self.wfile.write(json.dumps({"success": True, "order_id": order_id}).encode('utf-8'))
-        else:
-            self.send_response(404)
-            self.end_headers()
 
 def run_health_server():
     port = int(os.environ.get("PORT", 8080))
-    server = HTTPServer(('0.0.0.0', port), HealthCheckHandler)
+    server = HTTPServer(('0.0.0.0', port), WebhookAPIHandler)
     server.serve_forever()
 
 # ======================================================
@@ -314,7 +327,7 @@ def admin_panel(message):
     bot.send_message(user_id, "⚙️ <b>PANNELLO GESTIONALE CAVEAU</b> 🎭\n\nScegli la sezione da gestire:", parse_mode="HTML", reply_markup=get_admin_main_keyboard())
 
 # ======================================================
-# MOTORE CENTRALE: ROUTING PULSANTI INLINE E DASHBOARD
+# MOTORE CENTRALE: ROUTING PULSANTI INLINE
 # ======================================================
 @bot.callback_query_handler(func=lambda call: True)
 def handle_callbacks(call):
@@ -326,9 +339,6 @@ def handle_callbacks(call):
         user_states.pop(user_id, None)
         bot.edit_message_text("⚙️ <b>PANNELLO GESTIONALE CAVEAU</b>", user_id, call.message.message_id, parse_mode="HTML", reply_markup=get_admin_main_keyboard())
 
-    # ==================================================
-    # DASHBOARD 1: ORDINI FISICI 
-    # ==================================================
     elif data == "dash_ord_phys":
         user_states.pop(user_id, None)
         orders = [o for o in db_get_all_orders() if o.get('status') in ['PENDING', 'ACCEPTED'] and o.get('order_type') != 'SERVICE']
@@ -370,15 +380,12 @@ def handle_callbacks(call):
                     markup.add(types.InlineKeyboardButton("🚚 Invia Tracking", callback_data=f"act_trk_{o['id']}_{u_id}_{m_id}"))
                 
                 markup.add(types.InlineKeyboardButton("✍️ Aggiornamento Custom", callback_data=f"act_upd_{o['id']}_{u_id}_{m_id}"))
-                markup.add(types.InlineKeyboardButton("❌ Annulla Ordine", callback_data=f"act_cnc_{o['id']}_{u_id}_{m_id}")) # Si può annullare SEMPRE
+                markup.add(types.InlineKeyboardButton("❌ Annulla Ordine", callback_data=f"act_cnc_{o['id']}_{u_id}_{m_id}"))
                 
             try: bot.send_message(user_id, msg, parse_mode="HTML", reply_markup=markup)
             except: pass
         bot.send_message(user_id, "👇 Fine lista:", reply_markup=get_cancel_keyboard())
 
-    # ==================================================
-    # DASHBOARD 2: SERVIZI DIGITALI
-    # ==================================================
     elif data == "dash_ord_serv":
         user_states.pop(user_id, None)
         orders = [o for o in db_get_all_orders() if o.get('status') in ['PENDING', 'ACCEPTED'] and o.get('order_type') == 'SERVICE']
@@ -413,31 +420,20 @@ def handle_callbacks(call):
             else:
                 markup.add(types.InlineKeyboardButton("📤 Invia Esito Finale", callback_data=f"act_file_{o['id']}_{u_id}_{m_id}"))
                 markup.add(types.InlineKeyboardButton("✍️ Aggiornamento Custom", callback_data=f"act_upd_{o['id']}_{u_id}_{m_id}"))
-                markup.add(types.InlineKeyboardButton("❌ Annulla Servizio", callback_data=f"act_cnc_{o['id']}_{u_id}_{m_id}")) # Si può annullare SEMPRE
+                markup.add(types.InlineKeyboardButton("❌ Annulla Servizio", callback_data=f"act_cnc_{o['id']}_{u_id}_{m_id}"))
                 
             try: bot.send_message(user_id, msg, parse_mode="HTML", reply_markup=markup)
             except: pass
         bot.send_message(user_id, "👇 Fine lista:", reply_markup=get_cancel_keyboard())
 
-    # ==================================================
-    # AZIONI LIVE SUL CLIENTE
-    # ==================================================
     elif data.startswith("act_trk_") or data.startswith("act_file_") or data.startswith("act_meet_") or data.startswith("act_upd_"):
         parts = data.split("_")
         action, o_id, u_id, m_id = parts[1], parts[2], parts[3], parts[4]
         
-        if action == "trk":
-            step_name = "WAITING_TRACKING"
-            prompt_txt = f"🚚 Scrivi il <b>TRACKING e NOTE</b> per l'ordine #{o_id}:"
-        elif action == "file":
-            step_name = "WAITING_FILE_INFO"
-            prompt_txt = f"📤 Scrivi l'<b>ESITO o IL LINK DEL FILE</b> per il Servizio #{o_id}:"
-        elif action == "meet":
-            step_name = "WAITING_MEETUP"
-            prompt_txt = f"📍 Scrivi i <b>DETTAGLI DEL MEET UP</b> (Es: Orario e Luogo esatto) per l'ordine #{o_id}:"
-        elif action == "upd":
-            step_name = "WAITING_UPDATE"
-            prompt_txt = f"✍️ Scrivi l'<b>AGGIORNAMENTO CUSTOM</b> per l'ordine #{o_id}.\nQuesto testo verrà mostrato in diretta al cliente:"
+        if action == "trk": step_name, prompt_txt = "WAITING_TRACKING", f"🚚 Scrivi il <b>TRACKING e NOTE</b> per l'ordine #{o_id}:"
+        elif action == "file": step_name, prompt_txt = "WAITING_FILE_INFO", f"📤 Scrivi l'<b>ESITO o IL LINK DEL FILE</b> per il Servizio #{o_id}:"
+        elif action == "meet": step_name, prompt_txt = "WAITING_MEETUP", f"📍 Scrivi i <b>DETTAGLI DEL MEET UP</b> per l'ordine #{o_id}:"
+        elif action == "upd": step_name, prompt_txt = "WAITING_UPDATE", f"✍️ Scrivi l'<b>AGGIORNAMENTO CUSTOM</b> per l'ordine #{o_id}:"
         
         user_states[user_id] = {"step": step_name, "o_id": o_id, "u_id": u_id, "m_id": m_id}
         bot.send_message(user_id, prompt_txt, parse_mode="HTML", reply_markup=get_cancel_keyboard())
@@ -468,14 +464,9 @@ def handle_callbacks(call):
         try: bot.edit_message_reply_markup(user_id, call.message.message_id, reply_markup=None)
         except: pass
 
-    # ==================================================
-    # RIPRISTINO ORDINE ANNULLATO (RESURREZIONE)
-    # ==================================================
     elif data.startswith("act_restore_"):
         parts = data.split("_")
         o_id, u_id, m_id = parts[2], parts[3], parts[4]
-        
-        # Riporta in stato PENDING
         db_update_order_status(o_id, "PENDING")
         new_text = f"⏳ <b>ORDINE #{o_id} RIPRISTINATO</b>\n\nLa tua richiesta è stata sbloccata ed è tornata in elaborazione."
         
@@ -485,13 +476,10 @@ def handle_callbacks(call):
                 else: bot.send_message(int(u_id), new_text, parse_mode="HTML")
             except: pass
             
-        bot.answer_callback_query(call.id, "✅ Ordine Ripristinato in Dashboard!")
+        bot.answer_callback_query(call.id, "✅ Ordine Ripristinato!")
         try: bot.edit_message_reply_markup(user_id, call.message.message_id, reply_markup=None)
         except: pass
 
-    # ==================================================
-    # STORICO A SCOMPARTIMENTI (COMPLETATI vs ANNULLATI)
-    # ==================================================
     elif data == "m_hist":
         user_states.pop(user_id, None)
         bot.edit_message_text("📜 <b>STORICO ARCHIVI</b>\n\nScegli quale registro visualizzare:", user_id, call.message.message_id, parse_mode="HTML", reply_markup=get_admin_hist_keyboard())
@@ -501,20 +489,8 @@ def handle_callbacks(call):
         if not orders:
             bot.send_message(user_id, "📭 Nessun ordine completato nello storico.", reply_markup=get_cancel_keyboard())
             return
-        
-        bot.send_message(user_id, f"🟩 <b>ARCHIVIO COMPLETATI</b> ({len(orders)} totali):", parse_mode="HTML")
         for o in orders:
-            items = json.loads(o.get('items', '[]')) if isinstance(o.get('items'), str) else o.get('items', [])
-            items_str = "\n".join([f"  • {i['name']} ({i['qty']})" for i in items]) if items else "  • Nessun dettaglio"
-            
-            msg = (
-                f"✅ ORDINE #{o.get('id')} [COMPLETATO]\n"
-                f"👤 @{o.get('username')} (ID: {o.get('user_id')})\n"
-                f"📍 {o.get('address', 'N/D')}\n"
-                f"📝 Esito/Note: {o.get('tracking_code', 'N/D')}\n\n"
-                f"📦:\n{items_str}\n"
-                f"────────────────────────"
-            )
+            msg = f"✅ ORDINE #{o.get('id')} [COMPLETATO]\n👤 @{o.get('username')}\n📝 {o.get('tracking_code', 'N/D')}\n────────────────────────"
             try: bot.send_message(user_id, msg)
             except: pass
         bot.send_message(user_id, "👇 Fine registro completati:", reply_markup=get_cancel_keyboard())
@@ -524,33 +500,14 @@ def handle_callbacks(call):
         if not orders:
             bot.send_message(user_id, "📭 Nessun ordine annullato.", reply_markup=get_cancel_keyboard())
             return
-        
-        bot.send_message(user_id, f"🟥 <b>ARCHIVIO ANNULLATI</b> ({len(orders)} totali):", parse_mode="HTML")
         for o in orders:
-            items = json.loads(o.get('items', '[]')) if isinstance(o.get('items'), str) else o.get('items', [])
-            items_str = "\n".join([f"  • {i['name']} ({i['qty']})" for i in items]) if items else "  • Nessun dettaglio"
-            
-            msg = (
-                f"❌ ORDINE #{o.get('id')} [ANNULLATO]\n"
-                f"👤 @{o.get('username')} (ID: {o.get('user_id')})\n"
-                f"📍 {o.get('address', 'N/D')}\n\n"
-                f"📦:\n{items_str}\n"
-                f"────────────────────────"
-            )
-            
-            # CHICCA: Tasto Ripristina sull'ordine annullato
-            m_id = o.get('user_message_id', 0)
-            u_id = o.get('user_id', 0)
+            msg = f"❌ ORDINE #{o.get('id')} [ANNULLATO]\n👤 @{o.get('username')}\n────────────────────────"
             markup = types.InlineKeyboardMarkup()
-            markup.add(types.InlineKeyboardButton("🔄 Ripristina Ordine in Dashboard", callback_data=f"act_restore_{o['id']}_{u_id}_{m_id}"))
-            
+            markup.add(types.InlineKeyboardButton("🔄 Ripristina Ordine in Dashboard", callback_data=f"act_restore_{o['id']}_{o['user_id']}_{o.get('user_message_id', 0)}"))
             try: bot.send_message(user_id, msg, reply_markup=markup)
             except: pass
         bot.send_message(user_id, "👇 Fine registro annullati:", reply_markup=get_cancel_keyboard())
 
-    # ==================================================
-    # PUNTI E GESTIONE PRODOTTI (INTATTI)
-    # ==================================================
     elif data == "m_pts":
         user_states.pop(user_id, None)
         msg = "💎 <b>GESTIONE PUNTI UTENTI</b>\n\nUsa in chat:\n<code>/punti ID_UTENTE QUANTITA</code>\n\n(Es: <code>/punti 123456789 100</code>)"
@@ -580,7 +537,7 @@ def handle_callbacks(call):
             bot.send_message(user_id, "📭 Nessun prodotto.", reply_markup=get_cancel_keyboard())
             return
         for p in prods:
-            st_val = p.get('in_showcase', True)
+            st_val = p.get('in_showcase', 1) == 1
             status_str = '🟢 In Vetrina' if st_val else '🔴 Nascosto'
             msg = f"📦 {p.get('name')}\n🏷 Categoria: {p.get('category')}\n👁 Stato: {status_str}"
             markup = types.InlineKeyboardMarkup(row_width=2)
@@ -652,7 +609,7 @@ def handle_callbacks(call):
             user_states.pop(user_id, None)
 
 # ======================================================
-# HANDLER MEDIA (CARICAMENTO PRODOTTI - INTATTO)
+# HANDLER MEDIA (CARICAMENTO SU STORAGE LOCALE PRIVATO)
 # ======================================================
 @bot.message_handler(content_types=['photo', 'video'])
 def handle_media(message):
@@ -661,7 +618,7 @@ def handle_media(message):
     state = user_states.get(user_id, {})
     if state.get("step") not in ["WAITING_MEDIA", "WAITING_MEDIA_EDIT"]: return
 
-    wait_msg = bot.reply_to(message, "⏳ Elaborazione Supabase in corso...")
+    wait_msg = bot.reply_to(message, "⏳ Salvataggio sul Server Locale in corso...")
 
     if message.photo:
         file_id = message.photo[-1].file_id
@@ -678,20 +635,20 @@ def handle_media(message):
         file_url = f"https://api.telegram.org/file/bot{TELEGRAM_TOKEN}/{file_info.file_path}"
         file_bytes = requests.get(file_url).content
         
-        public_url, err = upload_to_supabase_storage(file_bytes, mime, ext)
+        public_url, err = upload_to_local_storage(file_bytes, mime, ext)
         if public_url:
             if "media_list" not in user_states[user_id]: user_states[user_id]["media_list"] = []
             user_states[user_id]["media_list"].append({"url": public_url, "type": media_type})
             tot = len(user_states[user_id]["media_list"])
-            bot.edit_message_text(f"✅ Salvato!\n📸 Media #{tot} aggiunto.\nContinua o premi Fine.", user_id, wait_msg.message_id, reply_markup=get_media_done_keyboard())
+            bot.edit_message_text(f"✅ Salvato Localmente!\n📸 Media #{tot} aggiunto.\nContinua o premi Fine.", user_id, wait_msg.message_id, reply_markup=get_media_done_keyboard())
         else:
-            bot.edit_message_text(f"❌ ERRORE SUPABASE:\n{err}", user_id, wait_msg.message_id)
+            bot.edit_message_text(f"❌ ERRORE SERVER:\n{err}", user_id, wait_msg.message_id)
     except Exception as e:
         bot.edit_message_text(f"❌ Errore scaricamento: {e}", user_id, wait_msg.message_id)
 
 
 # ======================================================
-# HANDLER TESTO (INPUT ADMIN & GHOST EDIT CHAT CLIENTE)
+# HANDLER TESTO (INPUT ADMIN)
 # ======================================================
 @bot.message_handler(func=lambda m: m.chat.id == ADMIN_ID)
 def handle_admin_text(message):
@@ -712,51 +669,39 @@ def handle_admin_text(message):
         except: bot.reply_to(message, "❌ Errore sintassi. Usa: /punti 123456789 100")
         return
 
-    # ==================================================
-    # RISOLUZIONE FINALE DEGLI ORDINI & UPDATE CUSTOM
-    # ==================================================
     if step in ["WAITING_TRACKING", "WAITING_FILE_INFO", "WAITING_MEETUP", "WAITING_UPDATE"]:
         admin_text = message.text.strip()
         o_id, u_id, m_id = state["o_id"], state["u_id"], state["m_id"]
         
-        # AGGIORNAMENTO CUSTOM (Modifica live, NON chiude l'ordine)
         if step == "WAITING_UPDATE":
             db_update_order_status(o_id, "ACCEPTED", f"Aggiornamento: {admin_text}")
-            title = "🔔 <b>AGGIORNAMENTO ORDINE</b>"
-            label = "Messaggio dallo Staff:"
+            title, label = "🔔 <b>AGGIORNAMENTO ORDINE</b>", "Messaggio dallo Staff:"
             new_text = f"{title}\n<i>Rif. #{o_id}</i>\n\n<b>{label}</b>\n<code>{admin_text}</code>\n\n<i>Stiamo lavorando alla tua richiesta...</i>"
-            
             if u_id and str(u_id) != "0":
                 try:
                     if m_id and str(m_id) != "0": bot.edit_message_text(chat_id=int(u_id), message_id=int(m_id), text=new_text, parse_mode="HTML")
                     else: bot.send_message(int(u_id), new_text, parse_mode="HTML")
                 except: pass
-            bot.reply_to(message, "✅ Aggiornamento Inviato! (L'ordine è rimasto nella Dashboard per essere chiuso in seguito)", reply_markup=get_admin_main_keyboard())
+            bot.reply_to(message, "✅ Aggiornamento Inviato!", reply_markup=get_admin_main_keyboard())
             user_states.pop(user_id, None)
             return
 
-        # TRACKING / MEETUP / ESITO (Archiviazione Definitiva in SHIPPED)
         db_update_order_status(o_id, "SHIPPED", admin_text)
         
-        if step == "WAITING_TRACKING":
-            title, label = "🚚 <b>ORDINE SPEDITO</b>", "Tracking / Istruzioni:"
-        elif step == "WAITING_FILE_INFO":
-            title, label = "✅ <b>SERVIZIO COMPLETATO</b>", "Esito / Link al Documento:"
-        elif step == "WAITING_MEETUP":
-            title, label = "📍 <b>DETTAGLI MEET UP</b>", "Info e Appuntamento:"
+        if step == "WAITING_TRACKING": title, label = "🚚 <b>ORDINE SPEDITO</b>", "Tracking / Istruzioni:"
+        elif step == "WAITING_FILE_INFO": title, label = "✅ <b>SERVIZIO COMPLETATO</b>", "Esito / Link al Documento:"
+        elif step == "WAITING_MEETUP": title, label = "📍 <b>DETTAGLI MEET UP</b>", "Info e Appuntamento:"
             
         new_text = f"{title}\n<i>Rif. #{o_id}</i>\n\n<b>{label}</b>\n<code>{admin_text}</code>\n\nGrazie per aver scelto Il Falsario 🎭"
-
         if u_id and str(u_id) != "0":
             try:
                 if m_id and str(m_id) != "0": bot.edit_message_text(chat_id=int(u_id), message_id=int(m_id), text=new_text, parse_mode="HTML")
                 else: bot.send_message(int(u_id), new_text, parse_mode="HTML")
             except: pass
                 
-        bot.reply_to(message, "✅ Operazione Completata! Ordine archiviato nello storico dei Completati.", reply_markup=get_admin_main_keyboard())
+        bot.reply_to(message, "✅ Operazione Completata! Archiviato nei Completati.", reply_markup=get_admin_main_keyboard())
         user_states.pop(user_id, None)
 
-    # CREAZIONE/MODIFICA PRODOTTI (INTATTO)
     elif step == "EDIT_NAME":
         db_update_product(state["target_product"], {"name": message.text})
         bot.reply_to(message, "✅ Nome aggiornato!", reply_markup=get_admin_main_keyboard())
@@ -787,7 +732,7 @@ def handle_admin_text(message):
                     else: continue
                 prices.append({"qty": qty, "price": float(price_str)})
                 
-            if not prices: raise ValueError("Nessun formato valido.")
+            if not prices: raise ValueError("Errore")
             
             if step == "EDIT_PRICES":
                 db_update_product(state["target_product"], {"price_options": prices})
@@ -820,7 +765,7 @@ def handle_admin_text(message):
 
 if __name__ == '__main__':
     threading.Thread(target=run_health_server, daemon=True).start()
-    print("🤖 Bot Il Falsario (Sistema Gestione Pro V5 Ultimate) Avviato!")
+    print("🤖 Bot Il Falsario (SERVER LOCALE 100% PRIVATO) Avviato!")
     while True:
         try:
             bot.remove_webhook()
