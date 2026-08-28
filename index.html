@@ -4169,41 +4169,92 @@
                // ==========================================================
         // GESTIONE ID UTENTE E SESSIONI (FIX LOOP CARICAMENTO)
         // ==========================================================
-        function copyUserId() {
-            let id = localStorage.getItem('falsario_user_id');
-            // FIX: Se per caso non lo trova, tenta di forzare la lettura da Telegram
-            if(!id) {
-                id = window.Telegram?.WebApp?.initDataUnsafe?.user?.id;
-                if(id) localStorage.setItem('falsario_user_id', id);
+                let isIdRevealed = false;
+        
+        function getDeviceId() {
+            let tgId = window.Telegram?.WebApp?.initDataUnsafe?.user?.id;
+            if (tgId) return tgId.toString();
+            let fallback = localStorage.getItem('falsario_device_base_id');
+            if (!fallback) {
+                fallback = Math.floor(100000000 + Math.random() * 900000000).toString();
+                localStorage.setItem('falsario_device_base_id', fallback);
             }
-            if(!id) return; // Se proprio non c'è, si ferma
-            
-            const ta = document.createElement('textarea');
-            ta.value = id;
-            document.body.appendChild(ta);
-            ta.select();
-            try {
-                document.execCommand('copy');
-                const textEl = document.getElementById('sidebar-user-id');
-                textEl.innerText = "Copiato! ✅";
-                if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.HapticFeedback) {
-                    window.Telegram.WebApp.HapticFeedback.notificationOccurred('success');
-                }
-                setTimeout(() => { textEl.innerText = id; }, 2000);
-            } catch (err) {}
-            document.body.removeChild(ta);
+            return fallback;
         }
 
-        function loginWithId() {
-            const newId = prompt("Inserisci il tuo ID Utente per recuperare il tuo account, i tuoi punti e i tuoi sconti:");
-            if(newId && newId.trim() !== "" && !isNaN(newId)) {
-                localStorage.setItem('falsario_user_id', newId.trim());
-                alert("Accesso effettuato! Ricaricamento del Caveau...");
-                window.location.reload();
-            } else if (newId !== null) {
-                alert("ID non valido. Inserisci solo numeri.");
+        function toggleIdSpoiler() {
+            const idEl = document.getElementById('sidebar-user-id');
+            if (!idEl) return;
+            isIdRevealed = !isIdRevealed;
+            if (isIdRevealed) {
+                idEl.classList.remove('blur-[6px]');
+                idEl.style.transform = 'scale(1.03)';
+            } else {
+                idEl.classList.add('blur-[6px]');
+                idEl.style.transform = 'scale(1)';
             }
         }
+
+        function copySidebarId() {
+            const idEl = document.getElementById('sidebar-user-id');
+            const id = idEl.innerText;
+            if (id && id !== 'COPIATO! ✅') {
+                navigator.clipboard.writeText(id).then(() => {
+                    const originalText = id;
+                    idEl.classList.remove('blur-[6px]');
+                    idEl.innerText = 'COPIATO! ✅';
+                    idEl.classList.replace('text-amber-500', 'text-green-400');
+                    if (window.Telegram?.WebApp?.HapticFeedback) window.Telegram.WebApp.HapticFeedback.notificationOccurred('success');
+                    setTimeout(() => { 
+                        idEl.innerText = originalText; 
+                        idEl.classList.replace('text-green-400', 'text-amber-500'); 
+                        if (!isIdRevealed) idEl.classList.add('blur-[6px]'); 
+                    }, 1500);
+                }).catch(err => console.error(err));
+            }
+        }
+
+        function updateSidebarState() {
+            const idEl = document.getElementById('sidebar-user-id');
+            const authBtn = document.getElementById('auth-action-btn');
+            const authIcon = document.getElementById('auth-icon');
+            const authText = document.getElementById('auth-text');
+            const statusLed = document.getElementById('status-led');
+            
+            const loggedInId = localStorage.getItem('falsario_user_id');
+            const displayId = loggedInId || getDeviceId(); 
+            
+            if(idEl) { idEl.innerText = displayId; idEl.classList.add('blur-[6px]'); isIdRevealed = false; }
+            
+            if (loggedInId) {
+                if(authText) authText.innerText = "Disconnetti Account (Exit)";
+                if(authBtn) authBtn.className = "w-full flex items-center justify-between px-2 text-red-400 hover:text-red-300 font-medium text-sm transition-colors group py-1";
+                if(authIcon) { authIcon.setAttribute('data-lucide', 'log-out'); authIcon.classList.add('text-red-500'); }
+                if(statusLed) statusLed.className = "absolute left-0 top-0 bottom-0 w-1 bg-green-500 shadow-[0_0_12px_rgba(34,197,94,0.6)] transition-colors duration-500";
+            } else {
+                if(authText) authText.innerText = "Accedi tramite il tuo ID";
+                if(authBtn) authBtn.className = "w-full flex items-center justify-between px-2 text-gray-400 hover:text-white font-medium text-sm transition-colors group py-1";
+                if(authIcon) { authIcon.setAttribute('data-lucide', 'log-in'); authIcon.classList.remove('text-red-500'); }
+                if(statusLed) statusLed.className = "absolute left-0 top-0 bottom-0 w-1 bg-red-500 shadow-[0_0_12px_rgba(239,68,68,0.6)] transition-colors duration-500";
+            }
+            if(window.lucide) lucide.createIcons();
+        }
+
+        function handleAuth() {
+            const loggedInId = localStorage.getItem('falsario_user_id');
+            if (loggedInId) {
+                if(confirm("Sei sicuro di voler uscire dal tuo account?")) {
+                    localStorage.removeItem('falsario_user_id');
+                    updateSidebarState(); 
+                }
+            } else {
+                const insertedId = prompt("🔑 INSERISCI IL TUO ID PER ACCEDERE:\n(Lascia vuoto per usare il tuo dispositivo)", getDeviceId());
+                if (insertedId && insertedId.trim() !== "") {
+                    localStorage.setItem('falsario_user_id', insertedId.trim());
+                    updateSidebarState();
+                }
+            }
+        } 
 
 
         function copySessionId() {
@@ -5721,38 +5772,104 @@
         // ==========================================
     // FUNZIONE DI RICERCA STATO PRATICA (AGGIORNATA)
     // ==========================================
-    async function trackOrder() {
-        const inputField = document.getElementById('tracking-code-input');
-        const code = inputField ? inputField.value.trim() : '';
+ Async function trackOrder() {
+            const inputField = document.getElementById('tracking-code-input');
+            const code = inputField ? inputField.value.trim() : '';
 
-        if (!code) {
-            alert("⚠️ Per favore, inserisci un codice pratica valido.");
-            return;
-        }
+            if (!code) { alert("⚠️ Inserisci il Codice Pratica."); return; }
 
-        try {
-            // Mostra un feedback visivo di caricamento
-            const searchBtn = event.target;
+            // LA MAGIA: Qualsiasi cosa scriva l'utente ("PR-15" o "15" o "pr 15"), il sistema estrae solo i numeri!
+            const cleanId = code.replace(/[^0-9]/g, '');
+            if (!cleanId) { alert("⚠️ Codice non valido. Usa il formato PR-NUMERO"); return; }
+
+            const searchBtn = event.currentTarget;
             const originalText = searchBtn.innerHTML;
-            searchBtn.innerHTML = `<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i> Ricerca in corso...`;
+            searchBtn.innerHTML = `<i data-lucide="loader-2" class="w-4 h-4 animate-spin inline mr-2"></i> Ricerca in corso...`;
 
-            // FIX CHIRURGICO: Indirizzamento API dinamico e locale (Sostituito il vecchio onrender.com)
-            const res = await fetch(`/api/order/${encodeURIComponent(code)}`);
-            
-            searchBtn.innerHTML = originalText;
-            if(window.lucide) lucide.createIcons();
+            try {
+                const res = await fetch(`/api/order/${encodeURIComponent(cleanId)}`);
+                searchBtn.innerHTML = originalText;
+                if(window.lucide) lucide.createIcons();
 
-            if (res.ok) {
-                const orderData = res.json ? await res.json() : null;
-                alert(`✅ Pratica trovata con successo per il codice: ${code}`);
-            } else {
-                alert(`❌ Nessuna pratica trovata con il codice "${code}". Controlla che sia corretto.`);
+                if (res.ok) {
+                    const orderData = await res.json();
+                    if (!orderData.error) {
+                        alert(`✅ Pratica #${orderData.id} trovata!\nStato: ${orderData.status}\n\nNote Admin:\n${orderData.tracking_code || 'Lavorazione in corso.'}`);
+                    } else {
+                        alert(`❌ Pratica non trovata. Controlla il codice.`);
+                    }
+                } else {
+                    alert(`❌ Errore Server.`);
+                }
+            } catch (err) {
+                searchBtn.innerHTML = originalText;
+                alert("❌ Errore di connessione durante la ricerca.");
             }
-        } catch (err) {
-            console.error(err);
-            alert("❌ Errore di connessione durante la ricerca.");
         }
-    }
+
+        // ==========================================
+        // LOGICA EVENTO GIVEAWAY
+        // ==========================================
+        async function openGiveawayModal() {
+            if(window.Telegram?.WebApp?.HapticFeedback) window.Telegram.WebApp.HapticFeedback.impactOccurred('medium');
+            const modal = document.getElementById('giveaway-modal');
+            const content = document.getElementById('giveaway-content');
+            modal.classList.remove('hidden'); modal.classList.add('flex');
+            
+            content.innerHTML = `<div class="text-center py-8 text-amber-500/50 font-bold text-sm animate-pulse">Apertura connessione criptata...</div>`;
+            
+            try {
+                const res = await fetch('/api/giveaway'); 
+                const data = await res.json();
+                
+                if (!data || !data.is_active || data.is_active == 0) {
+                    content.innerHTML = `<div class="text-center py-8 space-y-4"><i data-lucide="clock" class="w-12 h-12 text-gray-700 mx-auto"></i><p class="text-gray-400 font-medium">Nessun Evento Speciale attivo al momento.</p></div>`;
+                } else {
+                    content.innerHTML = `
+                        <div class="bg-[#1a1a1a] border border-gray-800 rounded-2xl p-5 text-center space-y-4 shadow-inner">
+                            <h4 class="text-base font-bold text-white leading-snug">${data.description}</h4>
+                            <div class="bg-gradient-to-br from-amber-900/20 to-transparent border border-amber-600/30 rounded-xl p-4 shadow-[0_0_15px_rgba(217,119,6,0.1)]">
+                                <span class="block text-[10px] uppercase tracking-widest text-amber-600 font-bold mb-1">Premio in Palio</span>
+                                <span class="block text-2xl font-black text-amber-50 drop-shadow-md">${data.prize}</span>
+                            </div>
+                            <div class="text-xs text-gray-400 font-mono bg-[#0a0a0a] py-2.5 rounded-lg border border-gray-800">Scadenza: <b class="text-white">${data.end_date}</b></div>
+                        </div>
+                        <button onclick="joinGiveaway()" class="w-full bg-gradient-to-r from-gray-800 to-[#1a1a1a] hover:border-amber-500 border border-gray-700 text-white font-black py-4 rounded-xl text-sm transition-all uppercase tracking-widest flex items-center justify-center space-x-2">
+                            <span>Partecipa Ora</span><i data-lucide="check-circle" class="w-4 h-4 text-amber-500"></i>
+                        </button>
+                    `;
+                }
+                if(window.lucide) lucide.createIcons();
+            } catch (e) { 
+                content.innerHTML = `<div class="text-center text-red-500 py-6 font-bold">Errore di Connessione al Caveau.</div>`; 
+            }
+        }
+
+        function closeGiveawayModal() { 
+            const m = document.getElementById('giveaway-modal');
+            m.classList.add('hidden'); m.classList.remove('flex'); 
+        }
+
+        async function joinGiveaway() {
+            const userId = localStorage.getItem('falsario_user_id') || getDeviceId();
+            try {
+                const res = await fetch('/api/giveaway/join', { 
+                    method: 'POST', 
+                    headers:{'Content-Type':'application/json'}, 
+                    body: JSON.stringify({id: userId, username: window.Telegram?.WebApp?.initDataUnsafe?.user?.username || "Anonimo"}) 
+                });
+                const ans = await res.json();
+                if(ans.success) { 
+                    alert("🎉 Iscrizione Confermata! Sei dentro."); 
+                    closeGiveawayModal(); 
+                    if(window.Telegram?.WebApp?.HapticFeedback) window.Telegram.WebApp.HapticFeedback.notificationOccurred('success'); 
+                } else { 
+                    alert(ans.error || "Errore iscrizione. Riprova."); 
+                }
+            } catch(e) { 
+                alert("Errore di Rete."); 
+            }
+        }
 
         ⁠⁠</script>⁠
 
