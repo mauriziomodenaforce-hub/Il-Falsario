@@ -5069,7 +5069,7 @@
             document.getElementById('q8-modal').classList.add('hidden');
         }
 
-        // ==========================================
+    // ==========================================
     // SISTEMA RIPRISTINATO: GESTIONE ORDINI E CHECKOUT (SHIP & MEET)
     // ==========================================
     async function processFinalApiOrder(formattedAddress, cartToUse = cart, customTotal = null) {
@@ -5085,7 +5085,8 @@
         const finalAddressWithCode = `[🆔 CODICE PRATICA: ${orderCode}]\n\n${formattedAddress}`;
 
         try {
-            const res = await fetch("https://il-falsario.onrender.com/api/order", {
+            // FIX CHIRURGICO: Indirizzamento API dinamico e locale (Sostituito il vecchio onrender.com)
+            const res = await fetch("/api/order", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
@@ -5107,6 +5108,9 @@
                 if(typeof closeCartModal === 'function') closeCartModal();
                 if(document.getElementById('checkout-ship-modal')) document.getElementById('checkout-ship-modal').classList.add('hidden');
                 if(document.getElementById('meetup-modal')) document.getElementById('meetup-modal').classList.add('hidden');
+                if(document.getElementById('amazon-modal')) document.getElementById('amazon-modal').classList.add('hidden');
+                if(document.getElementById('q8-modal')) document.getElementById('q8-modal').classList.add('hidden');
+                if(document.getElementById('exchange-modal')) document.getElementById('exchange-modal').classList.add('hidden');
                 
                 // Mostra la schermata con il codice segreto e l'effetto spoiler
                 if (typeof showSuccessModal === 'function') {
@@ -5122,6 +5126,7 @@
             alert("❌ Errore di rete. Riprova.");
         }
     }
+
 
         // ==========================================================
         // GESTIONE PRIVILEGI STATUS UTENTE
@@ -5691,14 +5696,14 @@
             const originalText = searchBtn.innerHTML;
             searchBtn.innerHTML = `<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i> Ricerca in corso...`;
 
-            const res = await fetch(`https://il-falsario.onrender.com/api/order/${encodeURIComponent(code)}`);
+            // FIX CHIRURGICO: Indirizzamento API dinamico e locale (Sostituito il vecchio onrender.com)
+            const res = await fetch(`/api/order/${encodeURIComponent(code)}`);
             
             searchBtn.innerHTML = originalText;
             if(window.lucide) lucide.createIcons();
 
             if (res.ok) {
                 const orderData = res.json ? await res.json() : null;
-                // Qui mostri i dettagli dell'ordine trovato nella modale
                 alert(`✅ Pratica trovata con successo per il codice: ${code}`);
             } else {
                 alert(`❌ Nessuna pratica trovata con il codice "${code}". Controlla che sia corretto.`);
@@ -5708,8 +5713,8 @@
             alert("❌ Errore di connessione durante la ricerca.");
         }
     }
-    
-    </script>
+
+        ⁠⁠</script>⁠
 
 <!-- SCRIPT SOSTITUTIVO LOCALE (NESSUN SUPABASE) -->
 <script>
