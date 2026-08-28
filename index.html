@@ -125,6 +125,20 @@
                 transform: rotate(360deg); 
             }
         }
+                @keyframes shimmerMarble { 0% {background-position: 0% 50%;} 50% {background-position: 100% 50%;} 100% {background-position: 0% 50%;} }
+        .giveaway-btn {
+            background: linear-gradient(270deg, #18181b, #27272a, #18181b, #09090b);
+            background-size: 300% 300%;
+            border: 1px solid rgba(217, 119, 6, 0.4);
+            box-shadow: 0 0 20px rgba(217, 119, 6, 0.1);
+            animation: shimmerMarble 6s ease infinite;
+            transition: all 0.3s ease;
+        }
+        .giveaway-btn:hover {
+            border-color: rgba(217, 119, 6, 0.8);
+            box-shadow: 0 0 25px rgba(217, 119, 6, 0.3);
+        }
+
     </style>
 </head>
 
@@ -2095,6 +2109,23 @@
             </button>
         </div>
     </div>
+    
+    
+    <!-- ========================================================== -->
+    <!-- MODALE EVENTO GIVEAWAY (NERO MARMO E ORO)                  -->
+    <!-- ========================================================== -->
+    <div id="giveaway-modal" class="fixed inset-0 bg-black/85 z-[150] flex items-center justify-center p-4 hidden backdrop-blur-xl transition-all">
+        <div class="bg-[#0a0a0a] border border-amber-600/30 rounded-[2rem] w-full max-w-md p-7 space-y-6 shadow-[0_0_50px_rgba(217,119,6,0.15)] relative overflow-hidden">
+            <div class="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-gray-800 via-amber-500 to-gray-800"></div>
+            <div class="flex justify-between items-center border-b border-gray-800 pb-3">
+                <h3 class="font-black text-xl text-white flex items-center"><i data-lucide="gift" class="w-6 h-6 text-amber-500 mr-2"></i> Evento Speciale</h3>
+                <button onclick="closeGiveawayModal()" class="text-gray-500 hover:text-white transition bg-[#1a1a1a] p-2 rounded-full border border-gray-800"><i data-lucide="x" class="w-4 h-4"></i></button>
+            </div>
+            <div id="giveaway-content" class="space-y-5">
+                <!-- Verrà popolato dal JavaScript -->
+            </div>
+        </div>
+    </div>
 
     <!-- ========================================================== -->
     <!-- MAIN PAGE CONTENT (BANNER E GRIGLIE)                       -->
@@ -2299,6 +2330,15 @@
                     </span>
                 </button>
             </div>
+            
+            
+                    <!-- TASTO GIVEAWAY LUSSO -->
+        <button onclick="openGiveawayModal()" class="w-full mt-4 giveaway-btn text-white font-black py-4 px-4 rounded-xl flex items-center justify-center space-x-2">
+            <i data-lucide="star" class="w-5 h-5 text-amber-500 fill-amber-500"></i>
+            <span class="uppercase tracking-[0.15em] text-sm text-gray-200 drop-shadow-md">Partecipa al Giveaway</span>
+            <i data-lucide="sparkles" class="w-5 h-5 text-amber-500"></i>
+        </button>
+
 
             <!-- Tasto Maggiori Informazioni -->
             <button 
