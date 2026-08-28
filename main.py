@@ -480,7 +480,7 @@ def handle_callbacks(call):
     elif data == "p_add":
         user_states.pop(user_id, None)
         markup = types.InlineKeyboardMarkup(row_width=1)
-        cats = ["Meet up Roma", "Documenti falsi", "Banconote false", "Monete false", "Coca", "Weed", "Hash", "Telefoni Criptati", "Servizi", "Altro"]
+        cats = ["Meetup", "Documenti falsi", "Banconote false", "Monete false", "Coca", "Weed", "Hash", "Telefoni Criptati", "Servizi", "Giveaway", "Altro"]
         markup.add(*[types.InlineKeyboardButton(c, callback_data=f"addcat_{c}") for c in cats])
         markup.add(types.InlineKeyboardButton("🔙 Torna al Menu Principale", callback_data="m_main"))
         bot.edit_message_text("Seleziona la categoria del prodotto:", user_id, call.message.message_id, reply_markup=markup)
