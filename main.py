@@ -5,6 +5,7 @@ import threading
 import uuid
 import sqlite3
 import base64
+import random
 from http.server import HTTPServer, BaseHTTPRequestHandler
 import requests
 import telebot
@@ -17,10 +18,14 @@ ADMIN_ID = int(os.environ.get('ADMIN_ID', 0))
 DB_PATH = "falsario.db"
 MEDIA_DIR = "/var/www/html/media"
 os.makedirs(MEDIA_DIR, exist_ok=True)
+GIVEAWAY_DB = 'giveaway_data.json'
 
 bot = telebot.TeleBot(TELEGRAM_TOKEN)
 user_states = {}
 
+# ==========================================
+# GESTIONE DATABASE E GIVEAWAY
+# ==========================================
 def get_db():
     conn = sqlite3.connect(DB_PATH, check_same_thread=False)
     conn.row_factory = sqlite3.Row
@@ -36,6 +41,18 @@ def init_db():
     conn.close()
 
 init_db()
+
+def get_giveaway():
+    if not os.path.exists(GIVEAWAY_DB):
+        return {"is_active": 1, "description": "🎁 Evento Esclusivo", "prize": "100€", "end_date": "Da definire", "participants": {}}
+    try:
+        with open(GIVEAWAY_DB, 'r') as f: return json.load(f)
+    except:
+        return {"is_active": 1, "description": "🎁 Evento Esclusivo", "prize": "100€", "end_date": "Da definire", "participants": {}}
+
+def save_giveaway(data):
+    with open(GIVEAWAY_DB, 'w') as f:
+        json.dump(data, f)
 
 def db_register_user(user_id, username):
     conn = get_db()
@@ -70,7 +87,8 @@ def db_update_product(prod_id, update_data):
 
 def db_get_products():
     conn = get_db()
-    rows = conn.execute("SELECT * FROM products ORDER BY created_at DESC").fetchall()
+    # Ordinamento fisso per ID per garantire la stabilità visiva originaria in vetrina
+    rows = conn.execute("SELECT * FROM products ORDER BY id ASC").fetchall()
     conn.close()
     return [dict(r) for r in rows]
 
@@ -137,6 +155,9 @@ def upload_to_local_storage(file_bytes, mime_type, file_extension):
     except Exception as e:
         return None, str(e)
 
+# ==========================================
+# SERVER API REST
+# ==========================================
 class WebhookAPIHandler(BaseHTTPRequestHandler):
     def do_OPTIONS(self):
         self.send_response(200)
@@ -157,9 +178,10 @@ class WebhookAPIHandler(BaseHTTPRequestHandler):
             self.wfile.write(json.dumps(showcase_prods).encode('utf-8'))
             
         elif self.path.startswith('/api/order/'):
-            order_id = self.path.split('/')[-1]
+            order_id = self.path.split('/')[-1].strip()
             orders = db_get_all_orders()
-            order = next((o for o in orders if str(o.get('id')) == str(order_id) or str(o.get('tracking_code')) == str(order_id)), None)
+            # Matching robusto e tipizzato per prevenire crash
+            order = next((o for o in orders if str(o.get('id')).strip() == order_id or str(o.get('tracking_code')).strip() == order_id), None)
             if order: self.wfile.write(json.dumps(order).encode('utf-8'))
             else: self.wfile.write(json.dumps({"error": "Not found"}).encode('utf-8'))
             
@@ -189,6 +211,7 @@ class WebhookAPIHandler(BaseHTTPRequestHandler):
         self.send_header('Access-Control-Allow-Origin', '*')
         self.end_headers()
 
+        # Risolto blocco architettonico API Giveaway
         if self.path == '/api/upload':
             b64_str = data.get("data", "")
             if "," in b64_str: b64_str = b64_str.split(",")[1]
@@ -202,59 +225,49 @@ class WebhookAPIHandler(BaseHTTPRequestHandler):
             except Exception as e:
                 self.wfile.write(json.dumps({"error": str(e)}).encode('utf-8'))
             return
-            if self.path == '/api/giveaway':
-                g = get_giveaway()
-                resp = {
-                    "is_active": g.get("is_active", 0),
-                    "description": g.get("description", ""),
-                    "prize": g.get("prize", ""),
-                    "end_date": g.get("end_date", ""),
-                    "participants_count": len(g.get("participants", {}))
-                }
-                self.send_response(200)
-                self.send_header('Content-type', 'application/json')
-                self.send_header('Access-Control-Allow-Origin', '*')
-                self.end_headers()
-                self.wfile.write(json.dumps(resp).encode('utf-8'))
-                return
+            
+        elif self.path == '/api/giveaway':
+            g = get_giveaway()
+            resp = {
+                "is_active": g.get("is_active", 0),
+                "description": g.get("description", ""),
+                "prize": g.get("prize", ""),
+                "end_date": g.get("end_date", ""),
+                "participants_count": len(g.get("participants", {}))
+            }
+            self.wfile.write(json.dumps(resp).encode('utf-8'))
+            return
 
-            if self.path == '/api/giveaway/join':
-                user_id = str(data.get('id', ''))
-                username = data.get('username', 'Anonimo')
-                g = get_giveaway()
-                
-                self.send_response(200)
-                self.send_header('Content-type', 'application/json')
-                self.send_header('Access-Control-Allow-Origin', '*')
-                self.end_headers()
-                
-                if not g.get("is_active"):
-                    self.wfile.write(json.dumps({"success": False, "error": "Evento chiuso al momento."}).encode('utf-8'))
-                    return
-                if user_id in g.get("participants", {}):
-                    self.wfile.write(json.dumps({"success": False, "error": "Sei già iscritto a questo evento!"}).encode('utf-8'))
-                    return
-                    
-                g.setdefault("participants", {})[user_id] = username
-                save_giveaway(g)
-                self.wfile.write(json.dumps({"success": True}).encode('utf-8'))
+        elif self.path == '/api/giveaway/join':
+            user_id = str(data.get('id', ''))
+            username = data.get('username', 'Anonimo')
+            g = get_giveaway()
+            
+            if not g.get("is_active"):
+                self.wfile.write(json.dumps({"success": False, "error": "Evento chiuso al momento."}).encode('utf-8'))
                 return
+            if user_id in g.get("participants", {}):
+                self.wfile.write(json.dumps({"success": False, "error": "Sei già iscritto a questo evento!"}).encode('utf-8'))
+                return
+                
+            g.setdefault("participants", {})[user_id] = username
+            save_giveaway(g)
+            self.wfile.write(json.dumps({"success": True}).encode('utf-8'))
+            return
 
-        if self.path == '/api/order':
+        elif self.path == '/api/order':
             cart = data.get("cart", [])
             total = data.get("total", 0)
             user_id = data.get("user_id")
             username = data.get("username", "Anonimo")
             address = data.get("address", "Non specificato")
 
-                        # Controllo intelligente per distinguere beni fisici e servizi digitali
             is_digital = any(
                 any(keyword in str(item.get("category", "")).lower() or keyword in str(item.get("name", "")).lower() 
                 for keyword in ["servizi", "exchange", "buoni amazon", "buoni q8", "amazon", "q8"]) 
                 for item in cart
             )
             order_type = "SERVICE" if is_digital else "PHYSICAL"
-
 
             order_id = db_save_order(user_id, username, cart, total, address, order_type)
             items_text = "\n".join([f"• {i['qty']}x {i['name']} - \u20ac{i['price']}" for i in cart])
@@ -275,7 +288,7 @@ class WebhookAPIHandler(BaseHTTPRequestHandler):
 
             if ADMIN_ID and ADMIN_ID != 0:
                 try:
-                    alert_type = "🛠 NUOVO SERVIZIO" if is_service else "📦 NUOVO ORDINE FISICO"
+                    alert_type = "🛠 NUOVO SERVIZIO" if is_digital else "📦 NUOVO ORDINE FISICO"
                     bot.send_message(ADMIN_ID, f"🔔 <b>{alert_type} RICEVUTO!</b>\nRif. #{order_id} da @{username}.\n👉 Apri /admin per gestirlo.", parse_mode="HTML")
                 except: pass
 
@@ -286,12 +299,16 @@ def run_health_server():
     server = HTTPServer(('0.0.0.0', port), WebhookAPIHandler)
     server.serve_forever()
 
+# ==========================================
+# KEYBOARD ADMIN (RESTAURATE & ALLINEATE)
+# ==========================================
 def get_admin_main_keyboard():
     markup = types.InlineKeyboardMarkup(row_width=1)
     markup.add(
         types.InlineKeyboardButton("📦 Gestione Ordini (Fisici)", callback_data="dash_ord_phys"),
         types.InlineKeyboardButton("🛠 Gestione Servizi (Digitali)", callback_data="dash_ord_serv"),
         types.InlineKeyboardButton("🛍 Gestione Prodotti & Media", callback_data="m_prod"),
+        types.InlineKeyboardButton("🎁 Gestione Giveaway", callback_data="m_gw"),
         types.InlineKeyboardButton("📜 Storico Archivi", callback_data="m_hist"),
         types.InlineKeyboardButton("💎 Gestione Punti Utenti", callback_data="m_pts")
     )
@@ -328,6 +345,7 @@ def get_media_done_keyboard():
     )
     return markup
 
+
 @bot.message_handler(commands=['start'])
 def send_welcome(message):
     user_id = message.chat.id
@@ -353,6 +371,7 @@ def admin_panel(message):
     user_states.pop(user_id, None)
     bot.send_message(user_id, "⚙️ <b>PANNELLO GESTIONALE CAVEAU</b> 🎭\n\nScegli la sezione da gestire:", parse_mode="HTML", reply_markup=get_admin_main_keyboard())
 
+
 @bot.callback_query_handler(func=lambda call: True)
 def handle_callbacks(call):
     user_id = call.message.chat.id
@@ -362,6 +381,80 @@ def handle_callbacks(call):
     if data == "m_main":
         user_states.pop(user_id, None)
         bot.edit_message_text("⚙️ <b>PANNELLO GESTIONALE CAVEAU</b>", user_id, call.message.message_id, parse_mode="HTML", reply_markup=get_admin_main_keyboard())
+
+    # --- INIZIO GESTIONE GIVEAWAY ADMIN ---
+    elif data == "m_gw":
+        user_states.pop(user_id, None)
+        gw = get_giveaway()
+        st_val = gw.get("is_active", 1)
+        status = "🟢 ATTIVO" if st_val else "🔴 INATTIVO"
+        
+        msg = (
+            f"🎁 <b>DASHBOARD GIVEAWAY</b>\n\n"
+            f"<b>Stato:</b> {status}\n"
+            f"<b>Premio in Palio:</b> {gw.get('prize', 'N/D')}\n"
+            f"<b>Descrizione:</b> {gw.get('description', 'N/D')}\n"
+            f"<b>Scadenza:</b> {gw.get('end_date', 'N/D')}\n"
+            f"<b>Iscritti Attuali:</b> {len(gw.get('participants', {}))}"
+        )
+        
+        markup = types.InlineKeyboardMarkup(row_width=2)
+        markup.add(
+            types.InlineKeyboardButton(f"👁️ Stato (On/Off)", callback_data=f"gw_tog_{0 if st_val else 1}"),
+            types.InlineKeyboardButton("🏆 Imposta Premio", callback_data="gw_prize")
+        )
+        markup.add(
+            types.InlineKeyboardButton("📝 Descrizione", callback_data="gw_desc"),
+            types.InlineKeyboardButton("⏳ Scadenza", callback_data="gw_date")
+        )
+        markup.add(
+            types.InlineKeyboardButton("📋 Lista Iscritti", callback_data="gw_list"),
+            types.InlineKeyboardButton("🎲 ESTRAI VINCITORE", callback_data="gw_draw")
+        )
+        markup.add(types.InlineKeyboardButton("🔙 Torna al Menu", callback_data="m_main"))
+        bot.edit_message_text(msg, user_id, call.message.message_id, parse_mode="HTML", reply_markup=markup)
+
+    elif data.startswith("gw_tog_"):
+        new_st = int(data.split("_")[2])
+        gw = get_giveaway()
+        gw["is_active"] = new_st
+        save_giveaway(gw)
+        bot.answer_callback_query(call.id, "✅ Stato Giveaway Aggiornato!")
+        call.data = "m_gw"
+        handle_callbacks(call)
+
+    elif data == "gw_prize":
+        user_states[user_id] = {"step": "WAITING_GW_PRIZE"}
+        bot.send_message(user_id, "🏆 Scrivi il nuovo PREMIO in palio (es. 100€ Bitcoin):", reply_markup=get_cancel_keyboard())
+    elif data == "gw_desc":
+        user_states[user_id] = {"step": "WAITING_GW_DESC"}
+        bot.send_message(user_id, "📝 Scrivi la nuova DESCRIZIONE dell'evento:", reply_markup=get_cancel_keyboard())
+    elif data == "gw_date":
+        user_states[user_id] = {"step": "WAITING_GW_DATE"}
+        bot.send_message(user_id, "⏳ Scrivi la SCADENZA (es. 31 Ottobre):", reply_markup=get_cancel_keyboard())
+
+    elif data == "gw_list":
+        gw = get_giveaway()
+        parts = gw.get("participants", {})
+        if not parts:
+            bot.answer_callback_query(call.id, "⚠️ Nessun iscritto al momento.", show_alert=True)
+            return
+        msg = "📋 <b>Lista Iscritti Giveaway:</b>\n\n"
+        for uid, uname in parts.items(): msg += f"👤 {uname} (ID: <code>{uid}</code>)\n"
+        bot.send_message(user_id, msg, parse_mode='HTML', reply_markup=get_cancel_keyboard())
+        bot.answer_callback_query(call.id, "Lista generata!")
+
+    elif data == "gw_draw":
+        gw = get_giveaway()
+        parts = gw.get("participants", {})
+        if not parts:
+            bot.answer_callback_query(call.id, "⚠️ Nessun iscritto per l'estrazione!", show_alert=True)
+            return
+        winner_id = random.choice(list(parts.keys()))
+        winner_name = parts[winner_id]
+        bot.send_message(user_id, f"🎉 <b>ESTRAZIONE COMPLETATA!</b>\n\n👤 <b>Vincitore:</b> {winner_name}\n🆔 <b>ID:</b> <code>{winner_id}</code>\n\nContattalo per consegnare il premio!", parse_mode='HTML', reply_markup=get_admin_main_keyboard())
+        bot.answer_callback_query(call.id, f"🎉 Ha vinto {winner_name}!", show_alert=True)
+    # --- FINE GESTIONE GIVEAWAY ---
 
     elif data == "dash_ord_phys":
         user_states.pop(user_id, None)
@@ -665,6 +758,29 @@ def handle_admin_text(message):
         except: bot.reply_to(message, "❌ Errore sintassi. Usa: /punti 123456789 100")
         return
 
+    # Gestione Update input testuale per Giveaway
+    if step == "WAITING_GW_PRIZE":
+        gw = get_giveaway()
+        gw["prize"] = message.text
+        save_giveaway(gw)
+        bot.reply_to(message, "✅ Premio aggiornato con successo!", reply_markup=get_admin_main_keyboard())
+        user_states.pop(user_id, None)
+        return
+    elif step == "WAITING_GW_DESC":
+        gw = get_giveaway()
+        gw["description"] = message.text
+        save_giveaway(gw)
+        bot.reply_to(message, "✅ Descrizione aggiornata con successo!", reply_markup=get_admin_main_keyboard())
+        user_states.pop(user_id, None)
+        return
+    elif step == "WAITING_GW_DATE":
+        gw = get_giveaway()
+        gw["end_date"] = message.text
+        save_giveaway(gw)
+        bot.reply_to(message, "✅ Scadenza aggiornata con successo!", reply_markup=get_admin_main_keyboard())
+        user_states.pop(user_id, None)
+        return
+
     if step in ["WAITING_TRACKING", "WAITING_FILE_INFO", "WAITING_MEETUP", "WAITING_UPDATE"]:
         admin_text = message.text.strip()
         o_id, u_id, m_id = state["o_id"], state["u_id"], state["m_id"]
@@ -758,48 +874,6 @@ def handle_admin_text(message):
         state["desc"] = message.text
         state["step"] = "WAITING_PRICES"
         bot.reply_to(message, "💰 Ultimo step. Invia i PREZZI (Es: 10pz 140, 25g - 100):", reply_markup=get_cancel_keyboard())
-# ==========================================
-# GESTIONE GIVEAWAY ADMIN (BOT)
-# ==========================================
-GIVEAWAY_DB = 'giveaway_data.json'
-
-def get_giveaway():
-    import json, os
-    if not os.path.exists(GIVEAWAY_DB):
-        return {"is_active": 1, "description": "🎁 Mega Evento Speciale", "prize": "100€ in Bitcoin", "end_date": "Fine Mese", "participants": {}}
-    with open(GIVEAWAY_DB, 'r') as f:
-        return json.load(f)
-
-def save_giveaway(data):
-    import json
-    with open(GIVEAWAY_DB, 'w') as f:
-        json.dump(data, f)
-
-@bot.message_handler(commands=['lista_giveaway'])
-def cmd_lista_giveaway(message):
-    g = get_giveaway()
-    parts = g.get("participants", {})
-    if not parts:
-        bot.reply_to(message, "⚠️ Nessun iscritto al momento.")
-        return
-    msg = "📋 <b>Lista Iscritti Giveaway:</b>\n\n"
-    for uid, uname in parts.items():
-        msg += f"👤 {uname} (ID: <code>{uid}</code>)\n"
-    bot.reply_to(message, msg, parse_mode='HTML')
-
-@bot.message_handler(commands=['estrai_giveaway'])
-def cmd_estrai_giveaway(message):
-    import time, random
-    g = get_giveaway()
-    parts = g.get("participants", {})
-    if not parts:
-        bot.reply_to(message, "⚠️ Nessun iscritto per l'estrazione.")
-        return
-    bot.send_message(message.chat.id, "🔄 <i>Estrazione in corso... rimescolo i partecipanti nel caveau...</i>", parse_mode='HTML')
-    time.sleep(3)
-    winner_id = random.choice(list(parts.keys()))
-    winner_name = parts[winner_id]
-    bot.send_message(message.chat.id, f"🎉 <b>ESTRAZIONE COMPLETATA!</b>\n\n👤 <b>Vincitore:</b> {winner_name}\n🆔 <b>ID:</b> <code>{winner_id}</code>\n\nContattalo per consegnare il premio!", parse_mode='HTML')
 
 
 if __name__ == '__main__':
