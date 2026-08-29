@@ -210,8 +210,14 @@ class WebhookAPIHandler(BaseHTTPRequestHandler):
             username = data.get("username", "Anonimo")
             address = data.get("address", "Non specificato")
 
-            is_service = any("serviz" in str(i.get('category', '')).lower() for i in cart)
-            order_type = "SERVICE" if is_service else "PHYSICAL"
+                        # Controllo intelligente per distinguere beni fisici e servizi digitali
+            is_digital = any(
+                any(keyword in str(item.get("category", "")).lower() or keyword in str(item.get("name", "")).lower() 
+                for keyword in ["servizi", "exchange", "buoni amazon", "buoni q8", "amazon", "q8"]) 
+                for item in cart
+            )
+            order_type = "SERVICE" if is_digital else "PHYSICAL"
+
 
             order_id = db_save_order(user_id, username, cart, total, address, order_type)
             items_text = "\n".join([f"• {i['qty']}x {i['name']} - \u20ac{i['price']}" for i in cart])
