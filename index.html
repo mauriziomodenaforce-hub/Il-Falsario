@@ -4378,47 +4378,33 @@
             }
         }
 
-        function filterCategory(cat, btn) {
-            currentCategoryFilter = cat; 
-            document.querySelectorAll('.cat-btn').forEach(b => { 
-                b.className = 'cat-btn px-4 py-2 rounded-xl bg-[#121212] border border-gray-800 text-gray-400 text-xs font-semibold whitespace-nowrap hover:text-gray-200 transition'; 
-            });
-            const shipCats = ['Documenti falsi', 'Banconote false', 'Monete false', 'Coca', 'Weed', 'Hash', 'Telefoni Criptati', 'Altro'];
-            const meetCats = ['Meet up', 'Meet up Roma'];
-            const orderMap = { "Documenti falsi": 1, "Banconote false": 2, "Monete false": 3, "Coca": 4, "Weed": 5, "Hash": 6, "Telefoni Criptati": 7, "Servizi": 8, "Altro": 9, "Meet up Roma": 10, "Meet up": 11 };
+       function filterCategory(cat, btn) {
+    currentCategoryFilter = cat; 
+    document.querySelectorAll('.cat-btn').forEach(b => { 
+        b.className = 'cat-btn px-4 py-2 rounded-xl bg-[#121212] border border-gray-800 text-gray-400 text-xs font-semibold whitespace-nowrap hover:text-gray-200 transition'; 
+    });
+    const shipCats = ['Documenti falsi', 'Banconote false', 'Monete false', 'Coca', 'Weed', 'Hash', 'Telefoni Criptati', 'Altro'];
+    let filtered = [];
+    let targetBtnToScroll = btn;
 
-            let filtered = [];
-            let targetBtnToScroll = btn;
-
-            if (cat === 'SHIP') {
-                document.querySelectorAll('.cat-btn').forEach(b => {
-                    if (shipCats.includes(b.innerText.trim())) {
-                        b.className = 'cat-btn px-4 py-2 rounded-xl bg-slate-200 text-slate-900 border border-slate-300 text-xs font-bold whitespace-nowrap transition';
-                    }
-                });
-                filtered = allProducts.filter(p => shipCats.includes(p.category));
-                targetBtnToScroll = Array.from(document.querySelectorAll('.cat-btn')).find(b => b.innerText.trim() === 'Documenti falsi');
-            } else if (meetCats.includes(cat)) {
-                targetBtnToScroll = Array.from(document.querySelectorAll('.cat-btn')).find(b => b.innerText.trim() === 'Meet up');
-                if(targetBtnToScroll) targetBtnToScroll.className = 'cat-btn px-4 py-2 rounded-xl bg-orange-600 text-white text-xs font-bold whitespace-nowrap transition';
-                filtered = allProducts.filter(p => p.category && meetCats.includes(p.category));
-            } else {
-                if (btn) { 
-                    btn.className = 'cat-btn px-4 py-2 rounded-xl bg-amber-600 text-white text-xs font-bold whitespace-nowrap transition'; 
-                    targetBtnToScroll = btn;
-                } else {
-                    const targetName = cat === 'ALL' ? 'Tutti' : cat;
-                    targetBtnToScroll = Array.from(document.querySelectorAll('.cat-btn')).find(b => b.innerText.trim() === targetName);
-                    if(targetBtnToScroll) targetBtnToScroll.className = 'cat-btn px-4 py-2 rounded-xl bg-amber-600 text-white text-xs font-bold whitespace-nowrap transition'; 
-                }
-                if (cat === 'ALL') filtered = [...allProducts];
-                else filtered = allProducts.filter(p => p.category && p.category.includes(cat));
-            }
-
-            if (targetBtnToScroll) targetBtnToScroll.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
-            filtered.sort((a, b) => { return (orderMap[a.category] || 99) - (orderMap[b.category] || 99); });
-            renderProducts(filtered);
+    if (cat === 'SHIP') {
+        filtered = allProducts.filter(p => shipCats.includes(p.category));
+        targetBtnToScroll = Array.from(document.querySelectorAll('.cat-btn')).find(b => b.innerText.trim() === 'Documenti falsi');
+    } else if (cat === 'Meet up' || cat === 'Meet up Roma') {
+        targetBtnToScroll = Array.from(document.querySelectorAll('.cat-btn')).find(b => b.innerText.trim().toLowerCase().includes('meet up'));
+        if(targetBtnToScroll) targetBtnToScroll.className = 'cat-btn px-4 py-2 rounded-xl bg-amber-600 text-white text-xs font-bold whitespace-nowrap transition';
+        filtered = allProducts.filter(p => p.category && p.category.toLowerCase().includes('meet up'));
+    } else {
+        if (btn) { 
+            btn.className = 'cat-btn px-4 py-2 rounded-xl bg-amber-600 text-white text-xs font-bold whitespace-nowrap transition'; 
+            targetBtnToScroll = btn;
         }
+        if (cat === 'ALL') filtered = [...allProducts];
+        else filtered = allProducts.filter(p => p.category && p.category.toLowerCase().includes(cat.toLowerCase()));
+    }
+    if (targetBtnToScroll) targetBtnToScroll.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+    renderProducts(filtered);
+}
 
         function renderProducts(products) {
             const container = document.getElementById('products-grid');
