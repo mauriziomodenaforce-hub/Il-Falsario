@@ -202,6 +202,43 @@ class WebhookAPIHandler(BaseHTTPRequestHandler):
             except Exception as e:
                 self.wfile.write(json.dumps({"error": str(e)}).encode('utf-8'))
             return
+            if self.path == '/api/giveaway':
+                g = get_giveaway()
+                resp = {
+                    "is_active": g.get("is_active", 0),
+                    "description": g.get("description", ""),
+                    "prize": g.get("prize", ""),
+                    "end_date": g.get("end_date", ""),
+                    "participants_count": len(g.get("participants", {}))
+                }
+                self.send_response(200)
+                self.send_header('Content-type', 'application/json')
+                self.send_header('Access-Control-Allow-Origin', '*')
+                self.end_headers()
+                self.wfile.write(json.dumps(resp).encode('utf-8'))
+                return
+
+            if self.path == '/api/giveaway/join':
+                user_id = str(data.get('id', ''))
+                username = data.get('username', 'Anonimo')
+                g = get_giveaway()
+                
+                self.send_response(200)
+                self.send_header('Content-type', 'application/json')
+                self.send_header('Access-Control-Allow-Origin', '*')
+                self.end_headers()
+                
+                if not g.get("is_active"):
+                    self.wfile.write(json.dumps({"success": False, "error": "Evento chiuso al momento."}).encode('utf-8'))
+                    return
+                if user_id in g.get("participants", {}):
+                    self.wfile.write(json.dumps({"success": False, "error": "Sei già iscritto a questo evento!"}).encode('utf-8'))
+                    return
+                    
+                g.setdefault("participants", {})[user_id] = username
+                save_giveaway(g)
+                self.wfile.write(json.dumps({"success": True}).encode('utf-8'))
+                return
 
         if self.path == '/api/order':
             cart = data.get("cart", [])
@@ -301,7 +338,7 @@ def send_welcome(message):
         "💬 Contatto Telegram Ufficiale: @il_falsario_ufficiale_x2\n"
         "📲 Contatto Signal Ufficiale: https://signal.me/#eu/m7lTtwu9GCr8RJQ7mhQ2OkwVfT_MZvjG6g-PFCnS8dG9NBl3s09GYKPtiyRQz-ih\n"
         "📲 Contatto Session Ufficiale: 05495e45a9c1ced74358dcedaad80c99956e1405fbbccf4f8e85f0ca873946a515\n\n"
-        "📢 Canale Feedback: https://t.me/+eRPnJSZq485kMzdk\n\n"
+        "📢 Canale Feedback: https://t.me/+VPltIK0sMag5YmFk\n\n"
         "Massima serietà, discrezione totale e qualità impeccabile.\n"
         "👇 Clicca in basso per accedere al caveau."
     )
@@ -721,6 +758,49 @@ def handle_admin_text(message):
         state["desc"] = message.text
         state["step"] = "WAITING_PRICES"
         bot.reply_to(message, "💰 Ultimo step. Invia i PREZZI (Es: 10pz 140, 25g - 100):", reply_markup=get_cancel_keyboard())
+# ==========================================
+# GESTIONE GIVEAWAY ADMIN (BOT)
+# ==========================================
+GIVEAWAY_DB = 'giveaway_data.json'
+
+def get_giveaway():
+    import json, os
+    if not os.path.exists(GIVEAWAY_DB):
+        return {"is_active": 1, "description": "🎁 Mega Evento Speciale", "prize": "100€ in Bitcoin", "end_date": "Fine Mese", "participants": {}}
+    with open(GIVEAWAY_DB, 'r') as f:
+        return json.load(f)
+
+def save_giveaway(data):
+    import json
+    with open(GIVEAWAY_DB, 'w') as f:
+        json.dump(data, f)
+
+@bot.message_handler(commands=['lista_giveaway'])
+def cmd_lista_giveaway(message):
+    g = get_giveaway()
+    parts = g.get("participants", {})
+    if not parts:
+        bot.reply_to(message, "⚠️ Nessun iscritto al momento.")
+        return
+    msg = "📋 <b>Lista Iscritti Giveaway:</b>\n\n"
+    for uid, uname in parts.items():
+        msg += f"👤 {uname} (ID: <code>{uid}</code>)\n"
+    bot.reply_to(message, msg, parse_mode='HTML')
+
+@bot.message_handler(commands=['estrai_giveaway'])
+def cmd_estrai_giveaway(message):
+    import time, random
+    g = get_giveaway()
+    parts = g.get("participants", {})
+    if not parts:
+        bot.reply_to(message, "⚠️ Nessun iscritto per l'estrazione.")
+        return
+    bot.send_message(message.chat.id, "🔄 <i>Estrazione in corso... rimescolo i partecipanti nel caveau...</i>", parse_mode='HTML')
+    time.sleep(3)
+    winner_id = random.choice(list(parts.keys()))
+    winner_name = parts[winner_id]
+    bot.send_message(message.chat.id, f"🎉 <b>ESTRAZIONE COMPLETATA!</b>\n\n👤 <b>Vincitore:</b> {winner_name}\n🆔 <b>ID:</b> <code>{winner_id}</code>\n\nContattalo per consegnare il premio!", parse_mode='HTML')
+
 
 if __name__ == '__main__':
     threading.Thread(target=run_health_server, daemon=True).start()
