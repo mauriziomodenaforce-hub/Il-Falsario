@@ -4214,7 +4214,7 @@
             }
         }
 
-        function updateSidebarState() {
+                function updateSidebarState() {
             const idEl = document.getElementById('sidebar-user-id');
             const authBtn = document.getElementById('auth-action-btn');
             const authIcon = document.getElementById('auth-icon');
@@ -4243,18 +4243,19 @@
         function handleAuth() {
             const loggedInId = localStorage.getItem('falsario_user_id');
             if (loggedInId) {
-                if(confirm("Sei sicuro di voler uscire dal tuo account?")) {
+                if(confirm("Sei sicuro di voler uscire dal tuo account personalizzato?")) {
                     localStorage.removeItem('falsario_user_id');
                     updateSidebarState(); 
                 }
             } else {
-                const insertedId = prompt("🔑 INSERISCI IL TUO ID PER ACCEDERE:\n(Lascia vuoto per usare il tuo dispositivo)", getDeviceId());
+                const insertedId = prompt("🔑 INSERISCI IL TUO ID PER ACCEDERE:", getDeviceId());
                 if (insertedId && insertedId.trim() !== "") {
                     localStorage.setItem('falsario_user_id', insertedId.trim());
                     updateSidebarState();
                 }
             }
-        } 
+        }
+ 
 
 
         function copySessionId() {
