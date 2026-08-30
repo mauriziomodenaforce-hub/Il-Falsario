@@ -5978,6 +5978,89 @@ async function openTrophiesModal() {
     if(window.lucide) lucide.createIcons();
 }
 </script>
+    <!-- ========================================================== -->
+    <!-- OVERRIDE GLOBALE E DEFINITIVO ACCOUNT E LOGIN              -->
+    <!-- ========================================================== -->
+    <script>
+    window.isIdRevealed = false;
+
+    window.getDeviceId = function() {
+        let tgId = window.Telegram?.WebApp?.initDataUnsafe?.user?.id;
+        if (tgId) return tgId.toString();
+        let fallback = localStorage.getItem('falsario_device_base_id');
+        if (!fallback) { 
+            fallback = Math.floor(100000000 + Math.random() * 900000000).toString(); 
+            localStorage.setItem('falsario_device_base_id', fallback); 
+        }
+        return fallback;
+    };
+
+    window.updateSidebarState = function() {
+        const idEl = document.getElementById('sidebar-user-id');
+        const authBtn = document.getElementById('auth-action-btn');
+        const authIcon = document.getElementById('auth-icon');
+        const authText = document.getElementById('auth-text');
+        const statusLed = document.getElementById('status-led');
+        
+        // Usiamo sessionStorage: appena esci dall'app, si resetta e torni DISCONNESSO!
+        const loggedInId = sessionStorage.getItem('falsario_active_session');
+        const displayId = loggedInId || window.getDeviceId(); 
+        
+        if(idEl) { 
+            idEl.innerText = displayId; 
+            idEl.classList.add('blur-[6px]'); 
+            window.isIdRevealed = false; 
+        }
+        
+        if (loggedInId) {
+            // SEI LOGGATO -> Mostra tasto EXIT
+            if(authText) authText.innerText = "Disconnetti Account (Exit)";
+            if(authBtn) authBtn.className = "w-full flex items-center justify-between px-2 text-red-400 hover:text-red-300 font-medium text-sm transition-colors group py-1";
+            if(authIcon) { authIcon.setAttribute('data-lucide', 'log-out'); authIcon.classList.add('text-red-500'); }
+            if(statusLed) statusLed.className = "absolute left-0 top-0 bottom-0 w-1 bg-green-500 shadow-[0_0_12px_rgba(34,197,94,0.6)] transition-colors duration-500";
+        } else {
+            // SEI DISCONNESSO -> Mostra tasto ACCEDI
+            if(authText) authText.innerText = "Accedi tramite il tuo ID";
+            if(authBtn) authBtn.className = "w-full flex items-center justify-between px-2 text-gray-400 hover:text-white font-medium text-sm transition-colors group py-1";
+            if(authIcon) { authIcon.setAttribute('data-lucide', 'log-in'); authIcon.classList.remove('text-red-500'); }
+            if(statusLed) statusLed.className = "absolute left-0 top-0 bottom-0 w-1 bg-red-500 shadow-[0_0_12px_rgba(239,68,68,0.6)] transition-colors duration-500";
+        }
+        if(window.lucide) lucide.createIcons();
+    };
+
+    window.handleAuth = function() {
+        const loggedInId = sessionStorage.getItem('falsario_active_session');
+        if (loggedInId) {
+            // AZIONE DI LOGOUT (Se eri dentro)
+            if(confirm("Sei sicuro di voler uscire dal tuo account personalizzato? Tornerai all'ID anonimo di base.")) {
+                sessionStorage.removeItem('falsario_active_session');
+                window.updateSidebarState(); 
+            }
+        } else {
+            // AZIONE DI LOGIN (Se eri fuori)
+            const insertedId = prompt("🔑 INSERISCI IL TUO ID PER ACCEDERE:\n(Lascia precompilato per usare l'ID base del tuo telefono, oppure cancellalo e incolla un vecchio ID)", window.getDeviceId());
+            if (insertedId && insertedId.trim() !== "") {
+                sessionStorage.setItem('falsario_active_session', insertedId.trim());
+                window.updateSidebarState();
+            }
+        }
+    };
+
+    window.toggleIdSpoiler = function() {
+        const idEl = document.getElementById('sidebar-user-id');
+        if (!idEl) return;
+        window.isIdRevealed = !window.isIdRevealed;
+        if (window.isIdRevealed) { idEl.classList.remove('blur-[6px]'); idEl.style.transform = 'scale(1.03)'; } 
+        else { idEl.classList.add('blur-[6px]'); idEl.style.transform = 'scale(1)'; }
+    };
+
+    // Forza la disconnessione (pulizia vecchi dati) e aggiorna lo stato all'avvio
+    document.addEventListener("DOMContentLoaded", () => {
+        localStorage.removeItem('falsario_user_id');
+        localStorage.removeItem('falsario_logged_in_id');
+        setTimeout(window.updateSidebarState, 100);
+    });
+    </script>
 </body>
 </html>
 
