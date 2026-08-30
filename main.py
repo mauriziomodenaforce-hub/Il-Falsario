@@ -186,7 +186,13 @@ class WebhookAPIHandler(BaseHTTPRequestHandler):
             else: self.wfile.write(json.dumps({"error": "Not found"}).encode('utf-8'))
             
         elif self.path.startswith('/api/user/'):
-            user_id = self.path.split('/')[-1]
+            user_id_str = self.path.split('/')[-1]
+            # [MODIFICA 1: Converte la stringa o ID_ in numero per trovare correttamente l'utente nel Database]
+            try:
+                user_id = int(user_id_str.replace("ID_", ""))
+            except:
+                user_id = user_id_str
+            
             conn = get_db()
             row = conn.execute("SELECT points FROM users WHERE telegram_id = ?", (user_id,)).fetchone()
             conn.close()
@@ -211,7 +217,6 @@ class WebhookAPIHandler(BaseHTTPRequestHandler):
         self.send_header('Access-Control-Allow-Origin', '*')
         self.end_headers()
 
-        # Risolto blocco architettonico API Giveaway
         if self.path == '/api/upload':
             b64_str = data.get("data", "")
             if "," in b64_str: b64_str = b64_str.split(",")[1]
@@ -604,6 +609,7 @@ def handle_callbacks(call):
             except: pass
         bot.send_message(user_id, "👇 Fine registro annullati:", reply_markup=get_cancel_keyboard())
 
+    # [MODIFICA 2: Aggiornato menu istruzioni M_PTS]
     elif data == "m_pts":
         user_states.pop(user_id, None)
         msg = (
@@ -752,6 +758,7 @@ def handle_admin_text(message):
     state = user_states.get(user_id, {})
     step = state.get("step")
 
+    # [MODIFICA 3: Implementazione comando /punti intelligente blindata nel DB originale]
     if message.text and message.text.startswith("/punti"):
         try:
             parts = message.text.split()
@@ -760,10 +767,10 @@ def handle_admin_text(message):
             
             # Caso 1: Assegnazione tramite risposta al messaggio/contatto
             if message.reply_to_message:
-                qty = int(parts[1])
+                qty = int(parts[1]) if len(parts) > 1 else 0
                 if message.reply_to_message.forward_from:
                     target_id = message.reply_to_message.forward_from.id
-                elif message.reply_to_message.contact and message.reply_to_message.contact.user_id:
+                elif hasattr(message.reply_to_message, 'contact') and message.reply_to_message.contact is not None and message.reply_to_message.contact.user_id:
                     target_id = message.reply_to_message.contact.user_id
                 else:
                     target_id = message.reply_to_message.from_user.id
@@ -784,14 +791,14 @@ def handle_admin_text(message):
                         bot.reply_to(message, f"❌ Nessun utente @{username} trovato nel database del bot.")
                         return
                 elif target_str.upper().startswith("ID_"):
-                    target_id = int(target_str[3:])
+                    target_id = int(target_str.upper().replace("ID_", ""))
                 else:
                     target_id = int(target_str)
             
             if target_id is None:
                 raise ValueError("Nessun target valido")
 
-            # Crea l'utente al volo se entra dal sito per la prima volta (Permette ricariche anonime senza /start)
+            # Crea l'utente al volo se entra dal sito per la prima volta e non è mai registrato
             conn = get_db()
             row = conn.execute("SELECT points FROM users WHERE telegram_id = ?", (target_id,)).fetchone()
             if not row:
@@ -799,7 +806,7 @@ def handle_admin_text(message):
                 conn.commit()
             conn.close()
 
-            # Esegue ricarica
+            # Esegue ricarica sul DB
             ok, new_total = db_update_user_points(target_id, qty)
             if ok:
                 receipt = f"✅ <b>RICARICA PUNTI COMPLETATA</b>\n\n🆔 <b>Target ID:</b> <code>{target_id}</code>\n💎 <b>Nuovo Saldo:</b> {new_total} punti"
