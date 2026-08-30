@@ -6162,6 +6162,89 @@ async function openTrophiesModal() {
         }
     };
     </script>
+        <!-- ========================================================== -->
+    <!-- OVERRIDE ASSOLUTO CATEGORIE E STILE (Eleganza Platino)     -->
+    <!-- ========================================================== -->
+    <style>
+        /* Sovrascrive la grezzata arancione: Stile Platino, niente ingrandimento, glow raffinato */
+        .cat-btn-active {
+            background-color: #1a1a1a !important;
+            color: #f3f4f6 !important; /* Platino / Grigio chiarissimo */
+            font-weight: 800 !important;
+            border-color: #d1d5db !important; /* Bordo Platino metallico */
+            box-shadow: 0 0 12px rgba(209, 213, 219, 0.25) !important; /* Glow elegante */
+            transform: scale(1) !important; /* Nessun ingrandimento brutto */
+        }
+    </style>
+
+    <script>
+    window.filterCategory = function(cat, btn) {
+        if(typeof currentCategoryFilter !== 'undefined') { currentCategoryFilter = cat; }
+        
+        // 1. Spegne tutti i bottoni con fluidità
+        document.querySelectorAll('.cat-btn').forEach(b => { 
+            b.className = 'cat-btn px-4 py-2 rounded-xl bg-[#121212] border border-gray-800 text-gray-400 text-xs font-semibold whitespace-nowrap hover:text-gray-200 transition-all duration-300'; 
+        });
+        
+        const shipCats = ['Documenti falsi', 'Banconote false', 'Monete false', 'Coca', 'Weed', 'Hash', 'Telefoni Criptati', 'Altro'];
+        const servCats = ['Servizi', 'Exchange', 'Buoni', 'Amazon', 'Q8'];
+        let filtered = [];
+        let targetBtnToScroll = btn;
+
+        // 2. Logica di illuminazione multipla e filtro mirato
+        if (cat === 'SHIP') {
+            filtered = allProducts.filter(p => p.category && shipCats.includes(p.category));
+            
+            // Accende TUTTE le categorie appartenenti a Ship
+            document.querySelectorAll('.cat-btn').forEach(b => {
+                const btnText = b.innerText.trim();
+                if (shipCats.includes(btnText)) {
+                    b.className = 'cat-btn px-4 py-2 rounded-xl cat-btn-active whitespace-nowrap transition-all duration-300';
+                    if (!targetBtnToScroll) targetBtnToScroll = b; // Prende il primo per centrarlo
+                }
+            });
+        } 
+        else if (cat === 'Meet up' || cat === 'Meet up Roma') {
+            filtered = allProducts.filter(p => p.category && p.category.toLowerCase().includes('meet up'));
+            
+            document.querySelectorAll('.cat-btn').forEach(b => {
+                if (b.innerText.trim().toLowerCase().includes('meet up')) {
+                    b.className = 'cat-btn px-4 py-2 rounded-xl cat-btn-active whitespace-nowrap transition-all duration-300';
+                    if (!targetBtnToScroll) targetBtnToScroll = b;
+                }
+            });
+        } 
+        else if (cat === 'Servizi' || cat === 'Digital') {
+             filtered = allProducts.filter(p => p.category && servCats.some(s => p.category.toLowerCase().includes(s.toLowerCase())));
+             
+             document.querySelectorAll('.cat-btn').forEach(b => {
+                if (servCats.some(s => b.innerText.trim().toLowerCase().includes(s.toLowerCase()))) {
+                    b.className = 'cat-btn px-4 py-2 rounded-xl cat-btn-active whitespace-nowrap transition-all duration-300';
+                    if (!targetBtnToScroll) targetBtnToScroll = b;
+                }
+            });
+        } 
+        else {
+            // Singola categoria
+            if (btn) { 
+                btn.className = 'cat-btn px-4 py-2 rounded-xl cat-btn-active whitespace-nowrap transition-all duration-300'; 
+                targetBtnToScroll = btn;
+            }
+            if (cat === 'ALL') filtered = [...allProducts];
+            else filtered = allProducts.filter(p => p.category && p.category.toLowerCase().includes(cat.toLowerCase()));
+        }
+
+        // 3. Esegue uno scroll super fluido che mette i tasti attivi al centro
+        if (targetBtnToScroll) {
+            targetBtnToScroll.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+        }
+        
+        // 4. Stampa le card a schermo
+        if(typeof renderProducts === 'function') {
+            renderProducts(filtered);
+        }
+    };
+    </script>
 </body>
 </html>
 
