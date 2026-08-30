@@ -606,7 +606,14 @@ def handle_callbacks(call):
 
     elif data == "m_pts":
         user_states.pop(user_id, None)
-        msg = "💎 <b>GESTIONE PUNTI UTENTI</b>\n\nUsa in chat:\n<code>/punti ID_UTENTE QUANTITA</code>\n\n(Es: <code>/punti 123456789 100</code>)"
+        msg = (
+            "💎 <b>MOTORE PUNTI INTELLIGENTE</b>\n\n"
+            "Puoi caricare punti usando 4 metodi:\n\n"
+            "1️⃣ <b>Per Username:</b> <code>/punti @Mario 100</code>\n"
+            "2️⃣ <b>Per ID Telegram:</b> <code>/punti 123456789 100</code>\n"
+            "3️⃣ <b>Per ID Sito:</b> <code>/punti ID_123456789 100</code>\n"
+            "4️⃣ <b>Per Risposta:</b> Rispondi a un utente/contatto scrivendo solo <code>/punti 100</code>"
+        )
         bot.send_message(user_id, msg, parse_mode="HTML", reply_markup=get_cancel_keyboard())
 
     elif data == "m_prod":
@@ -748,14 +755,69 @@ def handle_admin_text(message):
     if message.text and message.text.startswith("/punti"):
         try:
             parts = message.text.split()
-            target_user, qty = int(parts[1]), int(parts[2])
-            ok, new_total = db_update_user_points(target_user, qty)
+            target_id = None
+            qty = 0
+            
+            # Caso 1: Assegnazione tramite risposta al messaggio/contatto
+            if message.reply_to_message:
+                qty = int(parts[1])
+                if message.reply_to_message.forward_from:
+                    target_id = message.reply_to_message.forward_from.id
+                elif message.reply_to_message.contact and message.reply_to_message.contact.user_id:
+                    target_id = message.reply_to_message.contact.user_id
+                else:
+                    target_id = message.reply_to_message.from_user.id
+            
+            # Caso 2, 3 e 4: Comando diretto strutturato (/punti BERSAGLIO 100)
+            elif len(parts) >= 3:
+                target_str = parts[1]
+                qty = int(parts[2])
+                
+                if target_str.startswith("@"):
+                    username = target_str.replace("@", "")
+                    conn = get_db()
+                    row = conn.execute("SELECT telegram_id FROM users WHERE username = ? COLLATE NOCASE", (username,)).fetchone()
+                    conn.close()
+                    if row:
+                        target_id = row['telegram_id']
+                    else:
+                        bot.reply_to(message, f"❌ Nessun utente @{username} trovato nel database del bot.")
+                        return
+                elif target_str.upper().startswith("ID_"):
+                    target_id = int(target_str[3:])
+                else:
+                    target_id = int(target_str)
+            
+            if target_id is None:
+                raise ValueError("Nessun target valido")
+
+            # Crea l'utente al volo se entra dal sito per la prima volta (Permette ricariche anonime senza /start)
+            conn = get_db()
+            row = conn.execute("SELECT points FROM users WHERE telegram_id = ?", (target_id,)).fetchone()
+            if not row:
+                conn.execute("INSERT INTO users (telegram_id, username, points) VALUES (?, ?, ?)", (target_id, "Utente_Caveau", 0))
+                conn.commit()
+            conn.close()
+
+            # Esegue ricarica
+            ok, new_total = db_update_user_points(target_id, qty)
             if ok:
-                bot.reply_to(message, f"✅ L'utente {target_user} ora ha {new_total} punti.")
-                try: bot.send_message(target_user, f"💎 <b>Aggiornamento Caveau:</b> il tuo saldo è {new_total} punti.", parse_mode="HTML")
+                receipt = f"✅ <b>RICARICA PUNTI COMPLETATA</b>\n\n🆔 <b>Target ID:</b> <code>{target_id}</code>\n💎 <b>Nuovo Saldo:</b> {new_total} punti"
+                bot.reply_to(message, receipt, parse_mode="HTML")
+                try: bot.send_message(target_id, f"💎 <b>Aggiornamento Caveau:</b> il tuo saldo è stato ricaricato. Hai ora <b>{new_total} punti</b>.", parse_mode="HTML")
                 except: pass
-            else: bot.reply_to(message, "❌ Errore: Utente non trovato.")
-        except: bot.reply_to(message, "❌ Errore sintassi. Usa: /punti 123456789 100")
+            else: 
+                bot.reply_to(message, "❌ Errore critico database durante l'aggiornamento.")
+        except Exception as e: 
+            err_msg = (
+                "❌ <b>ERRORE DI SINTASSI</b>\n\n"
+                "Usa il Motore Punti con questi formati:\n"
+                "1️⃣ <code>/punti @username 100</code>\n"
+                "2️⃣ <code>/punti 123456789 100</code>\n"
+                "3️⃣ <code>/punti ID_123456789 100</code>\n"
+                "4️⃣ <i>Rispondi a un messaggio/contatto con:</i> <code>/punti 100</code>"
+            )
+            bot.reply_to(message, err_msg, parse_mode="HTML")
         return
 
     # Gestione Update input testuale per Giveaway
