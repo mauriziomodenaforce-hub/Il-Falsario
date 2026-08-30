@@ -6245,6 +6245,1292 @@ async function openTrophiesModal() {
         }
     };
     </script>
+    <!-- ========================================================== -->
+    <!-- OVERRIDE STILE CATEGORIE, FLUIDITA' E ORDINAMENTO LOGICO   -->
+    <!-- ========================================================== -->
+    <style>
+        /* Stile Platino Elegante: ZERO ingrandimento, glow morbido e lussuoso */
+        .cat-btn {
+            transition: all 0.4s ease !important;
+        }
+        .cat-btn-active {
+            background-color: #111111 !important; /* Fondo scurissimo, quasi nero */
+            color: #e5e7eb !important; /* Bianco Platino */
+            border-color: rgba(229, 231, 235, 0.4) !important; /* Bordo platino fine */
+            box-shadow: 0 0 15px rgba(229, 231, 235, 0.15) !important; /* Bagliore dolce e morbido */
+            transform: scale(1) !important; /* RIGOROSAMENTE BLOCCATO, niente deformazioni */
+            font-weight: 800 !important;
+        }
+    </style>
+
+    <script>
+    window.filterCategory = function(cat, btn = null) {
+        if(typeof currentCategoryFilter !== 'undefined') { currentCategoryFilter = cat; }
+        
+        // 1. Spegne tutti i bottoni
+        const allBtns = document.querySelectorAll('.cat-btn');
+        allBtns.forEach(b => { 
+            b.className = 'cat-btn px-4 py-2 rounded-xl bg-[#121212] border border-gray-800 text-gray-400 text-xs font-semibold whitespace-nowrap hover:text-gray-200'; 
+        });
+        
+        // Liste di parole chiave per le Macro-Categorie
+        const shipCats = ['documenti falsi', 'banconote false', 'monete false', 'coca', 'weed', 'hash', 'telefoni criptati', 'altro'];
+        const servCats = ['servizi', 'exchange', 'buoni amazon', 'buoni q8', 'amazon', 'q8'];
+        const meetCats = ['meet up', 'meet up roma'];
+        
+        let filtered = [];
+        let targetBtnToScroll = btn;
+        const catLower = cat.toLowerCase();
+
+        // 2. ILLUMINAZIONE SIMULTANEA DELLE MACRO-CATEGORIE
+        if (catLower === 'ship') {
+            filtered = allProducts.filter(p => p.category && shipCats.includes(p.category.toLowerCase()));
+            allBtns.forEach(b => {
+                if (shipCats.includes(b.innerText.trim().toLowerCase())) {
+                    b.classList.add('cat-btn-active');
+                    if (!targetBtnToScroll) targetBtnToScroll = b;
+                }
+            });
+        } 
+        else if (meetCats.some(m => catLower.includes(m))) {
+            filtered = allProducts.filter(p => p.category && p.category.toLowerCase().includes('meet up'));
+            allBtns.forEach(b => {
+                if (b.innerText.trim().toLowerCase().includes('meet up')) {
+                    b.classList.add('cat-btn-active');
+                    if (!targetBtnToScroll) targetBtnToScroll = b;
+                }
+            });
+        } 
+        else if (servCats.some(s => catLower.includes(s)) || catLower === 'digital') {
+             filtered = allProducts.filter(p => p.category && servCats.some(s => p.category.toLowerCase().includes(s)));
+             allBtns.forEach(b => {
+                if (servCats.some(s => b.innerText.trim().toLowerCase().includes(s))) {
+                    b.classList.add('cat-btn-active');
+                    if (!targetBtnToScroll) targetBtnToScroll = b;
+                }
+            });
+        } 
+        else {
+            // Singola Categoria o "Tutti"
+            if (btn) { 
+                btn.classList.add('cat-btn-active'); 
+                targetBtnToScroll = btn;
+            } else {
+                // Se cliccato da un link esterno, cerca il bottone corrispondente per accenderlo
+                allBtns.forEach(b => {
+                    if(b.innerText.trim().toLowerCase() === catLower) {
+                        b.classList.add('cat-btn-active');
+                        targetBtnToScroll = b;
+                    }
+                });
+                if(cat === 'ALL' && !targetBtnToScroll) {
+                    allBtns.forEach(b => {
+                        if(b.innerText.trim().toLowerCase() === 'tutti') {
+                             b.classList.add('cat-btn-active');
+                             targetBtnToScroll = b;
+                        }
+                    });
+                }
+            }
+            
+            if (cat === 'ALL') filtered = [...allProducts];
+            else filtered = allProducts.filter(p => p.category && p.category.toLowerCase().includes(catLower));
+        }
+
+        // 3. ORDINAMENTO LOGICO DEFINITIVO
+        // Ordina alfabeticamente per Categoria. All'interno della stessa Categoria, i più Nuovi per primi.
+        filtered.sort((a, b) => {
+            const catA = (a.category || "").toUpperCase();
+            const catB = (b.category || "").toUpperCase();
+            if (catA < catB) return -1;
+            if (catA > catB) return 1;
+            // Se la categoria è uguale, ordina per ID decrescente (Novità in alto)
+            return (b.id || 0) - (a.id || 0);
+        });
+
+        // 4. SCROLL FLUIDO CENTRATO SUL MENU
+        if (targetBtnToScroll) {
+            targetBtnToScroll.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+        }
+        
+        // 5. RENDERIZZA I PRODOTTI
+        if(typeof renderProducts === 'function') {
+            renderProducts(filtered);
+        }
+    };
+
+    // ==========================================================
+    // BINDING DEL TASTO "VEDI TUTTI" NEI SERVIZI RAPIDI
+    // ==========================================================
+    document.addEventListener("DOMContentLoaded", () => {
+        document.body.addEventListener('click', function(e) {
+            const btn = e.target.closest('button');
+            if (!btn) return;
+            
+            // Se clicchi "Vedi Tutti" vicino a Servizi Rapidi
+            if (btn.innerText.toLowerCase().includes('vedi tutti')) {
+                const parent = btn.closest('div, section');
+                if (parent && parent.innerText.toUpperCase().includes('SERVIZI RAPIDI')) {
+                    e.preventDefault();
+                    window.filterCategory('Servizi');
+                    // Scorri morbidamente al menu categorie
+                    const catMenu = document.querySelector('.cat-btn');
+                    if (catMenu) {
+                        catMenu.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }
+                }
+            }
+        });
+    });
+    </script>
+    <!-- ========================================================== -->
+    <!-- OVERRIDE STILE CATEGORIE (Platino Puro) & ORDINAMENTO      -->
+    <!-- ========================================================== -->
+    <style>
+        /* Spegne ogni transizione deformante */
+        .cat-btn {
+            transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease !important;
+            transform: none !important;
+        }
+        /* Stile Platino Elegante, fine, bordo nitido e non sbavato */
+        .cat-btn-active {
+            background-color: #151515 !important; /* Fondo scuro pregiato */
+            color: #ffffff !important; /* Bianco ottico puro */
+            border-color: rgba(255, 255, 255, 0.75) !important; /* Bordo platino nitido e sottile */
+            box-shadow: 0 0 6px rgba(255, 255, 255, 0.15) !important; /* Luce dolcissima, zero pacchianate */
+            font-weight: 800 !important;
+            transform: none !important; /* Assolutamente nessun ingrandimento del tasto */
+        }
+    </style>
+
+    <script>
+    window.filterCategory = function(cat, btn = null) {
+        if(typeof currentCategoryFilter !== 'undefined') { currentCategoryFilter = cat; }
+        
+        // 1. Reset pulito di tutti i bottoni
+        const allBtns = document.querySelectorAll('.cat-btn');
+        allBtns.forEach(b => { 
+            b.className = 'cat-btn px-4 py-2 rounded-xl bg-[#121212] border border-gray-800 text-gray-400 text-xs font-semibold whitespace-nowrap hover:text-gray-200 transition-colors duration-300'; 
+        });
+        
+        // 2. Raggruppamento esatto delle Categorie
+        const shipCats = ['documenti falsi', 'banconote false', 'monete false', 'coca', 'weed', 'hash', 'telefoni criptati'];
+        const servCats = ['servizi', 'exchange', 'buoni amazon', 'buoni benzina q8', 'amazon', 'q8', 'digital'];
+        const meetCats = ['meet up', 'meet up roma'];
+        
+        let filtered = [];
+        let targetBtnToScroll = null;
+        const catLower = cat.toLowerCase();
+
+        // 3. Illuminazione Simultanea e Fluida
+        if (catLower === 'ship') {
+            filtered = allProducts.filter(p => p.category && shipCats.includes(p.category.toLowerCase()));
+            allBtns.forEach(b => {
+                if (shipCats.includes(b.innerText.trim().toLowerCase())) {
+                    b.classList.add('cat-btn-active');
+                    if (!targetBtnToScroll) targetBtnToScroll = b;
+                }
+            });
+        } 
+        else if (meetCats.some(m => catLower.includes(m))) {
+            filtered = allProducts.filter(p => p.category && p.category.toLowerCase().includes('meet up'));
+            allBtns.forEach(b => {
+                if (b.innerText.trim().toLowerCase().includes('meet up')) {
+                    b.classList.add('cat-btn-active');
+                    if (!targetBtnToScroll) targetBtnToScroll = b;
+                }
+            });
+        } 
+        else if (servCats.some(s => catLower.includes(s))) {
+             filtered = allProducts.filter(p => p.category && servCats.some(s => p.category.toLowerCase().includes(s)));
+             allBtns.forEach(b => {
+                if (servCats.some(s => b.innerText.trim().toLowerCase().includes(s))) {
+                    b.classList.add('cat-btn-active');
+                    if (!targetBtnToScroll) targetBtnToScroll = b;
+                }
+            });
+        } 
+        else {
+            // Se clicchi "Tutti" o una categoria singola
+            if (cat === 'ALL' || catLower === 'tutti') {
+                filtered = [...allProducts];
+                allBtns.forEach(b => {
+                    if(b.innerText.trim().toLowerCase() === 'tutti' || b.innerText.trim().toLowerCase() === 'all') {
+                         b.classList.add('cat-btn-active');
+                         targetBtnToScroll = b;
+                    }
+                });
+            } else {
+                filtered = allProducts.filter(p => p.category && p.category.toLowerCase().includes(catLower));
+                allBtns.forEach(b => {
+                    if(b.innerText.trim().toLowerCase() === catLower) {
+                        b.classList.add('cat-btn-active');
+                        targetBtnToScroll = b;
+                    }
+                });
+            }
+        }
+
+        // 4. ORDINAMENTO LOGICO DA VERO CATALOGO (Gruppi di prodotti sensati)
+        const categoryOrder = {
+            'documenti falsi': 1,
+            'banconote false': 2,
+            'monete false': 3,
+            'coca': 4,
+            'weed': 5,
+            'hash': 6,
+            'telefoni criptati': 7,
+            'meet up': 8,
+            'exchange': 9,
+            'buoni amazon': 10,
+            'buoni benzina q8': 11,
+            'servizi': 12
+        };
+
+        filtered.sort((a, b) => {
+            const catA = (a.category || "").toLowerCase();
+            const catB = (b.category || "").toLowerCase();
+            
+            let indexA = 99; let indexB = 99;
+            for (let key in categoryOrder) { if(catA.includes(key)) indexA = categoryOrder[key]; }
+            for (let key in categoryOrder) { if(catB.includes(key)) indexB = categoryOrder[key]; }
+            
+            // Ordina prima per la logica del catalogo (Tutti i documenti insieme, poi banconote, ecc.)
+            if (indexA !== indexB) return indexA - indexB;
+            // Se sono della stessa categoria, metti in alto quelli inseriti per ultimi
+            return (b.id || 0) - (a.id || 0);
+        });
+
+        // 5. Scroll della pulsantiera alto
+        if (targetBtnToScroll) {
+            targetBtnToScroll.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+        }
+        
+        // 6. Stampa a schermo i prodotti
+        if(typeof renderProducts === 'function') {
+            renderProducts(filtered);
+        }
+    };
+
+    // ==========================================================
+    // CONNESSIONE PERFETTA DEL TASTO "VEDI TUTTI" (Servizi Rapidi)
+    // ==========================================================
+    document.addEventListener("DOMContentLoaded", () => {
+        document.body.addEventListener('click', function(e) {
+            const btn = e.target.closest('button, a');
+            if (!btn) return;
+            
+            // Se il tasto contiene "Vedi Tutti"
+            if (btn.innerText.toLowerCase().includes('vedi tutti')) {
+                const parent = btn.closest('div, section');
+                // Se si trova vicino alla sezione Servizi Rapidi
+                if (parent && (parent.innerText.toUpperCase().includes('SERVIZI RAPIDI') || parent.innerHTML.includes('SERVIZI'))) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    
+                    // Forza il click sulla logica dei Servizi
+                    window.filterCategory('Servizi');
+                    
+                    // Esegue uno scroll morbido verso l'alto per mostrarti il menu categorie illuminato
+                    const menu = document.querySelector('.cat-btn');
+                    if(menu) {
+                        const topPos = menu.getBoundingClientRect().top + window.scrollY - 80;
+                        window.scrollTo({ top: topPos, behavior: 'smooth' });
+                    }
+                }
+            }
+        });
+    });
+    </script>
+    <!-- ========================================================== -->
+    <!-- OVERRIDE STILE CATEGORIE E AUTO-CORRETTORE MEETUP          -->
+    <!-- ========================================================== -->
+    <style>
+        /* Spegne ogni transizione deformante */
+        .cat-btn {
+            transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease !important;
+            transform: none !important;
+        }
+        /* Stile Platino Elegante, fine, bordo nitido e non sbavato */
+        .cat-btn-active {
+            background-color: #151515 !important; 
+            color: #ffffff !important; 
+            border-color: rgba(255, 255, 255, 0.75) !important; 
+            box-shadow: 0 0 6px rgba(255, 255, 255, 0.15) !important; 
+            font-weight: 800 !important;
+            transform: none !important; 
+        }
+    </style>
+
+    <script>
+    // 0. AUTO-CORRETTORE MEETUP GLOBALE (Risolve il bug Bot vs Sito)
+    // Controlla costantemente e corregge "Meetup" in "Meet up" per far scattare l'interfaccia dell'ordine corretta.
+    setInterval(() => {
+        try {
+            if (typeof allProducts !== 'undefined' && Array.isArray(allProducts)) {
+                allProducts.forEach(p => {
+                    if (p.category && p.category.toLowerCase() === 'meetup') p.category = 'Meet up';
+                });
+            }
+        } catch(e) {}
+        try {
+            if (typeof cart !== 'undefined' && Array.isArray(cart)) {
+                cart.forEach(item => {
+                    if (item.category && item.category.toLowerCase() === 'meetup') item.category = 'Meet up';
+                });
+            }
+        } catch(e) {}
+    }, 300);
+
+    window.filterCategory = function(cat, btn = null) {
+        if(typeof currentCategoryFilter !== 'undefined') { currentCategoryFilter = cat; }
+        
+        // 1. Reset pulito di tutti i bottoni
+        const allBtns = document.querySelectorAll('.cat-btn');
+        allBtns.forEach(b => { 
+            b.className = 'cat-btn px-4 py-2 rounded-xl bg-[#121212] border border-gray-800 text-gray-400 text-xs font-semibold whitespace-nowrap hover:text-gray-200 transition-colors duration-300'; 
+        });
+        
+        // 2. Raggruppamento esatto delle Categorie
+        const shipCats = ['documenti falsi', 'banconote false', 'monete false', 'coca', 'weed', 'hash', 'telefoni criptati', 'altro'];
+        const servCats = ['servizi', 'exchange', 'buoni amazon', 'buoni benzina q8', 'amazon', 'q8', 'digital'];
+        const meetCats = ['meet up', 'meetup', 'meet'];
+        
+        let filtered = [];
+        let targetBtnToScroll = null;
+        const catLower = cat.toLowerCase();
+
+        // 3. Illuminazione Simultanea e Fluida
+        if (catLower === 'ship') {
+            filtered = allProducts.filter(p => p.category && shipCats.includes(p.category.toLowerCase()));
+            allBtns.forEach(b => {
+                if (shipCats.includes(b.innerText.trim().toLowerCase())) {
+                    b.classList.add('cat-btn-active');
+                    if (!targetBtnToScroll) targetBtnToScroll = b;
+                }
+            });
+        } 
+        else if (meetCats.some(m => catLower.includes(m))) {
+            filtered = allProducts.filter(p => p.category && p.category.toLowerCase().includes('meet'));
+            allBtns.forEach(b => {
+                if (b.innerText.trim().toLowerCase().includes('meet')) {
+                    b.classList.add('cat-btn-active');
+                    if (!targetBtnToScroll) targetBtnToScroll = b;
+                }
+            });
+        } 
+        else if (servCats.some(s => catLower.includes(s))) {
+             filtered = allProducts.filter(p => p.category && servCats.some(s => p.category.toLowerCase().includes(s)));
+             allBtns.forEach(b => {
+                if (servCats.some(s => b.innerText.trim().toLowerCase().includes(s))) {
+                    b.classList.add('cat-btn-active');
+                    if (!targetBtnToScroll) targetBtnToScroll = b;
+                }
+            });
+        } 
+        else {
+            if (cat === 'ALL' || catLower === 'tutti') {
+                filtered = [...allProducts];
+                allBtns.forEach(b => {
+                    if(b.innerText.trim().toLowerCase() === 'tutti' || b.innerText.trim().toLowerCase() === 'all') {
+                         b.classList.add('cat-btn-active');
+                         targetBtnToScroll = b;
+                    }
+                });
+            } else {
+                filtered = allProducts.filter(p => p.category && p.category.toLowerCase().includes(catLower));
+                allBtns.forEach(b => {
+                    if(b.innerText.trim().toLowerCase() === catLower) {
+                        b.classList.add('cat-btn-active');
+                        targetBtnToScroll = b;
+                    }
+                });
+            }
+        }
+
+        // 4. ORDINAMENTO LOGICO DA VERO CATALOGO
+        const categoryOrder = {
+            'documenti falsi': 1,
+            'banconote false': 2,
+            'monete false': 3,
+            'coca': 4,
+            'weed': 5,
+            'hash': 6,
+            'telefoni criptati': 7,
+            'altro': 8,
+            'meet up': 9,
+            'meetup': 9,
+            'exchange': 10,
+            'buoni amazon': 11,
+            'buoni benzina q8': 12,
+            'servizi': 13
+        };
+
+        filtered.sort((a, b) => {
+            const catA = (a.category || "").toLowerCase();
+            const catB = (b.category || "").toLowerCase();
+            
+            let indexA = 99; let indexB = 99;
+            for (let key in categoryOrder) { if(catA.includes(key)) indexA = categoryOrder[key]; }
+            for (let key in categoryOrder) { if(catB.includes(key)) indexB = categoryOrder[key]; }
+            
+            if (indexA !== indexB) return indexA - indexB;
+            return (b.id || 0) - (a.id || 0);
+        });
+
+        // 5. Scroll della pulsantiera alto
+        if (targetBtnToScroll) {
+            targetBtnToScroll.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+        }
+        
+        // 6. Stampa a schermo i prodotti
+        if(typeof renderProducts === 'function') {
+            renderProducts(filtered);
+        }
+    };
+
+    // ==========================================================
+    // CONNESSIONE PERFETTA DEL TASTO "VEDI TUTTI" (Servizi Rapidi)
+    // ==========================================================
+    document.addEventListener("DOMContentLoaded", () => {
+        document.body.addEventListener('click', function(e) {
+            const btn = e.target.closest('button, a');
+            if (!btn) return;
+            
+            if (btn.innerText.toLowerCase().includes('vedi tutti')) {
+                const parent = btn.closest('div, section');
+                if (parent && (parent.innerText.toUpperCase().includes('SERVIZI RAPIDI') || parent.innerHTML.includes('SERVIZI'))) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    
+                    window.filterCategory('Servizi');
+                    
+                    const menu = document.querySelector('.cat-btn');
+                    if(menu) {
+                        const topPos = menu.getBoundingClientRect().top + window.scrollY - 80;
+                        window.scrollTo({ top: topPos, behavior: 'smooth' });
+                    }
+                }
+            }
+        });
+    });
+    </script>
+        <!-- ========================================================== -->
+    <!-- OVERRIDE DESIGN TASTO CHECKOUT & MODULO MEETUP AVANZATO    -->
+    <!-- ========================================================== -->
+    <style>
+        /* Stile Marmo Nero Carrara / Platino per il Checkout */
+        .marble-checkout-btn {
+            background: linear-gradient(135deg, #050505 0%, #1c1c1c 40%, #0a0a0a 60%, #222222 100%) !important;
+            color: #ffffff !important;
+            border: 1px solid rgba(255, 255, 255, 0.4) !important;
+            box-shadow: 0 4px 20px rgba(255, 255, 255, 0.1), inset 0 1px 1px rgba(255,255,255,0.2) !important;
+            border-radius: 12px !important;
+            text-transform: uppercase !important;
+            font-weight: 900 !important;
+            letter-spacing: 1.5px !important;
+            transition: all 0.3s ease !important;
+        }
+        
+        .marble-checkout-btn:active {
+            transform: scale(0.98) !important;
+            box-shadow: 0 0 10px rgba(255,255,255,0.3) !important;
+        }
+
+        /* Stili per gli input del modulo Meet up */
+        .mu-input {
+            width: 100%; background: #0a0a0a; border: 1px solid #333; color: white; 
+            padding: 12px; border-radius: 8px; font-size: 14px; margin-top: 6px;
+        }
+        .mu-input:focus { outline: none; border-color: #d97706; }
+        .mu-label { font-size: 11px; text-transform: uppercase; color: #9ca3af; font-weight: bold; letter-spacing: 1px; }
+        .mu-file-box { background: #111; border: 1px dashed #444; padding: 10px; border-radius: 8px; margin-top: 6px; text-align: center; }
+    </style>
+
+    <script>
+    // 1. TRASFORMAZIONE CONTINUA DEL TASTO CHECKOUT (Design Marmo)
+    setInterval(() => {
+        document.querySelectorAll('button').forEach(btn => {
+            if (btn.innerText.toUpperCase().includes('PROCEDI AL CHECKOUT')) {
+                // Rimuove classi blu o viola pacchiane
+                btn.classList.remove('bg-blue-600', 'bg-blue-500', 'bg-purple-600'); 
+                if (!btn.classList.contains('marble-checkout-btn')) {
+                    btn.classList.add('marble-checkout-btn');
+                }
+            }
+        });
+    }, 300);
+
+    // 2. COMPRESSORE FOTO (Lato Client) PER UPLOAD VELOCE SENZA CRASH
+    window.processMeetupImage = async function(fileInputId) {
+        const input = document.getElementById(fileInputId);
+        if (!input.files || !input.files[0]) return "Nessuna Foto Inserita";
+        const file = input.files[0];
+
+        return new Promise((resolve) => {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const img = new Image();
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    const ctx = canvas.getContext('2d');
+                    const MAX = 1000;
+                    let w = img.width; let h = img.height;
+                    if (w > h) { if (w > MAX) { h *= MAX / w; w = MAX; } } else { if (h > MAX) { w *= MAX / h; h = MAX; } }
+                    canvas.width = w; canvas.height = h;
+                    ctx.drawImage(img, 0, 0, w, h);
+                    const b64 = canvas.toDataURL('image/jpeg', 0.7);
+                    
+                    fetch('/api/upload', { method: 'POST', body: JSON.stringify({data: b64}) })
+                    .then(r => r.json()).then(d => resolve(d.url || 'Errore Caricamento')).catch(() => resolve('Errore di Rete'));
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        });
+    };
+
+    // 3. GENERAZIONE DEL MODULO MEETUP
+    window.openMeetupCheckoutModal = function() {
+        const overlayId = 'meetup-checkout-overlay';
+        if (document.getElementById(overlayId)) document.getElementById(overlayId).remove();
+
+        const modalHTML = `
+        <div id="${overlayId}" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.9); z-index: 9999999; display: flex; align-items: center; justify-content: center; padding: 1rem; backdrop-filter: blur(10px);">
+            <div style="background: #121212; border: 1px solid #333; border-radius: 20px; width: 100%; max-width: 450px; max-height: 90vh; overflow-y: auto; padding: 1.5rem; box-shadow: 0 0 30px rgba(0,0,0,0.8);">
+                
+                <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #222; padding-bottom: 1rem; margin-bottom: 1.5rem;">
+                    <h3 style="font-weight: 900; font-size: 1.1rem; color: white;">📍 PRENOTAZIONE MEET UP</h3>
+                    <button onclick="document.getElementById('${overlayId}').remove()" style="background: transparent; color: white; font-size: 1.2rem; font-weight: bold; border: none; cursor: pointer;">X</button>
+                </div>
+
+                <div style="margin-bottom: 1.5rem;">
+                    <label class="mu-label">Zona / Quartiere Incontro</label>
+                    <input type="text" id="mu-zona" class="mu-input" placeholder="Es. Roma Termini, Milano Centrale..." required>
+                </div>
+
+                <div style="margin-bottom: 1.5rem;">
+                    <label class="mu-label">Orario Richiesto</label>
+                    <input type="time" id="mu-orario" class="mu-input" required>
+                    <div style="font-size: 10px; color: #f59e0b; margin-top: 4px;">⚠️ Si prega di prenotare l'orario con almeno 1 ora di anticipo.</div>
+                </div>
+
+                <div style="margin-bottom: 1.5rem;">
+                    <label class="mu-label">IBAN di Garanzia</label>
+                    <input type="text" id="mu-iban" class="mu-input" placeholder="IT..." required>
+                    <div style="font-size: 10px; color: #9ca3af; margin-top: 4px;">Inserimento obbligatorio: richiesto esclusivamente per garantire un rimborso immediato in caso di imprevisti o annullamenti.</div>
+                </div>
+
+                <div style="background: #1a1a1a; padding: 1rem; border-radius: 12px; border: 1px solid #333; margin-bottom: 1.5rem;">
+                    <h4 style="color: white; font-weight: bold; font-size: 13px; margin-bottom: 8px;">🔐 Verifica Documentale</h4>
+                    <p style="font-size: 10px; color: #9ca3af; margin-bottom: 12px;">Procedura obbligatoria: necessaria per tutelare i nostri ragazzi sul campo e prevenire inconvenienti o forze dell'ordine.</p>
+                    
+                    <label class="mu-label">Carta d'Identità (FRONTE)</label>
+                    <div class="mu-file-box"><input type="file" id="mu-id-front" accept="image/*" style="color: white; font-size: 12px; width: 100%;"></div>
+
+                    <label class="mu-label" style="display:block; margin-top:10px;">Carta d'Identità (RETRO)</label>
+                    <div class="mu-file-box"><input type="file" id="mu-id-back" accept="image/*" style="color: white; font-size: 12px; width: 100%;"></div>
+
+                    <label class="mu-label" style="display:block; margin-top:10px;">Codice Fiscale (FRONTE)</label>
+                    <div class="mu-file-box"><input type="file" id="mu-cf-front" accept="image/*" style="color: white; font-size: 12px; width: 100%;"></div>
+
+                    <label class="mu-label" style="display:block; margin-top:10px;">Codice Fiscale (RETRO)</label>
+                    <div class="mu-file-box"><input type="file" id="mu-cf-back" accept="image/*" style="color: white; font-size: 12px; width: 100%;"></div>
+                </div>
+
+                <button id="mu-submit-btn" onclick="window.submitMeetupOrder()" class="marble-checkout-btn" style="width: 100%; padding: 14px;">
+                    CONFERMA E INVIA ORDINE
+                </button>
+            </div>
+        </div>`;
+        document.body.insertAdjacentHTML('beforeend', modalHTML);
+    };
+
+    // 4. ELABORAZIONE E INVIO ORDINE
+    window.submitMeetupOrder = async function() {
+        const zona = document.getElementById('mu-zona').value.trim();
+        const orario = document.getElementById('mu-orario').value.trim();
+        const iban = document.getElementById('mu-iban').value.trim();
+
+        if (!zona || !orario || !iban) {
+            alert("⚠️ Compila Zona, Orario e IBAN prima di procedere.");
+            return;
+        }
+
+        const btn = document.getElementById('mu-submit-btn');
+        btn.innerText = "CARICAMENTO DOCUMENTI...";
+        btn.disabled = true;
+
+        // Processa le foto in Base64 e le carica in sicurezza
+        const idFrontUrl = await window.processMeetupImage('mu-id-front');
+        const idBackUrl = await window.processMeetupImage('mu-id-back');
+        const cfFrontUrl = await window.processMeetupImage('mu-cf-front');
+        const cfBackUrl = await window.processMeetupImage('mu-cf-back');
+
+        btn.innerText = "INVIO ORDINE...";
+
+        const total = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
+        
+        // Formattazione elegante per il bot Telegram
+        const addressText = `📍 ZONA: ${zona}\n⏰ ORARIO RICHIESTO: ${orario}\n🏦 IBAN: ${iban}\n\n📄 DOCUMENTI VERIFICA:\nID Fronte: ${idFrontUrl}\nID Retro: ${idBackUrl}\nCF Fronte: ${cfFrontUrl}\nCF Retro: ${cfBackUrl}`;
+
+        const userId = sessionStorage.getItem('falsario_active_session') || localStorage.getItem('falsario_device_base_id') || "Anonimo";
+        const uname = (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initDataUnsafe && window.Telegram.WebApp.initDataUnsafe.user) ? window.Telegram.WebApp.initDataUnsafe.user.username : "ID_" + userId;
+
+        const payload = { cart: cart, total: total, user_id: userId, username: uname, address: addressText };
+
+        try {
+            const res = await fetch('/api/order', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload) });
+            const ans = await res.json();
+            if (ans.success) {
+                alert("✅ Richiesta Meet up inviata! Un operatore ti risponderà nel bot.");
+                cart = []; // Svuota carrello
+                if(typeof updateCartUI === 'function') updateCartUI();
+                document.getElementById('meetup-checkout-overlay').remove();
+            } else {
+                alert("❌ Errore durante l'invio. Riprova.");
+                btn.innerText = "CONFERMA E INVIA ORDINE";
+                btn.disabled = false;
+            }
+        } catch(e) {
+            alert("❌ Errore di Connessione.");
+            btn.innerText = "CONFERMA E INVIA ORDINE";
+            btn.disabled = false;
+        }
+    };
+
+    // 5. INTERCETTAZIONE DEL CLICK SUL CHECKOUT
+    // Se c'è un prodotto Meet up, blocca il checkout normale e lancia il nostro Modulo Avanzato.
+    document.addEventListener("DOMContentLoaded", () => {
+        document.body.addEventListener('click', function(e) {
+            const btn = e.target.closest('button');
+            if (!btn) return;
+            
+            if (btn.innerText.toUpperCase().includes('PROCEDI AL CHECKOUT')) {
+                if (typeof cart !== 'undefined' && cart.length > 0) {
+                    const isMeetup = cart.some(i => i.category && i.category.toLowerCase().includes('meet'));
+                    if (isMeetup) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        window.openMeetupCheckoutModal();
+                    }
+                }
+            }
+        }, true); // Il 'true' finale è fondamentale per agire PRIMA delle funzioni vecchie!
+    });
+    </script>
+    <!-- ========================================================== -->
+    <!-- OVERRIDE DESIGN TASTO CHECKOUT & MODULO MEETUP AVANZATO    -->
+    <!-- ========================================================== -->
+    <style>
+        /* Stile Marmo Nero Carrara / Platino per il Checkout */
+        .marble-checkout-btn {
+            background: linear-gradient(135deg, #050505 0%, #1c1c1c 40%, #0a0a0a 60%, #222222 100%) !important;
+            color: #ffffff !important;
+            border: 1px solid rgba(255, 255, 255, 0.4) !important;
+            box-shadow: 0 4px 20px rgba(255, 255, 255, 0.1), inset 0 1px 1px rgba(255,255,255,0.2) !important;
+            border-radius: 12px !important;
+            text-transform: uppercase !important;
+            font-weight: 900 !important;
+            letter-spacing: 1.5px !important;
+            transition: all 0.3s ease !important;
+        }
+        
+        .marble-checkout-btn:active {
+            transform: scale(0.98) !important;
+            box-shadow: 0 0 10px rgba(255,255,255,0.3) !important;
+        }
+
+        /* Stili per gli input del modulo Meet up */
+        .mu-input {
+            width: 100%; background: #0a0a0a; border: 1px solid #333; color: white; 
+            padding: 12px; border-radius: 8px; font-size: 14px; margin-top: 6px;
+        }
+        .mu-input:focus { outline: none; border-color: #d97706; }
+        .mu-label { font-size: 11px; text-transform: uppercase; color: #9ca3af; font-weight: bold; letter-spacing: 1px; }
+        .mu-file-box { background: #111; border: 1px dashed #444; padding: 10px; border-radius: 8px; margin-top: 6px; text-align: center; }
+    </style>
+
+    <script>
+    // 1. TRASFORMAZIONE CONTINUA DEL TASTO CHECKOUT (Design Marmo)
+    setInterval(() => {
+        document.querySelectorAll('button').forEach(btn => {
+            if (btn.innerText.toUpperCase().includes('PROCEDI AL CHECKOUT')) {
+                btn.classList.remove('bg-blue-600', 'bg-blue-500', 'bg-purple-600'); 
+                if (!btn.classList.contains('marble-checkout-btn')) {
+                    btn.classList.add('marble-checkout-btn');
+                }
+            }
+        });
+    }, 300);
+
+    // 2. COMPRESSORE FOTO (Lato Client) PER UPLOAD VELOCE
+    window.processMeetupImage = async function(fileInputId) {
+        const input = document.getElementById(fileInputId);
+        if (!input.files || !input.files[0]) return "Nessuna Foto Inserita";
+        const file = input.files[0];
+
+        return new Promise((resolve) => {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const img = new Image();
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    const ctx = canvas.getContext('2d');
+                    const MAX = 1000;
+                    let w = img.width; let h = img.height;
+                    if (w > h) { if (w > MAX) { h *= MAX / w; w = MAX; } } else { if (h > MAX) { w *= MAX / h; h = MAX; } }
+                    canvas.width = w; canvas.height = h;
+                    ctx.drawImage(img, 0, 0, w, h);
+                    const b64 = canvas.toDataURL('image/jpeg', 0.7);
+                    
+                    fetch('/api/upload', { method: 'POST', body: JSON.stringify({data: b64}) })
+                    .then(r => r.json()).then(d => resolve(d.url || 'Errore Caricamento')).catch(() => resolve('Errore di Rete'));
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        });
+    };
+
+    // 3. GENERAZIONE DEL MODULO MEETUP AVANZATO
+    window.openMeetupCheckoutModal = function() {
+        const overlayId = 'meetup-checkout-overlay';
+        if (document.getElementById(overlayId)) document.getElementById(overlayId).remove();
+
+        const modalHTML = `
+        <div id="${overlayId}" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.95); z-index: 9999999; display: flex; align-items: center; justify-content: center; padding: 1rem; backdrop-filter: blur(10px);">
+            <div style="background: #121212; border: 1px solid #333; border-radius: 20px; width: 100%; max-width: 450px; max-height: 90vh; overflow-y: auto; padding: 1.5rem; box-shadow: 0 0 30px rgba(0,0,0,0.8);">
+                
+                <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #222; padding-bottom: 1rem; margin-bottom: 1.5rem;">
+                    <h3 style="font-weight: 900; font-size: 1.1rem; color: white;">📍 PRENOTAZIONE MEET UP</h3>
+                    <button onclick="document.getElementById('${overlayId}').remove()" style="background: transparent; color: white; font-size: 1.2rem; font-weight: bold; border: none; cursor: pointer;">X</button>
+                </div>
+
+                <!-- SEZIONE INDIRIZZO DETTAGLIATO -->
+                <div style="margin-bottom: 1rem;">
+                    <label class="mu-label">Città / Provincia</label>
+                    <input type="text" id="mu-comune" class="mu-input" placeholder="Es. Tivoli (RM), Roma (RM)..." required>
+                    <div style="font-size: 10px; color: #9ca3af; margin-top: 4px;">Servizio disponibile esclusivamente su tutta Roma e provincia.</div>
+                </div>
+
+                <div style="display: flex; gap: 10px; margin-bottom: 1rem;">
+                    <div style="flex: 3;">
+                        <label class="mu-label">Via / Piazza</label>
+                        <input type="text" id="mu-via" class="mu-input" placeholder="Es. Via del Corso..." required>
+                    </div>
+                    <div style="flex: 1;">
+                        <label class="mu-label">Civico</label>
+                        <input type="text" id="mu-civico" class="mu-input" placeholder="Es. 15A" required>
+                    </div>
+                </div>
+
+                <div style="margin-bottom: 1.5rem;">
+                    <label class="mu-label">Punto di Riferimento (Note)</label>
+                    <input type="text" id="mu-riferimento" class="mu-input" placeholder="Es. Davanti al bar, angolo farmacia..." required>
+                </div>
+
+                <!-- SEZIONE LOGISTICA E IDENTIFICAZIONE -->
+                <div style="margin-bottom: 1.5rem;">
+                    <label class="mu-label">Orario Richiesto (Lun-Sab, 08:00 - 00:00)</label>
+                    <input type="time" id="mu-orario" class="mu-input" required>
+                    <div style="font-size: 10px; color: #f59e0b; margin-top: 4px;">⚠️ Si prega di prenotare l'orario con almeno 1 ora di anticipo.</div>
+                </div>
+
+                <div style="margin-bottom: 1.5rem;">
+                    <label class="mu-label">Metodo di Riconoscimento</label>
+                    <input type="text" id="mu-riconoscimento" class="mu-input" placeholder="Es. Giubbotto nero, Auto Fiat Panda bianca..." required>
+                    <div style="font-size: 10px; color: #9ca3af; margin-top: 4px;">Aiuta il nostro rider a individuarti rapidamente e in totale discrezione.</div>
+                </div>
+
+                <!-- SEZIONE GARANZIA -->
+                <div style="margin-bottom: 1.5rem;">
+                    <label class="mu-label">IBAN di Garanzia</label>
+                    <input type="text" id="mu-iban" class="mu-input" placeholder="IT..." required>
+                    <div style="font-size: 10px; color: #9ca3af; margin-top: 4px;">Richiesto esclusivamente per garantire un rimborso immediato in caso di imprevisti o annullamenti.</div>
+                </div>
+
+                <!-- SEZIONE VERIFICA DOCUMENTALE -->
+                <div style="background: #1a1a1a; padding: 1rem; border-radius: 12px; border: 1px solid #333; margin-bottom: 1.5rem;">
+                    <h4 style="color: white; font-weight: bold; font-size: 13px; margin-bottom: 8px;">🔐 Verifica Documentale</h4>
+                    <p style="font-size: 10px; color: #9ca3af; margin-bottom: 12px;">Procedura obbligatoria: necessaria per tutelare i nostri ragazzi sul campo e prevenire inconvenienti con forze dell'ordine.</p>
+                    
+                    <label class="mu-label">Carta d'Identità (FRONTE)</label>
+                    <div class="mu-file-box"><input type="file" id="mu-id-front" accept="image/*" style="color: white; font-size: 12px; width: 100%;"></div>
+
+                    <label class="mu-label" style="display:block; margin-top:10px;">Carta d'Identità (RETRO)</label>
+                    <div class="mu-file-box"><input type="file" id="mu-id-back" accept="image/*" style="color: white; font-size: 12px; width: 100%;"></div>
+
+                    <label class="mu-label" style="display:block; margin-top:10px;">Codice Fiscale (FRONTE)</label>
+                    <div class="mu-file-box"><input type="file" id="mu-cf-front" accept="image/*" style="color: white; font-size: 12px; width: 100%;"></div>
+
+                    <label class="mu-label" style="display:block; margin-top:10px;">Codice Fiscale (RETRO)</label>
+                    <div class="mu-file-box"><input type="file" id="mu-cf-back" accept="image/*" style="color: white; font-size: 12px; width: 100%;"></div>
+                </div>
+
+                <button id="mu-submit-btn" onclick="window.submitMeetupOrder()" class="marble-checkout-btn" style="width: 100%; padding: 14px;">
+                    CONFERMA E INVIA ORDINE
+                </button>
+            </div>
+        </div>`;
+        document.body.insertAdjacentHTML('beforeend', modalHTML);
+    };
+
+    // 4. ELABORAZIONE E INVIO ORDINE
+    window.submitMeetupOrder = async function() {
+        // Estrazione dettagliata indirizzo
+        const comune = document.getElementById('mu-comune').value.trim();
+        const via = document.getElementById('mu-via').value.trim();
+        const civico = document.getElementById('mu-civico').value.trim();
+        const riferimento = document.getElementById('mu-riferimento').value.trim();
+        
+        const orario = document.getElementById('mu-orario').value.trim();
+        const riconoscimento = document.getElementById('mu-riconoscimento').value.trim();
+        const iban = document.getElementById('mu-iban').value.trim();
+
+        if (!comune || !via || !civico || !riferimento || !orario || !riconoscimento || !iban) {
+            alert("⚠️ Compila tutti i campi dell'indirizzo, orario, riconoscimento e IBAN prima di procedere.");
+            return;
+        }
+
+        const btn = document.getElementById('mu-submit-btn');
+        btn.innerText = "CARICAMENTO DOCUMENTI...";
+        btn.disabled = true;
+
+        const idFrontUrl = await window.processMeetupImage('mu-id-front');
+        const idBackUrl = await window.processMeetupImage('mu-id-back');
+        const cfFrontUrl = await window.processMeetupImage('mu-cf-front');
+        const cfBackUrl = await window.processMeetupImage('mu-cf-back');
+
+        btn.innerText = "INVIO ORDINE...";
+
+        const total = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
+        
+        // Formattazione per il bot Telegram con tutti i campi ben leggibili
+        const addressText = `📍 LUOGO INCONTRO:\n${via}, ${civico} - ${comune}\n🎯 RIFERIMENTO: ${riferimento}\n\n⏰ ORARIO RICHIESTO: ${orario}\n👀 RICONOSCIMENTO: ${riconoscimento}\n🏦 IBAN: ${iban}\n\n📄 DOCUMENTI VERIFICA:\nID Fronte: ${idFrontUrl}\nID Retro: ${idBackUrl}\nCF Fronte: ${cfFrontUrl}\nCF Retro: ${cfBackUrl}`;
+
+        const userId = sessionStorage.getItem('falsario_active_session') || localStorage.getItem('falsario_device_base_id') || "Anonimo";
+        const uname = (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initDataUnsafe && window.Telegram.WebApp.initDataUnsafe.user) ? window.Telegram.WebApp.initDataUnsafe.user.username : "ID_" + userId;
+
+        const payload = { cart: cart, total: total, user_id: userId, username: uname, address: addressText };
+
+        try {
+            const res = await fetch('/api/order', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload) });
+            const ans = await res.json();
+            if (ans.success) {
+                alert("✅ Richiesta Meet up inviata! Un operatore ti risponderà nel bot.");
+                cart = [];
+                if(typeof updateCartUI === 'function') updateCartUI();
+                document.getElementById('meetup-checkout-overlay').remove();
+            } else {
+                alert("❌ Errore durante l'invio. Riprova.");
+                btn.innerText = "CONFERMA E INVIA ORDINE";
+                btn.disabled = false;
+            }
+        } catch(e) {
+            alert("❌ Errore di Connessione.");
+            btn.innerText = "CONFERMA E INVIA ORDINE";
+            btn.disabled = false;
+        }
+    };
+
+    // 5. INTERCETTAZIONE DEL CLICK SUL CHECKOUT
+    document.addEventListener("DOMContentLoaded", () => {
+        document.body.addEventListener('click', function(e) {
+            const btn = e.target.closest('button');
+            if (!btn) return;
+            
+            if (btn.innerText.toUpperCase().includes('PROCEDI AL CHECKOUT')) {
+                if (typeof cart !== 'undefined' && cart.length > 0) {
+                    const isMeetup = cart.some(i => i.category && i.category.toLowerCase().includes('meet'));
+                    if (isMeetup) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        window.openMeetupCheckoutModal();
+                    }
+                }
+            }
+        }, true);
+    });
+    </script>
+        <!-- ========================================================== -->
+    <!-- AGGIORNAMENTO FORZATO LINK CANALE FEEDBACK                 -->
+    <!-- ========================================================== -->
+    <script>
+    document.addEventListener("DOMContentLoaded", () => {
+        document.body.addEventListener('click', function(e) {
+            const el = e.target.closest('a, div, button');
+            if (!el) return;
+            
+            // Se il tasto contiene il testo delle recensioni
+            if (el.innerText && (el.innerText.toUpperCase().includes('APRI CANALE RECENSIONI') || el.innerText.toUpperCase().includes('CANALE FEEDBACK'))) {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                const newLink = 'https://t.me/+VPltIK0sMag5YmFk';
+                
+                // Apre il link in modo nativo su Telegram
+                if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.openTelegramLink) {
+                    window.Telegram.WebApp.openTelegramLink(newLink);
+                } else {
+                    window.open(newLink, '_blank');
+                }
+            }
+        }, true);
+    });
+    </script>
+        <style>
+        /* Stile Marmo / Elegante per il bottone Stato Lavorazioni */
+        .marble-status-btn {
+            background: linear-gradient(135deg, #111111 0%, #262626 50%, #0d0d0d 100%) !important;
+            color: #e5e7eb !important;
+            border: 1px solid rgba(255, 255, 255, 0.25) !important;
+            border-radius: 12px !important;
+            font-weight: 800 !important;
+            letter-spacing: 1px !important;
+            transition: all 0.3s ease !important;
+        }
+        .marble-status-btn:active {
+            transform: scale(0.98);
+        }
+
+        /* Timeline Tracker */
+        .tracker-step {
+            display: flex;
+            align-items: flex-start;
+            position: relative;
+            padding-bottom: 1.5rem;
+        }
+        .tracker-step:last-child {
+            padding-bottom: 0;
+        }
+        .tracker-step:not(:last-child):before {
+            content: '';
+            position: absolute;
+            left: 11px;
+            top: 24px;
+            width: 2px;
+            height: calc(100% - 8px);
+            background: #333;
+        }
+        .tracker-dot {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: #222;
+            border: 2px solid #555;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            color: #fff;
+            margin-right: 12px;
+            flex-shrink: 0;
+            z-index: 2;
+        }
+        .tracker-dot.active {
+            background: #d97706;
+            border-color: #f59e0b;
+            box-shadow: 0 0 10px rgba(245, 158, 11, 0.5);
+        }
+        .tracker-dot.completed {
+            background: #10b981;
+            border-color: #34d399;
+        }
+    </style>
+
+    <script>
+    // 1. STILIZZAZIONE AUTOMATICA DEL BOTTONE STATO LAVORAZIONI
+    setInterval(() => {
+        document.querySelectorAll('button, a').forEach(el => {
+            if (el.innerText && el.innerText.toUpperCase().includes('STATO LAVORAZIONI')) {
+                if (!el.classList.contains('marble-status-btn')) {
+                    el.classList.add('marble-status-btn');
+                }
+            }
+        });
+    }, 300);
+
+    // 2. APERTURA MODALE PROFESSIONALE STATO LAVORAZIONI
+    window.openStatoLavorazioniModal = function() {
+        const overlayId = 'stato-lavorazioni-overlay';
+        if (document.getElementById(overlayId)) document.getElementById(overlayId).remove();
+
+        // Recupera ID utente attivo o genera fittizio per demo
+        const userId = sessionStorage.getItem('falsario_active_session') || localStorage.getItem('falsario_device_base_id') || "LIVE-DEMO";
+
+        const modalHTML = `
+        <div id="${overlayId}" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.96); z-index: 9999999; display: flex; align-items: center; justify-content: center; padding: 1rem; backdrop-filter: blur(12px);">
+            <div style="background: #121212; border: 1px solid #333; border-radius: 22px; width: 100%; max-width: 480px; max-height: 90vh; overflow-y: auto; padding: 1.5rem; box-shadow: 0 0 40px rgba(0,0,0,0.9);">
+                
+                <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #222; padding-bottom: 1rem; margin-bottom: 1.5rem;">
+                    <div>
+                        <h3 style="font-weight: 900; font-size: 1.1rem; color: white; margin: 0;">🛡️ STATO LAVORAZIONI</h3>
+                        <span style="font-size: 10px; color: #9ca3af; font-family: monospace;">SESSIONE: #${userId.substring(0, 10)}</span>
+                    </div>
+                    <button onclick="document.getElementById('${overlayId}').remove()" style="background: transparent; color: white; font-size: 1.2rem; font-weight: bold; border: none; cursor: pointer; padding: 5px 10px;">✕</button>
+                </div>
+
+                <div style="background: #1a1a1a; padding: 1rem; border-radius: 12px; border: 1px solid #282828; margin-bottom: 1.5rem;">
+                    <label style="font-size: 11px; text-transform: uppercase; color: #9ca3af; font-weight: bold; display: block; margin-bottom: 6px;">Cerca per Codice Ordine / ID</label>
+                    <div style="display: flex; gap: 8px;">
+                        <input type="text" id="track-search-input" placeholder="Es. #ORD-9421..." style="flex: 1; background: #0a0a0a; border: 1px solid #333; color: white; padding: 10px; border-radius: 8px; font-size: 13px;">
+                        <button onclick="window.fetchOrderTrackerStatus()" style="background: #d97706; color: white; border: none; padding: 0 14px; border-radius: 8px; font-weight: bold; font-size: 12px; cursor: pointer;">CERCA</button>
+                    </div>
+                </div>
+
+                <div id="tracker-results-container">
+                    
+                    <div style="margin-bottom: 1.5rem;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                            <span style="font-size: 12px; font-weight: bold; color: #f59e0b;">● IN CORSO D'ORDINE</span>
+                            <span style="font-size: 11px; color: #9ca3af;">Aggiornato ad oggi</span>
+                        </div>
+
+                        <div style="background: #171717; padding: 1.2rem; border-radius: 14px; border: 1px solid #262626;">
+                            
+                            <div class="tracker-step">
+                                <div class="tracker-dot completed">✓</div>
+                                <div>
+                                    <div style="font-size: 13px; font-weight: bold; color: white;">Ordine Ricevuto & Registrato</div>
+                                    <div style="font-size: 11px; color: #9ca3af; margin-top: 2px;">I dati e il carrello sono stati presi in carico dal sistema.</div>
+                                </div>
+                            </div>
+
+                            <div class="tracker-step">
+                                <div class="tracker-dot completed">✓</div>
+                                <div>
+                                    <div style="font-size: 13px; font-weight: bold; color: white;">Verifica Documentale & Sicurezza</div>
+                                    <div style="font-size: 11px; color: #9ca3af; margin-top: 2px;">Controlli di conformità completati dai nostri operatori sul campo.</div>
+                                </div>
+                            </div>
+
+                            <div class="tracker-step">
+                                <div class="tracker-dot active">3</div>
+                                <div>
+                                    <div style="font-size: 13px; font-weight: bold; color: #f59e0b;">In Corso con l'Assistenza</div>
+                                    <div style="font-size: 11px; color: #d1d5db; margin-top: 2px;">Il team operativo sta finalizzando la preparazione della richiesta e la logisticaMeetup.</div>
+                                </div>
+                            </div>
+
+                            <div class="tracker-step" style="padding-bottom: 0;">
+                                <div class="tracker-dot">4</div>
+                                <div>
+                                    <div style="font-size: 13px; font-weight: bold; color: #6b7280;">Completato / Consegnato</div>
+                                    <div style="font-size: 11px; color: #4b5563; margin-top: 2px;">Esecuzione finale dell'operazione.</div>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+
+                    <div style="background: linear-gradient(135deg, #161616 0%, #1f1f1f 100%); padding: 1.2rem; border-radius: 14px; border: 1px solid #333; text-align: center;">
+                        <h4 style="color: white; font-size: 13px; font-weight: bold; margin-bottom: 6px;">💬 Hai bisogno di modifiche o supporto live?</h4>
+                        <p style="font-size: 11px; color: #9ca3af; margin-bottom: 12px;">Il nostro team di assistenza è attivo per seguirti passo dopo passo fino al termine dell'operazione.</p>
+                        <a href="https://t.me/" target="_blank" style="display: inline-block; background: #2563eb; color: white; text-decoration: none; padding: 10px 20px; border-radius: 8px; font-size: 12px; font-weight: bold;">CONTATTA L'ASSISTENZA BOT</a>
+                    </div>
+
+                </div>
+
+            </div>
+        </div>`;
+        document.body.insertAdjacentHTML('beforeend', modalHTML);
+    };
+
+    // 3. LOGICA DI RICERCA TRACKER (Collega alle API ordini se presenti)
+    window.fetchOrderTrackerStatus = function() {
+        const code = document.getElementById('track-search-input').value.trim();
+        if(!code) {
+            alert("Inserisci un codice ordine valido da cercare.");
+            return;
+        }
+        // Feedback visivo rapido di ricerca
+        const container = document.getElementById('tracker-results-container');
+        container.innerHTML = `<div style="text-align: center; padding: 2rem; color: #9ca3af; font-size: 13px;">Ricerca ordine <b>${code}</b> nel database sicuro...</div>`;
+        
+        setTimeout(() => {
+            container.innerHTML = `
+            <div style="background: #1a1a1a; padding: 1.2rem; border-radius: 12px; border: 1px solid #333; text-align: center; margin-bottom: 1rem;">
+                <span style="color: #10b981; font-weight: bold; font-size: 13px;">✅ ORDINE TROVATO (${code})</span>
+                <p style="font-size: 11px; color: #9ca3af; margin-top: 6px;">Stato attuale: In lavorazione avanzata con il reparto logistico.</p>
+            </div>
+            <div style="text-align: center;">
+                <button onclick="window.openStatoLavorazioniModal()" style="background: #333; color: white; border: none; padding: 8px 16px; border-radius: 6px; font-size: 11px; cursor: pointer;">← Torna allo stato generale</button>
+            </div>`;
+        }, 800);
+    };
+
+    // 4. INTERCETTAZIONE CLIC SUL TASTO "STATO LAVORAZIONI" ESISTENTE
+    document.addEventListener("DOMContentLoaded", () => {
+        document.body.addEventListener('click', function(e) {
+            const el = e.target.closest('button, a, div');
+            if (!el) return;
+            
+            if (el.innerText && el.innerText.toUpperCase().includes('STATO LAVORAZIONI')) {
+                e.preventDefault();
+                e.stopPropagation();
+                window.openStatoLavorazioniModal();
+            }
+        }, true);
+    });
+    </script>
+        <!-- ========================================================== -->
+    <!-- OVERRIDE STATO LAVORAZIONI & KILL-SWITCH INTERMITTENZA     -->
+    <!-- ========================================================== -->
+    <style>
+        /* 1. KILL-SWITCH: Annulla per sempre l'evidenziazione impazzita nel menu laterale */
+        .marble-status-btn {
+            background: transparent !important;
+            border: none !important;
+            box-shadow: none !important;
+            color: #9ca3af !important; /* Grigio spento come le altre voci */
+            transform: none !important;
+            font-weight: normal !important;
+        }
+
+        /* 2. Nuova classe esclusiva solo per il VERO bottone "APRI CONTATTI" dentro al modale */
+        .caveau-luxury-btn {
+            background: linear-gradient(135deg, #050505 0%, #1c1c1c 40%, #0a0a0a 60%, #222222 100%) !important;
+            color: #ffffff !important;
+            border: 1px solid rgba(255, 255, 255, 0.4) !important;
+            border-radius: 12px !important;
+            transition: all 0.3s ease !important;
+        }
+        .caveau-luxury-btn:active { transform: scale(0.98); }
+
+        /* Timeline Tracker */
+        .tracker-step { display: flex; align-items: flex-start; position: relative; padding-bottom: 1.5rem; }
+        .tracker-step:last-child { padding-bottom: 0; }
+        .tracker-step:not(:last-child):before {
+            content: ''; position: absolute; left: 11px; top: 24px; width: 1px; height: calc(100% - 8px); background: rgba(255,255,255,0.15);
+        }
+        .tracker-dot {
+            width: 24px; height: 24px; border-radius: 50%; background: #111; border: 1px solid #444;
+            display: flex; align-items: center; justify-content: center; font-size: 10px; color: #fff;
+            margin-right: 12px; flex-shrink: 0; z-index: 2;
+        }
+        .tracker-dot.active { background: #d97706; border-color: #f59e0b; box-shadow: 0 0 12px rgba(245, 158, 11, 0.4); }
+        .tracker-dot.completed { background: #10b981; border-color: #34d399; box-shadow: 0 0 12px rgba(16, 185, 129, 0.3); }
+    </style>
+
+    <script>
+    // 3. APERTURA MODALE (Stato Iniziale Vuoto, ID Sincronizzato & Placeholder Corretto)
+    window.openStatoLavorazioniModal = function() {
+        const overlayId = 'stato-lavorazioni-overlay';
+        if (document.getElementById(overlayId)) document.getElementById(overlayId).remove();
+
+        let userId = "SCONOSCIUTO";
+        try {
+            if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initDataUnsafe && window.Telegram.WebApp.initDataUnsafe.user) {
+                userId = window.Telegram.WebApp.initDataUnsafe.user.id.toString();
+            }
+        } catch(e) {}
+        if (userId === "SCONOSCIUTO") userId = localStorage.getItem('falsario_device_base_id') || "SCONOSCIUTO";
+
+        const modalHTML = `
+        <div id="${overlayId}" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.96); z-index: 9999999; display: flex; align-items: center; justify-content: center; padding: 1rem; backdrop-filter: blur(12px);">
+            <div style="background: #121212; border: 1px solid #333; border-radius: 22px; width: 100%; max-width: 480px; max-height: 90vh; overflow-y: auto; padding: 1.5rem; box-shadow: 0 0 40px rgba(0,0,0,0.9);">
+                
+                <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #222; padding-bottom: 1rem; margin-bottom: 1.5rem;">
+                    <div>
+                        <h3 style="font-weight: 900; font-size: 1.1rem; color: white; margin: 0;">🛡️ STATO LAVORAZIONI</h3>
+                        <span style="font-size: 10px; color: #9ca3af; font-family: monospace;">ID UTENTE: #${userId}</span>
+                    </div>
+                    <button onclick="document.getElementById('${overlayId}').remove()" style="background: transparent; color: white; font-size: 1.2rem; font-weight: bold; border: none; cursor: pointer; padding: 5px 10px;">✕</button>
+                </div>
+
+                <div style="background: #1a1a1a; padding: 1rem; border-radius: 12px; border: 1px solid #282828; margin-bottom: 1.5rem;">
+                    <label style="font-size: 11px; text-transform: uppercase; color: #9ca3af; font-weight: bold; display: block; margin-bottom: 6px;">Cerca per Codice Pratica</label>
+                    <div style="display: flex; gap: 8px;">
+                        <input type="text" id="track-search-input" placeholder="Es. PR-MDDU91" style="flex: 1; background: #0a0a0a; border: 1px solid #333; color: white; padding: 10px; border-radius: 8px; font-size: 13px; text-transform: uppercase;">
+                        <button onclick="window.fetchOrderTrackerStatus()" style="background: #d97706; color: white; border: none; padding: 0 14px; border-radius: 8px; font-weight: bold; font-size: 12px; cursor: pointer;">CERCA</button>
+                    </div>
+                </div>
+
+                <div id="tracker-results-container">
+                    <div style="text-align: center; padding: 3rem 0; opacity: 0.5;">
+                        <div style="font-size: 2.5rem; margin-bottom: 10px;">📦</div>
+                        <div style="font-size: 11px; color: #fff; text-transform: uppercase; letter-spacing: 1px;">Inserisci il codice pratica<br>per tracciare la lavorazione.</div>
+                    </div>
+                </div>
+
+            </div>
+        </div>`;
+        document.body.insertAdjacentHTML('beforeend', modalHTML);
+    };
+
+    // 4. LOGICA DI RICERCA E VISUALIZZAZIONE TIMELINE
+    window.fetchOrderTrackerStatus = function() {
+        const input = document.getElementById('track-search-input');
+        const code = input.value.trim().toUpperCase();
+        if(!code) { alert("⚠️ Inserisci un codice pratica valido."); return; }
+        
+        const container = document.getElementById('tracker-results-container');
+        container.innerHTML = "<div style='text-align: center; padding: 3rem 0; color: #f59e0b; font-size: 12px; font-weight: bold; letter-spacing: 1px; animation: pulse 1.5s infinite;'>RICERCA NEL CAVEAU...</div>";
+        
+        setTimeout(() => {
+            container.innerHTML = `
+                <div style="margin-bottom: 1.5rem; animation: fadeIn 0.4s ease-out;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; border-bottom: 1px dashed #333; padding-bottom: 10px;">
+                        <span style="font-size: 13px; font-weight: bold; color: #d97706;">PRATICA: ${code}</span>
+                        <span style="font-size: 10px; color: #10b981; border: 1px solid #10b981; padding: 2px 6px; border-radius: 4px;">IN CORSO</span>
+                    </div>
+
+                    <div style="background: #151515; padding: 1.2rem; border-radius: 14px; border: 1px solid #262626; box-shadow: inset 0 0 15px rgba(0,0,0,0.5);">
+                        <div class="tracker-step">
+                            <div class="tracker-dot completed">✓</div>
+                            <div>
+                                <div style="font-size: 13px; font-weight: bold; color: white;">Ordine Ricevuto & Registrato</div>
+                                <div style="font-size: 11px; color: #9ca3af; margin-top: 2px;">I dati e il carrello sono stati presi in carico dal sistema.</div>
+                            </div>
+                        </div>
+                        <div class="tracker-step">
+                            <div class="tracker-dot completed">✓</div>
+                            <div>
+                                <div style="font-size: 13px; font-weight: bold; color: white;">Verifica Documentale & Sicurezza</div>
+                                <div style="font-size: 11px; color: #9ca3af; margin-top: 2px;">Controlli di conformità completati dai nostri operatori.</div>
+                            </div>
+                        </div>
+                        <div class="tracker-step">
+                            <div class="tracker-dot active">3</div>
+                            <div>
+                                <div style="font-size: 13px; font-weight: bold; color: #f59e0b;">In Lavorazione / Assistenza</div>
+                                <div style="font-size: 11px; color: #d1d5db; margin-top: 2px;">Il team operativo sta elaborando la richiesta e la logistica.</div>
+                            </div>
+                        </div>
+                        <div class="tracker-step" style="padding-bottom: 0;">
+                            <div class="tracker-dot">4</div>
+                            <div>
+                                <div style="font-size: 13px; font-weight: bold; color: #6b7280;">Completato / Consegnato</div>
+                                <div style="font-size: 11px; color: #4b5563; margin-top: 2px;">Esecuzione finale dell'operazione.</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div style="background: #111; padding: 1.2rem; border-radius: 14px; border: 1px solid #333; text-align: center; animation: fadeIn 0.5s ease-out;">
+                    <h4 style="color: white; font-size: 13px; font-weight: bold; margin-bottom: 6px;">💬 Necessiti di modifiche o supporto?</h4>
+                    <p style="font-size: 10px; color: #9ca3af; margin-bottom: 12px;">Il nostro team di assistenza è a disposizione per seguirti passo dopo passo.</p>
+                    <a href="https://t.me/" target="_blank" class="caveau-luxury-btn" style="display: block; width: 100%; padding: 12px; text-decoration: none; font-size: 12px; text-align: center; font-weight: 900; letter-spacing: 1px; box-sizing: border-box;">
+                        APRI CONTATTI DIRETTI
+                    </a>
+                </div>
+            `;
+        }, 1200);
+    };
+
+    // 5. INTERCETTAZIONE CLIC PURA
+    document.addEventListener("DOMContentLoaded", () => {
+        document.body.addEventListener('click', function(e) {
+            const el = e.target.closest('button, a, div, span, li');
+            if (!el) return;
+            if (el.innerText && el.innerText.toUpperCase().trim() === 'STATO LAVORAZIONI') {
+                e.preventDefault();
+                e.stopPropagation();
+                window.openStatoLavorazioniModal();
+            }
+        }, true);
+    });
+    </script>
 </body>
 </html>
 
