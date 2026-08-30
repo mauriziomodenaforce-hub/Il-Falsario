@@ -5817,18 +5817,27 @@
         // ==========================================
         // LOGICA EVENTO GIVEAWAY
         // ==========================================
-                        async function openGiveawayModal() {
-            if(window.Telegram?.WebApp?.HapticFeedback) window.Telegram.WebApp.HapticFeedback.impactOccurred('medium');
+                                window.openGiveawayModal = async function() {
             const modal = document.getElementById('giveaway-modal');
             const content = document.getElementById('giveaway-content');
-            if (!modal || !content) return;
+            
+            // Sistema anti-blocco: se per caso l'HTML manca, te lo dice!
+            if (!modal || !content) {
+                alert("⚠️ Errore UI: Il contenitore del Giveaway non è presente nell'HTML.");
+                return;
+            }
+
+            try {
+                if(window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.HapticFeedback) {
+                    window.Telegram.WebApp.HapticFeedback.impactOccurred('medium');
+                }
+            } catch(e) {}
 
             modal.classList.remove('hidden'); 
             modal.classList.add('flex');
             content.innerHTML = `<div class="text-center py-8 text-amber-500 font-bold text-sm animate-pulse">Accesso al Caveau Eventi...</div>`;
             
             try {
-                // Interroga il bot Python
                 const res = await fetch('/api/giveaway'); 
                 const data = await res.json();
                 
@@ -5845,41 +5854,45 @@
                             </div>
                             <div class="flex justify-between items-center bg-[#0a0a0a] p-3 rounded-lg border border-gray-800">
                                 <div class="text-xs text-gray-400 font-mono">Scadenza: <b class="text-white">${data.end_date}</b></div>
-                                <div class="text-xs text-amber-500 font-bold flex items-center"><i data-lucide="users" class="w-3 h-3 mr-1"></i> <b class="text-white mr-1">${data.participants_count || 0}</b> Iscritti</div>
+                                <div class="text-xs text-amber-500 font-bold flex items-center">
+                                    <b class="text-white mr-1">${data.participants_count || 0}</b> Iscritti
+                                </div>
                             </div>
                         </div>
-                        <button onclick="joinGiveaway(this)" class="w-full bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-500 hover:to-amber-400 text-black font-black py-4 rounded-xl text-sm transition-all uppercase tracking-widest flex items-center justify-center space-x-2 shadow-[0_0_20px_rgba(217,119,6,0.4)] hover:scale-[1.02]">
-                            <span>Partecipa Ufficialmente</span><i data-lucide="check-circle" class="w-5 h-5 text-black"></i>
+                        <button onclick="window.joinGiveaway(this)" class="w-full bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-500 text-black font-black py-4 rounded-xl text-sm transition-all uppercase tracking-widest shadow-[0_0_20px_rgba(217,119,6,0.4)]">
+                            Partecipa Ufficialmente
                         </button>
                     `;
                 }
-                if(window.lucide) lucide.createIcons();
             } catch (e) { 
-                content.innerHTML = `<div class="text-center text-red-500 py-6 font-bold">Errore di Connessione al Server.</div>`; 
+                content.innerHTML = `<div class="text-center text-red-500 py-6 font-bold">Errore di Connessione. Riprova.</div>`; 
             }
-        }
+        };
 
-        function closeGiveawayModal() { 
+        window.closeGiveawayModal = function() { 
             const m = document.getElementById('giveaway-modal');
             if (m) { m.classList.add('hidden'); m.classList.remove('flex'); }
-        }
+        };
 
-        async function joinGiveaway(btn) {
-            const userId = localStorage.getItem('falsario_user_id') || getDeviceId();
+        window.joinGiveaway = async function(btn) {
+            // Usa l'ID univoco della sessione blindata appena creata!
+            const userId = sessionStorage.getItem('falsario_active_session') || (window.getDeviceId ? window.getDeviceId() : "Anonimo");
             const originalText = btn.innerHTML;
-            btn.innerHTML = `<i data-lucide="loader-2" class="w-5 h-5 animate-spin"></i>`;
+            btn.innerHTML = `Elaborazione...`;
             
+            let uname = "Anonimo";
+            try { if(window.Telegram?.WebApp?.initDataUnsafe?.user) uname = window.Telegram.WebApp.initDataUnsafe.user.username || "ID_" + userId; } catch(e){}
+
             try {
                 const res = await fetch('/api/giveaway/join', { 
                     method: 'POST', 
                     headers:{'Content-Type':'application/json'}, 
-                    body: JSON.stringify({id: userId, username: window.Telegram?.WebApp?.initDataUnsafe?.user?.username || "ID_" + userId}) 
+                    body: JSON.stringify({id: userId, username: uname}) 
                 });
                 const ans = await res.json();
                 if(ans.success) { 
                     alert("🎉 Iscrizione Confermata! Sei ufficialmente in gara."); 
-                    closeGiveawayModal(); 
-                    if(window.Telegram?.WebApp?.HapticFeedback) window.Telegram.WebApp.HapticFeedback.notificationOccurred('success'); 
+                    window.closeGiveawayModal(); 
                 } else { 
                     alert(ans.error || "Sei già iscritto a questo evento!"); 
                     btn.innerHTML = originalText;
@@ -5888,7 +5901,7 @@
                 alert("Errore di Rete."); 
                 btn.innerHTML = originalText;
             }
-        }
+        };
         
 
         ⁠⁠</script>⁠
@@ -6060,6 +6073,94 @@ async function openTrophiesModal() {
         localStorage.removeItem('falsario_logged_in_id');
         setTimeout(window.updateSidebarState, 100);
     });
+    </script>
+        <!-- ========================================================== -->
+    <!-- OVERRIDE ASSOLUTO GIVEAWAY (Schiaccia ogni bug HTML)       -->
+    <!-- ========================================================== -->
+    <script>
+    window.openGiveawayModal = async function() {
+        // 1. Distruggiamo vecchie modali fantasma rimaste incastrate
+        const oldModal = document.getElementById('gw-master-overlay');
+        if (oldModal) oldModal.remove();
+
+        // 2. Creiamo la modale da zero in puro codice (Indistruttibile)
+        const modalHTML = `
+        <div id="gw-master-overlay" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.85); z-index: 999999; display: flex; align-items: center; justify-content: center; padding: 1rem; backdrop-filter: blur(12px);">
+            <div style="background: #0a0a0a; border: 1px solid rgba(217,119,6,0.4); border-radius: 24px; width: 100%; max-width: 400px; padding: 1.5rem; box-shadow: 0 0 40px rgba(217,119,6,0.2);">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; border-bottom: 1px solid #1f2937; padding-bottom: 1rem;">
+                    <h3 style="font-weight: 900; font-size: 1.2rem; color: white; display: flex; align-items: center;"><span style="margin-right:8px;">🎁</span> Evento Speciale</h3>
+                    <button onclick="document.getElementById('gw-master-overlay').remove()" style="background: #1a1a1a; border: 1px solid #374151; color: white; padding: 0.5rem 0.8rem; border-radius: 50%; font-weight: bold; cursor: pointer;">X</button>
+                </div>
+                <div id="gw-master-body" style="text-align: center;">
+                    <div style="color: #f59e0b; font-weight: bold; padding: 2rem 0;">Connessione al Server Caveau...</div>
+                </div>
+            </div>
+        </div>`;
+        
+        document.body.insertAdjacentHTML('beforeend', modalHTML);
+
+        // 3. Chiamata sicura al server Python
+        try {
+            const res = await fetch('/api/giveaway');
+            const data = await res.json();
+            const content = document.getElementById('gw-master-body');
+            
+            if (!data || !data.is_active) {
+                content.innerHTML = `<div style="color: #9ca3af; padding: 2rem 0; font-weight: bold;">Nessun Evento Speciale attivo al momento.</div>`;
+            } else {
+                content.innerHTML = `
+                    <div style="background: #1a1a1a; border: 1px solid #1f2937; border-radius: 16px; padding: 1.5rem; margin-bottom: 1.5rem; position: relative;">
+                        <span style="position: absolute; top: 0; right: 0; background: #d97706; color: black; font-size: 10px; font-weight: 900; padding: 4px 8px; border-bottom-left-radius: 8px; text-transform: uppercase;">Live</span>
+                        <h4 style="font-weight: 900; color: white; margin-bottom: 1rem; font-size: 1.1rem;">${data.description}</h4>
+                        <div style="background: rgba(217,119,6,0.1); border: 1px solid rgba(217,119,6,0.3); border-radius: 12px; padding: 1rem; margin-bottom: 1rem;">
+                            <span style="display: block; font-size: 10px; text-transform: uppercase; color: #d97706; font-weight: bold; margin-bottom: 4px;">Premio Esclusivo</span>
+                            <span style="display: block; font-size: 1.8rem; font-weight: 900; color: #fef3c7;">${data.prize}</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; background: #0a0a0a; padding: 12px; border-radius: 8px; border: 1px solid #1f2937; font-size: 12px;">
+                            <div style="color: #9ca3af;">Scadenza: <b style="color: white;">${data.end_date}</b></div>
+                            <div style="color: #f59e0b; font-weight: bold;"><b style="color: white;">${data.participants_count || 0}</b> Iscritti</div>
+                        </div>
+                    </div>
+                    <button onclick="window.forceJoinGiveaway(this)" style="width: 100%; background: linear-gradient(90deg, #d97706, #f59e0b); color: black; font-weight: 900; padding: 1rem; border-radius: 12px; text-transform: uppercase; border: none; font-size: 14px; cursor: pointer; box-shadow: 0 0 20px rgba(217,119,6,0.3);">
+                        Partecipa Ufficialmente
+                    </button>
+                `;
+            }
+        } catch (e) {
+            document.getElementById('gw-master-body').innerHTML = `<div style="color: #ef4444; font-weight: bold; padding: 2rem 0;">Errore di Connessione al Server.</div>`;
+        }
+    };
+
+    window.forceJoinGiveaway = async function(btn) {
+        const userId = sessionStorage.getItem('falsario_active_session') || localStorage.getItem('falsario_device_base_id') || "Anonimo";
+        const originalText = btn.innerHTML;
+        btn.innerHTML = "ELABORAZIONE IN CORSO...";
+        btn.disabled = true;
+        
+        let uname = "ID_" + userId;
+        try { if(window.Telegram?.WebApp?.initDataUnsafe?.user?.username) uname = window.Telegram.WebApp.initDataUnsafe.user.username; } catch(e){}
+
+        try {
+            const res = await fetch('/api/giveaway/join', { 
+                method: 'POST', 
+                headers:{'Content-Type':'application/json'}, 
+                body: JSON.stringify({id: userId, username: uname}) 
+            });
+            const ans = await res.json();
+            if(ans.success) { 
+                alert("🎉 Iscrizione Confermata! Sei ufficialmente in gara."); 
+                document.getElementById('gw-master-overlay').remove();
+            } else { 
+                alert(ans.error || "Sei già iscritto a questo evento!"); 
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
+        } catch(e) { 
+            alert("❌ Errore di Rete."); 
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+        }
+    };
     </script>
 </body>
 </html>
