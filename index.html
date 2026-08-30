@@ -3561,264 +3561,96 @@
         </button>
     </div>
 
+        <!-- ========================================================== -->
+    <!-- MOTORE SINCRONIZZAZIONE PUNTI SU MODALE ORIGINALE TROPHIES -->
     <!-- ========================================================== -->
-    <!-- MODALE PRIVILEGI E SCONTI                                  -->
-    <!-- ========================================================== -->
-    <div 
-        id="trophies-modal" 
-        class="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4 hidden backdrop-blur-md transition-all"
-    >
-        <div 
-            class="bg-[#121212] border border-amber-600/30 rounded-2xl w-full max-w-sm p-5 space-y-4 shadow-2xl"
-        >
-            <div 
-                class="flex justify-between items-center border-b border-gray-800 pb-3"
-            >
-                <h3 
-                    class="font-bold text-lg text-white flex items-center"
-                >
-                    <i 
-                        data-lucide="award" 
-                        class="w-5 h-5 text-amber-500 mr-2"
-                    ></i> 
-                    Club Esclusivo & Sconti
-                </h3>
-                <button 
-                    onclick="closeTrophiesModal()" 
-                    class="text-gray-500 hover:text-white transition"
-                >
-                    <i 
-                        data-lucide="x" 
-                        class="w-5 h-5"
-                    ></i>
-                </button>
-            </div>
-            
-            <div 
-                class="bg-gradient-to-br from-[#1a1a1a] to-[#0a0a0a] border border-amber-600/40 rounded-xl p-4 text-center relative overflow-hidden shadow-lg transition"
-            >
-                <div 
-                    class="absolute -right-3 -top-3 text-amber-500/10"
-                >
-                    <i 
-                        data-lucide="percent" 
-                        class="w-20 h-20"
-                    ></i>
-                </div>
-                <div 
-                    class="flex justify-between items-center mb-1"
-                >
-                    <span 
-                        class="text-[9px] uppercase text-amber-500 font-extrabold tracking-widest"
-                    >
-                        Il tuo Status
-                    </span>
-                    <span 
-                        id="user-rank-title" 
-                        class="text-[9px] bg-amber-500/20 text-amber-400 font-bold px-2 py-0.5 rounded-full border border-amber-500/30 transition"
-                    >
-                        Cliente Standard 🥉
-                    </span>
-                </div>
-                <div 
-                    class="text-3xl font-black text-amber-50 mt-1 flex items-center justify-center space-x-2"
-                >
-                    <span 
-                        id="user-points-val"
-                    >
-                        50
-                    </span>
-                    <span 
-                        class="text-xs text-amber-500 font-normal"
-                    >
-                        punti spesa
-                    </span>
-                </div>
-                <div 
-                    class="mt-3 w-full bg-gray-800 rounded-full h-1.5 overflow-hidden"
-                >
-                    <div 
-                        id="rank-progress-bar" 
-                        class="bg-gradient-to-r from-amber-600 to-yellow-400 h-1.5 rounded-full transition-all duration-500" 
-                        style="width: 30%;"
-                    ></div>
-                </div>
-                <p 
-                    class="text-[10px] text-gray-400 mt-2 font-light" 
-                    id="rank-next-target"
-                >
-                    Ogni 500€ di spesa ricevi 50 punti. Sblocca sconti perenni su tutti gli acquisti!
-                </p>
-            </div>
-            
-            <div 
-                class="space-y-2"
-            >
-                <div 
-                    class="flex justify-between items-center"
-                >
-                    <span 
-                        class="text-[10px] font-bold text-gray-400 uppercase tracking-widest"
-                    >
-                        Premi & Sconti Sbloccabili
-                    </span>
-                    <span 
-                        class="text-[9px] text-amber-500/80"
-                    >
-                        Vantaggi perenni
-                    </span>
-                </div>
-                
-                <div 
-                    id="user-trophies-list" 
-                    class="space-y-2 max-h-52 overflow-y-auto pr-1 hide-scrollbar"
-                >
-                    <div 
-                        id="trophy-1-box" 
-                        class="bg-[#1a1a1a] border border-amber-600/30 p-3 rounded-xl text-xs text-gray-200 flex items-center justify-between shadow-sm mb-2 transition"
-                    >
-                        <div 
-                            class="flex items-center space-x-2.5"
-                        >
-                            <i 
-                                id="trophy-1-icon" 
-                                data-lucide="check-circle-2" 
-                                class="w-4 h-4 text-amber-500 flex-shrink-0"
-                            ></i>
-                            <div>
-                                <div 
-                                    class="font-bold text-amber-50"
-                                >
-                                    🎁 Bonus Benvenuto Iniziale
-                                </div>
-                                <div 
-                                    class="text-[10px] text-gray-400 font-light mt-0.5"
-                                >
-                                    50 punti di benvenuto accreditati automaticamente all'ingresso nel Caveau.
-                                </div>
-                            </div>
-                        </div>
-                        <span 
-                            id="trophy-1-badge" 
-                            class="text-[9px] bg-amber-500/20 text-amber-400 px-2.5 py-1 rounded font-extrabold uppercase tracking-wider transition"
-                        >
-                            ATTIVO
-                        </span>
-                    </div>
+    <script>
+    async function syncUserPointsReal() {
+        let userId = "0";
+        try { 
+            if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initDataUnsafe && window.Telegram.WebApp.initDataUnsafe.user) {
+                userId = window.Telegram.WebApp.initDataUnsafe.user.id.toString();
+            }
+        } catch(e) {}
+        
+        if (userId === "0") {
+            userId = localStorage.getItem('falsario_device_base_id') || "0";
+        }
 
-                    <div 
-                        id="trophy-2-box" 
-                        class="bg-[#121212] border border-gray-800/80 p-3 rounded-xl text-xs text-gray-500 flex items-center justify-between opacity-80 mb-2 transition-all duration-300"
-                    >
-                        <div 
-                            class="flex items-center space-x-2.5"
-                        >
-                            <i 
-                                id="trophy-2-icon" 
-                                data-lucide="lock" 
-                                class="w-4 h-4 text-gray-500 flex-shrink-0"
-                            ></i>
-                            <div>
-                                <div 
-                                    id="trophy-2-title" 
-                                    class="font-bold text-gray-300 transition"
-                                >
-                                    🏷️ Sconto 5% Silver Perenne
-                                </div>
-                                <div 
-                                    class="text-[10px] text-gray-500 font-light mt-0.5"
-                                >
-                                    Sconto fisso del 5% applicato in automatico. Sbloccato a 150 punti spesa.
-                                </div>
-                            </div>
-                        </div>
-                        <span 
-                            id="trophy-2-badge" 
-                            class="text-[9px] bg-amber-600/20 text-amber-400 border border-amber-500/30 px-2.5 py-1 rounded font-bold uppercase tracking-wider animate-pulse transition"
-                        >
-                            SBLOCCA
-                        </span>
-                    </div>
+        try {
+            const res = await fetch(`/api/user/${userId}`);
+            const data = await res.json();
+            const pts = data && typeof data.points !== 'undefined' ? parseInt(data.points) : 50;
 
-                    <div 
-                        id="trophy-3-box" 
-                        class="bg-[#121212] border border-gray-800/80 p-3 rounded-xl text-xs text-gray-500 flex items-center justify-between opacity-80 mb-2 transition-all duration-300"
-                    >
-                        <div 
-                            class="flex items-center space-x-2.5"
-                        >
-                            <i 
-                                id="trophy-3-icon" 
-                                data-lucide="lock" 
-                                class="w-4 h-4 text-gray-500 flex-shrink-0"
-                            ></i>
-                            <div>
-                                <div 
-                                    id="trophy-3-title" 
-                                    class="font-bold text-gray-300 transition"
-                                >
-                                    🔥 Sconto 10% Gold Perenne
-                                </div>
-                                <div 
-                                    class="text-[10px] text-gray-500 font-light mt-0.5"
-                                >
-                                    Sconto superiore del 10% valido a vita. Sbloccato a 300 punti spesa.
-                                </div>
-                            </div>
-                        </div>
-                        <span 
-                            id="trophy-3-badge" 
-                            class="text-[9px] bg-amber-600/20 text-amber-400 border border-amber-500/30 px-2.5 py-1 rounded font-bold uppercase tracking-wider animate-pulse transition"
-                        >
-                            SBLOCCA
-                        </span>
-                    </div>
+            const modal = document.getElementById('trophies-modal');
+            if (!modal) return;
 
-                    <div 
-                        id="trophy-4-box" 
-                        class="bg-[#121212] border border-gray-800/80 p-3 rounded-xl text-xs text-gray-500 flex items-center justify-between opacity-80 mb-2 transition-all duration-300"
-                    >
-                        <div 
-                            class="flex items-center space-x-2.5"
-                        >
-                            <i 
-                                id="trophy-4-icon" 
-                                data-lucide="lock" 
-                                class="w-4 h-4 text-gray-500 flex-shrink-0"
-                            ></i>
-                            <div>
-                                <div 
-                                    id="trophy-4-title" 
-                                    class="font-bold text-gray-300 transition"
-                                >
-                                    💎 Sconto 15% + Omaggi VIP Inclusi
-                                </div>
-                                <div 
-                                    class="text-[10px] text-gray-500 font-light mt-0.5"
-                                >
-                                    Sconto massimo del 15% su tutto il listino. Sbloccato a 500 punti spesa.
-                                </div>
-                            </div>
-                        </div>
-                        <span 
-                            id="trophy-4-badge" 
-                            class="text-[9px] bg-amber-600/20 text-amber-400 border border-amber-500/30 px-2.5 py-1 rounded font-bold uppercase tracking-wider animate-pulse transition"
-                        >
-                            SBLOCCA
-                        </span>
-                    </div>
+            // Aggiorna il numero dei punti all'interno del modale
+            modal.querySelectorAll('div, span, p').forEach(el => {
+                if (el.innerText.trim() === '50' && el.style.fontSize) {
+                    el.innerText = pts;
+                }
+            });
 
-                </div>
-            </div>
+            // Aggiorna la barra di progressione
+            modal.querySelectorAll('div').forEach(el => {
+                if (el.style.background && el.style.background.includes('rgba(255, 255, 255, 0.1)')) {
+                    const bar = el.firstElementChild;
+                    if (bar) {
+                        const pct = Math.min(100, Math.floor((pts / 500) * 100));
+                        bar.style.width = `${pct}%`;
+                    }
+                }
+            });
 
-            <button 
-                onclick="closeTrophiesModal()" 
-                class="w-full bg-[#1a1a1a] border border-gray-800 hover:bg-gray-900 text-gray-300 font-bold py-3 rounded-xl text-xs uppercase tracking-wider transition"
-            >
-                Chiudi
-            </button>
-        </div>
-    </div>
+            // Sblocca i bottoni se si raggiungono le soglie (150 per Silver, 300 per Gold)
+            modal.querySelectorAll('button').forEach(b => {
+                if (b.innerText.trim() === 'SBLOCCA') {
+                    const cardText = b.parentElement.innerText;
+                    if (cardText.includes('Silver') && pts >= 150) {
+                        b.innerText = 'ATTIVO';
+                        b.style.background = '#10b981';
+                        b.style.color = '#fff';
+                    } else if (cardText.includes('Gold') && pts >= 300) {
+                        b.innerText = 'ATTIVO';
+                        b.style.background = '#10b981';
+                        b.style.color = '#fff';
+                    }
+                }
+            });
+
+        } catch(e) {
+            console.log("Errore sync punti:", e);
+        }
+    }
+
+    // Intercetta l'apertura del modale dei trofei/privilegi
+    document.addEventListener("DOMContentLoaded", () => {
+        document.body.addEventListener('click', function(e) {
+            const el = e.target.closest('button, a, div, span, li');
+            if (!el) return;
+            // Se l'utente clicca sul menu per aprire i privilegi o se viene aperto il modale trophies
+            if ((el.innerText && el.innerText.toUpperCase().includes('PRIVILEGI CLIENTI')) || el.id === 'trophies-modal' || el.closest('#trophies-modal')) {
+                setTimeout(syncUserPointsReal, 300);
+            }
+        }, true);
+    });
+
+    // Osservatore mutazioni: appena il modale "trophies-modal" diventa visibile, aggiorna i punti
+    const observer = new MutationObserver((mutations) => {
+        mutations.forEach((mutation) => {
+            const modal = document.getElementById('trophies-modal');
+            if (modal && !modal.classList.contains('hidden') && modal.style.display !== 'none') {
+                syncUserPointsReal();
+            }
+        });
+    });
+    
+    window.addEventListener('DOMContentLoaded', () => {
+        const modal = document.getElementById('trophies-modal');
+        if (modal) observer.observe(modal, { attributes: true, attributeFilter: ['class', 'style'] });
+    });
+    </script>
 
        <!-- ======================================================= -->
     <!-- MODALE TRACKING LAVORAZIONI (DESIGN DI LUSSO) -->
@@ -7530,6 +7362,517 @@ async function openTrophiesModal() {
             }
         }, true);
     });
+    </script>
+        <!-- ========================================================== -->
+    <!-- VALIDATORE SOFISTICATO E REQUISITI DI SICUREZZA CHECKOUT   -->
+    <!-- ========================================================== -->
+    <script>
+    document.addEventListener("DOMContentLoaded", () => {
+        // Intercetta i tentativi di invio ordine / checkout
+        document.body.addEventListener('submit', function(e) {
+            validateAndProcessCheckout(e);
+        }, true);
+
+        // Intercetta anche i click sui bottoni di conferma ordine se non usano il tag <form>
+        document.body.addEventListener('click', function(e) {
+            const btn = e.target.closest('button, input[type="submit"]');
+            if (!btn) return;
+            
+            // Se il bottone è quello che finalizza l'ordine
+            const text = (btn.innerText || btn.value || '').toUpperCase();
+            if (text.includes('CONFERMA') || text.includes('INVIA ORDINE') || text.includes('PROCEDI AL PAGAMENTO') || text.includes('COMPLETA')) {
+                // Trova il contenitore del checkout o modale attivo
+                const modal = btn.closest('div[id*="checkout"], div[id*="order"], form, div[class*="modal"]');
+                if (modal) {
+                    if (!performStrictValidation(modal)) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                    }
+                }
+            }
+        }, true);
+    });
+
+    function validateAndProcessCheckout(e) {
+        const form = e.target;
+        if (!performStrictValidation(form)) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+    }
+
+    function performStrictValidation(container) {
+        // 1. TROVA TUTTI I CAMPI DI INPUT E TEXTAREA VISIBILI
+        const inputs = container.querySelectorAll('input:not([type="hidden"]):not([type="checkbox"]):not([type="radio"]), textarea');
+        
+        let isValid = true;
+        let errorMessage = "";
+
+        inputs.forEach(input => {
+            const val = input.value.trim();
+            const placeholder = (input.placeholder || input.name || "Campo").toLowerCase();
+
+            // REGOLA A: Obbligatorietà assoluta (Dal primo all'ultimo)
+            if (!val) {
+                isValid = false;
+                highlightError(input);
+                errorMessage = "Compila tutti i campi obbligatori richiesti.";
+                return;
+            }
+
+            // REGOLA B: Riconoscimento ed Email Valida
+            if (placeholder.includes('email') || input.type === 'email') {
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                if (!emailRegex.test(val)) {
+                    isValid = false;
+                    highlightError(input);
+                    errorMessage = "Inserisci un indirizzo email valido (es. nome@dominio.it).";
+                    return;
+                }
+            }
+
+            // REGOLA C: Riconoscimento Indirizzo / Recapito (Evita stringhe casuali di 1 lettera)
+            if (placeholder.includes('indirizzo') || placeholder.includes('recapito') || placeholder.includes('via') || placeholder.includes('città')) {
+                if (val.length < 6 || !/\d/.test(val) && !val.includes(' ')) {
+                    // Richiede un minimo di struttura (es. Via Roma 10 o simili)
+                    isValid = false;
+                    highlightError(input);
+                    errorMessage = "Inserisci un indirizzo di spedizione o recapito reale e completo.";
+                    return;
+                }
+            }
+
+            // REGOLA D: Controllo Screenshot / Ricevuta Pagamento
+            if (placeholder.includes('screenshot') || placeholder.includes('ricevuta') || placeholder.includes('pagamento')  || placeholder.includes('txid') || placeholder.includes('cro')) {
+                // Verifica se è un link valido, un hash di transazione o se l'utente ha scritto solo sciocchezze tipo "aaa" o "ok"
+                const isUrl = val.startsWith('http://') || val.startsWith('https://') || val.startsWith('blob:');
+                const isTxIdOrHash = val.length >= 10; // Un hash o CRO ha una lunghezza minima di sicurezza
+                
+                if (!isUrl && !isTxIdOrHash) {
+                    isValid = false;
+                    highlightError(input);
+                    errorMessage = "Il campo pagamento richiede uno screenshot valido (link) o un codice CRO/TXID autentico.";
+                    return;
+                }
+            }
+            
+            removeError(input);
+        });
+
+        if (!isValid) {
+            showVaultSecurityAlert(errorMessage);
+            return false;
+        }
+
+        return true;
+    }
+
+    function highlightError(element) {
+        element.style.border = '2px solid #ef4444';
+        element.style.boxShadow = '0 0 10px rgba(239, 68, 68, 0.4)';
+    }
+
+    function removeError(element) {
+        element.style.border = '';
+        element.style.boxShadow = '';
+    }
+
+    function showVaultSecurityAlert(msg) {
+        // Crea un alert in stile lusso coerente col tema del Caveau
+        const existing = document.getElementById('vault-security-toast');
+        if (existing) existing.remove();
+
+        const toast = document.createElement('div');
+        toast.id = 'vault-security-toast';
+        toast.innerHTML = `
+            <div style="position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: #1a0505; border: 1px solid #ef4444; color: #fff; padding: 12px 20px; border-radius: 12px; z-index: 99999999; font-size: 12px; font-weight: bold; box-shadow: 0 10px 30px rgba(0,0,0,0.8); display: flex; align-items: center; gap: 10px; backdrop-filter: blur(10px);">
+                <span style="font-size: 16px;">🛡️</span>
+                <div>
+                    <div style="color: #ef4444; text-transform: uppercase; font-size: 10px; letter-spacing: 1px;">Controllo Sicurezza Caveau</div>
+                    <div>${msg}</div>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(toast);
+        setTimeout(() => { if (toast) toast.remove(); }, 4000);
+    }
+    </script>
+        <!-- ========================================================== -->
+    <!-- SENTINELLA CAVEAU & AI OCR (RICONOSCIMENTO RICEVUTE)       -->
+    <!-- ========================================================== -->
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+    <script>
+    // 1. PULIZIA UI: Rimuove "Facoltativa" e lascia il design pulito
+    function cleanVaultUI(node) {
+        if (node.nodeType === 3) {
+            if (/FACOLTATIV[OA]/i.test(node.nodeValue)) {
+                node.nodeValue = node.nodeValue.replace(/\s*\(?FACOLTATIV[OA]\)?\s*/gi, '').trim();
+            }
+        } else {
+            node.childNodes.forEach(cleanVaultUI);
+        }
+    }
+    setInterval(() => cleanVaultUI(document.body), 200);
+
+    // Variabili di stato per l'IA
+    let receiptStatus = { isScanning: false, isValid: false };
+
+    // 2. MOTORE AI OCR PER RICONOSCIMENTO SCREENSHOT
+    document.addEventListener('change', async function(e) {
+        if (e.target.type === 'file') {
+            const file = e.target.files[0];
+            if (!file) { receiptStatus.isValid = false; return; }
+
+            // Verifica se il file è in una zona dove si richiede una ricevuta (per non scansionare foto a caso in altre sezioni)
+            const container = e.target.closest('div');
+            if (container && !container.innerHTML.toUpperCase().includes('RICEVUTA') && !container.innerHTML.toUpperCase().includes('SCREENSHOT') && !container.innerHTML.toUpperCase().includes('PAGAMENTO')) {
+                receiptStatus.isValid = true; // Salta il check AI se non è una ricevuta
+                return;
+            }
+
+            // A. Check Base (Immagine e peso anti-QR code)
+            if (!file.type.startsWith('image/') && file.type !== 'application/pdf') {
+                showVaultAlert("⚠️ Formato non supportato. Carica una foto (JPG/PNG).", 4000);
+                e.target.value = ''; return;
+            }
+            if (file.size < 40000) {
+                showVaultAlert("🚫 Immagine sospetta o troppo leggera. Carica uno SCREENSHOT INTERO, non icone o ritagli.", 5000);
+                e.target.value = ''; return;
+            }
+
+            // B. Scansione AI
+            receiptStatus.isScanning = true;
+            receiptStatus.isValid = false;
+            showVaultAlert("🔍 Scansione AI anti-frode in corso... Non chiudere.", 15000); // Mostra alert prolungato
+
+            try {
+                // Avvia il motore Tesseract AI
+                const worker = await Tesseract.createWorker('ita+eng');
+                const ret = await worker.recognize(file);
+                const text = ret.data.text.toLowerCase();
+                await worker.terminate();
+
+                // Parole chiave finanziarie (Banca, Crypto, Postepay, Esiti)
+                const financialKeywords = ['pagamento', 'transazione', 'inviato', 'importo', 'eseguito', 'successo', 'confermato', 'iban', 'postepay', 'usdt', 'btc', 'eth', 'binance', 'revolut', 'paypal', 'saldo', 'txid', 'cro', 'bonifico', 'ricarica', 'carta', 'conto', 'dettagli', 'completed', 'sent'];
+                const hasMoneySymbols = /[€$£]|usdt|btc|eth/i.test(text);
+                const hasKeywords = financialKeywords.some(kw => text.includes(kw));
+
+                if (hasKeywords || hasMoneySymbols) {
+                    receiptStatus.isValid = true;
+                    showVaultAlert("✅ Ricevuta verificata dall'IA. Puoi procedere.", 3000);
+                } else {
+                    e.target.value = ''; // Distrugge il file
+                    showVaultAlert("🚫 ERRORE SICUREZZA: Nessun dato finanziario rilevato nell'immagine. Assicurati che sia la vera ricevuta di pagamento.", 6000);
+                }
+            } catch (err) {
+                console.error("Errore AI OCR:", err);
+                receiptStatus.isValid = true; // Fallback d'emergenza se la connessione del cliente blocca l'IA
+                showVaultAlert("✅ File acquisito in modalità standard.", 3000);
+            } finally {
+                receiptStatus.isScanning = false;
+            }
+        }
+    }, true);
+
+    // 3. SENTINELLA CHECKOUT (Blocca l'invio in base ai dati e all'IA)
+    document.addEventListener('click', function(e) {
+        const btn = e.target.closest('button, [onclick]');
+        if (!btn) return;
+
+        const btnText = (btn.innerText || '').toUpperCase();
+        
+        if (btnText.includes('INVIA RICHIESTA') || btnText.includes('CONFERMA') || btnText.includes('PROCEDI')) {
+            const container = btn.closest('div[class*="fixed"], div[id*="modal"], body');
+            const inputs = container.querySelectorAll('input[type="text"], input[type="email"], textarea');
+            
+            // Se l'IA sta ancora scansionando, blocca tutto.
+            if (receiptStatus.isScanning) {
+                e.preventDefault(); e.stopPropagation(); e.stopImmediatePropagation();
+                showVaultAlert("⏳ Attendi il completamento della Scansione AI sulla ricevuta...", 3000);
+                return false;
+            }
+
+            let isValid = true;
+            let errorMsg = "";
+
+            // A. Controllo rigido campi di testo
+            for (let inp of inputs) {
+                let val = inp.value.trim();
+                let type = inp.type || '';
+                let placeholder = (inp.placeholder || '').toLowerCase();
+                
+                if (!val) { isValid = false; errorMsg = "Campi obbligatori mancanti. Compila tutti i dati richiesti."; break; }
+                
+                if (type === 'email' || placeholder.includes('email')) {
+                    if (!/^[^\s@]+@[^\s@]+\.[a-zA-Z]{2,}$/.test(val)) {
+                        isValid = false; errorMsg = "Indirizzo email non valido (es: tuo@indirizzo.com)."; break;
+                    }
+                }
+                
+                if (type === 'text' && !placeholder.includes('iban')) {
+                    if (val.length < 4 || /([a-zA-Z0-9])\1{3,}/.test(val)) {
+                        isValid = false; errorMsg = "Dati non conformi: inserisci informazioni reali e complete."; break;
+                    }
+                }
+            }
+
+            // B. Controllo Presenza/Validità File e Spunta Checkbox
+            if (isValid) {
+                const modalHtml = container.innerHTML.toUpperCase();
+                
+                // Controlla se c'è la checkbox della dichiarazione e se è spuntata
+                const checkbox = container.querySelector('input[type="checkbox"]');
+                if (checkbox && !checkbox.checked) {
+                    isValid = false; errorMsg = "Devi confermare la Dichiarazione Vincolante (spunta la casella).";
+                }
+                // Controlla la ricevuta
+                else if (modalHtml.includes('RICEVUTA') || modalHtml.includes('SCREENSHOT') || modalHtml.includes('PAGAMENTO')) {
+                    if (!receiptStatus.isValid && !container.innerHTML.includes('✅') && !/(\.png|\.jpg|\.jpeg|\.pdf)/i.test(container.innerHTML)) {
+                        isValid = false; errorMsg = "SECURITY CHECK: Devi allegare e far verificare lo screenshot del pagamento.";
+                    }
+                }
+            }
+
+            // UCCIDE L'AZIONE SE NON VALIDO
+            if (!isValid) {
+                e.preventDefault(); e.stopPropagation(); e.stopImmediatePropagation();
+                showVaultAlert(errorMsg, 4500);
+                return false;
+            }
+        }
+    }, true);
+
+    // 4. GENERATORE DI AVVISI CAVEAU
+    function showVaultAlert(msg, duration = 4000) {
+        const existing = document.getElementById('vault-alert');
+        if (existing) existing.remove();
+
+        const toast = document.createElement('div');
+        toast.id = 'vault-alert';
+        toast.innerHTML = `
+            <div style="position: fixed; top: 15%; left: 50%; transform: translateX(-50%); background: rgba(18, 5, 5, 0.98); border: 1px solid #ef4444; color: #fff; padding: 18px 24px; border-radius: 16px; z-index: 99999999; text-align: center; box-shadow: 0 10px 40px rgba(239, 68, 68, 0.6); width: 85%; max-width: 380px; backdrop-filter: blur(12px);">
+                <div style="font-size: 26px; margin-bottom: 8px;">🛡️</div>
+                <div style="color: #ef4444; font-weight: 900; font-size: 11px; letter-spacing: 2px; margin-bottom: 6px; text-transform: uppercase;">Controllo Sicurezza</div>
+                <div style="font-size: 13px; font-weight: 500; line-height: 1.4;">${msg}</div>
+            </div>
+        `;
+        document.body.appendChild(toast);
+        setTimeout(() => { if(document.getElementById('vault-alert')) document.getElementById('vault-alert').remove(); }, duration);
+    }
+    </script>
+        <!-- ========================================================== -->
+    <!-- MOTORE STATO LAVORAZIONI DINAMICO & COLLEGAMENTO DB REALE  -->
+    <!-- ========================================================== -->
+    <script>
+    // 1. Funzione per triggerare l'apertura del VERO "Contatto Diretto" del tuo template
+    window.triggerOfficialContactModal = function() {
+        // Chiude il modale del tracking
+        const overlay = document.getElementById('stato-lavorazioni-overlay');
+        if (overlay) overlay.remove();
+
+        // Cerca nel menu originale la voce "Contatto Diretto" e simula il click
+        const allElements = document.querySelectorAll('button, a, div, span, li');
+        for (let el of allElements) {
+            if (el.innerText && el.innerText.trim() === 'Contatto Diretto' && el.tagName !== 'SCRIPT' && el.tagName !== 'STYLE') {
+                el.click();
+                break;
+            }
+        }
+    };
+
+    // 2. Modale Base
+    window.openStatoLavorazioniModal = function() {
+        const overlayId = 'stato-lavorazioni-overlay';
+        if (document.getElementById(overlayId)) document.getElementById(overlayId).remove();
+
+        let userId = "0";
+        try { if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initDataUnsafe && window.Telegram.WebApp.initDataUnsafe.user) userId = window.Telegram.WebApp.initDataUnsafe.user.id.toString(); } catch(e) {}
+        if (userId === "0") userId = localStorage.getItem('falsario_device_base_id') || "SCONOSCIUTO";
+
+        const modalHTML = `
+        <div id="${overlayId}" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.96); z-index: 9999999; display: flex; align-items: center; justify-content: center; padding: 1rem; backdrop-filter: blur(12px);">
+            <div style="background: #121212; border: 1px solid #333; border-radius: 22px; width: 100%; max-width: 480px; max-height: 90vh; overflow-y: auto; padding: 1.5rem; box-shadow: 0 0 40px rgba(0,0,0,0.9);">
+                
+                <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #222; padding-bottom: 1rem; margin-bottom: 1.5rem;">
+                    <div>
+                        <h3 style="font-weight: 900; font-size: 1.1rem; color: white; margin: 0;">🛡️ STATO LAVORAZIONI</h3>
+                        <span style="font-size: 10px; color: #9ca3af; font-family: monospace;">ID UTENTE: #${userId}</span>
+                    </div>
+                    <button onclick="document.getElementById('${overlayId}').remove()" style="background: transparent; color: white; font-size: 1.2rem; font-weight: bold; border: none; cursor: pointer; padding: 5px 10px;">✕</button>
+                </div>
+
+                <div style="background: #1a1a1a; padding: 1rem; border-radius: 12px; border: 1px solid #282828; margin-bottom: 1.5rem;">
+                    <label style="font-size: 11px; text-transform: uppercase; color: #9ca3af; font-weight: bold; display: block; margin-bottom: 6px;">Cerca per Pratica o Tracking</label>
+                    <div style="display: flex; gap: 8px;">
+                        <input type="text" id="track-search-input" placeholder="Es. PR-19HWEV o Tracking" style="flex: 1; background: #0a0a0a; border: 1px solid #333; color: white; padding: 10px; border-radius: 8px; font-size: 13px; text-transform: uppercase;">
+                        <button onclick="window.fetchOrderTrackerStatus()" style="background: #d97706; color: white; border: none; padding: 0 14px; border-radius: 8px; font-weight: bold; font-size: 12px; cursor: pointer;">CERCA</button>
+                    </div>
+                </div>
+
+                <div id="tracker-results-container">
+                    <div style="text-align: center; padding: 3rem 0; opacity: 0.5;">
+                        <div style="font-size: 2.5rem; margin-bottom: 10px;">📦</div>
+                        <div style="font-size: 11px; color: #fff; text-transform: uppercase; letter-spacing: 1px;">Inserisci il codice<br>per tracciare l'operazione.</div>
+                    </div>
+                </div>
+            </div>
+        </div>`;
+        document.body.insertAdjacentHTML('beforeend', modalHTML);
+    };
+
+    // 3. MOTORE DI RICERCA DATI REALI SUL SERVER
+    window.fetchOrderTrackerStatus = async function() {
+        const input = document.getElementById('track-search-input');
+        const code = input.value.trim().toUpperCase();
+        if(!code) return;
+        
+        const container = document.getElementById('tracker-results-container');
+        container.innerHTML = "<div style='text-align: center; padding: 3rem 0; color: #f59e0b; font-size: 12px; font-weight: bold; letter-spacing: 1px; animation: pulse 1.5s infinite;'>RICERCA NEL CAVEAU...</div>";
+        
+        try {
+            const res = await fetch(`/api/order/${encodeURIComponent(code)}`);
+            const order = await res.json();
+
+            if (order.error || !order.id) {
+                container.innerHTML = `
+                    <div style="text-align: center; padding: 2rem 0;">
+                        <div style="font-size: 2rem; margin-bottom: 10px;">❌</div>
+                        <div style="color: #ef4444; font-weight: bold; font-size: 14px;">PRATICA NON TROVATA</div>
+                        <div style="color: #9ca3af; font-size: 11px; margin-top: 5px;">Verifica il codice e riprova.</div>
+                    </div>`;
+                return;
+            }
+
+            // Mappatura Dati Reali
+            const status = order.status; // PENDING, ACCEPTED, SHIPPED, CANCELLED
+            const isPhysical = order.order_type !== 'SERVICE';
+            const notes = order.tracking_code || "";
+
+            // Calcolo fasi
+            let s1 = "completed", s2 = "", s3 = "", s4 = "";
+            let statusLabel = "IN CORSO"; let statusColor = "#10b981";
+            
+            if (status === 'PENDING') { s2 = "active"; }
+            else if (status === 'ACCEPTED') { s2 = "completed"; s3 = "active"; }
+            else if (status === 'SHIPPED') { s2 = "completed"; s3 = "completed"; s4 = "completed"; statusLabel = "COMPLETATO"; }
+            else if (status === 'CANCELLED') { s2 = "completed"; s3 = "active"; statusLabel = "ANNULLATO"; statusColor = "#ef4444"; }
+
+            // Costruisce i pallini e le V
+            const d1 = `<div class="tracker-dot completed">✓</div>`;
+            const d2 = s2 === 'completed' ? `<div class="tracker-dot completed">✓</div>` : `<div class="tracker-dot ${s2}">2</div>`;
+            
+            let d3 = `<div class="tracker-dot ${s3}">3</div>`;
+            if (status === 'CANCELLED') d3 = `<div class="tracker-dot" style="background:#ef4444; border-color:#ef4444;">✕</div>`;
+            else if (s3 === 'completed') d3 = `<div class="tracker-dot completed">✓</div>`;
+
+            const d4 = s4 === 'completed' ? `<div class="tracker-dot completed">✓</div>` : `<div class="tracker-dot ${s4}">4</div>`;
+
+            // Testi dinamici in base al tipo di ordine
+            const txtStep3 = isPhysical ? "Preparazione & Imballaggio" : "In Lavorazione / Elaborazione";
+            const descStep3 = isPhysical ? "Logistica in corso per la spedizione o il drop." : "Il team sta elaborando i dati e i servizi digitali richiesti.";
+            const txtStep4 = isPhysical ? "Spedito / Consegnato" : "Esito Finale Concluso";
+
+            // Box note aggiuntive/tracking (se presente)
+            const trackingBox = notes ? `
+                <div style="margin-top: 1.5rem; background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.3); padding: 1rem; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.2);">
+                    <div style="font-size: 10px; color: #10b981; text-transform: uppercase; font-weight: bold; margin-bottom: 6px; display: flex; align-items: center; gap: 5px;">
+                        <span>📋</span> INFORMAZIONI AGGIUNTIVE / TRACKING
+                    </div>
+                    <div style="color: white; font-size: 12px; line-height: 1.5; font-family: monospace; white-space: pre-wrap; word-break: break-word;">${notes}</div>
+                </div>
+            ` : "";
+
+            container.innerHTML = `
+                <div style="margin-bottom: 1.5rem; animation: fadeIn 0.4s ease-out;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; border-bottom: 1px dashed #333; padding-bottom: 10px;">
+                        <span style="font-size: 13px; font-weight: bold; color: #d97706;">PRATICA: #${order.id} ${code !== String(order.id) ? `(${code})` : ''}</span>
+                        <span style="font-size: 10px; color: ${statusColor}; border: 1px solid ${statusColor}; padding: 2px 6px; border-radius: 4px; font-weight: bold;">${statusLabel}</span>
+                    </div>
+
+                    <div style="background: #151515; padding: 1.2rem; border-radius: 14px; border: 1px solid #262626; box-shadow: inset 0 0 15px rgba(0,0,0,0.5);">
+                        <div class="tracker-step">
+                            ${d1}
+                            <div>
+                                <div style="font-size: 13px; font-weight: bold; color: white;">Ordine Ricevuto & Registrato</div>
+                                <div style="font-size: 11px; color: #9ca3af; margin-top: 2px;">Preso in carico dal sistema.</div>
+                            </div>
+                        </div>
+                        <div class="tracker-step">
+                            ${d2}
+                            <div>
+                                <div style="font-size: 13px; font-weight: bold; color: ${s2==='active'?'#f59e0b':'white'};">Verifica di Sicurezza</div>
+                                <div style="font-size: 11px; color: #9ca3af; margin-top: 2px;">Controllo pagamenti e dati annessi.</div>
+                            </div>
+                        </div>
+                        <div class="tracker-step">
+                            ${d3}
+                            <div>
+                                <div style="font-size: 13px; font-weight: bold; color: ${status==='CANCELLED'?'#ef4444':(s3==='active'?'#f59e0b':'white')};">${status==='CANCELLED'?'Pratica Annullata':txtStep3}</div>
+                                <div style="font-size: 11px; color: #d1d5db; margin-top: 2px;">${status==='CANCELLED'?'L\'operazione è stata bloccata.':descStep3}</div>
+                            </div>
+                        </div>
+                        <div class="tracker-step" style="padding-bottom: 0;">
+                            ${d4}
+                            <div>
+                                <div style="font-size: 13px; font-weight: bold; color: ${s4==='completed'?'white':'#6b7280'};">${txtStep4}</div>
+                                <div style="font-size: 11px; color: #4b5563; margin-top: 2px;">Esecuzione finale dell'operazione.</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    ${trackingBox}
+                </div>
+
+                <div style="background: #111; padding: 1.2rem; border-radius: 14px; border: 1px solid #333; text-align: center; animation: fadeIn 0.5s ease-out;">
+                    <h4 style="color: white; font-size: 13px; font-weight: bold; margin-bottom: 6px;">💬 Necessiti di supporto?</h4>
+                    <p style="font-size: 10px; color: #9ca3af; margin-bottom: 12px;">Il nostro team è a disposizione sui canali sicuri.</p>
+                    <button onclick="window.triggerOfficialContactModal()" class="caveau-luxury-btn" style="display: block; width: 100%; padding: 12px; border: none; cursor: pointer; font-size: 12px; text-align: center; font-weight: 900; letter-spacing: 1px; border-radius: 8px;">
+                        APRI CONTATTI DIRETTI
+                    </button>
+                </div>
+            `;
+        } catch(e) {
+            container.innerHTML = "<div style='text-align: center; color: #ef4444;'>Errore di connessione al database.</div>";
+        }
+    };
+    </script>
+        <!-- ========================================================== -->
+    <!-- SINCRONIZZAZIONE ASSOLUTA TRACKING BOT -> SITO             -->
+    <!-- ========================================================== -->
+    <script>
+    let ultimatePraticaCode = "";
+
+    // 1. Il sito ruba il codice vero generato dal Bot quando fa l'ordine
+    const originalFetchFn = window.fetch;
+    window.fetch = async function() {
+        const response = await originalFetchFn.apply(this, arguments);
+        const clone = response.clone();
+        
+        let resource = arguments[0];
+        if (typeof resource === 'string' && resource.includes('/api/order') && arguments[1] && arguments[1].method === 'POST') {
+            try {
+                const data = await clone.json();
+                if (data.pratica_code) {
+                    ultimatePraticaCode = data.pratica_code;
+                }
+            } catch(e) {}
+        }
+        return response;
+    };
+
+    // 2. Quando appare il codice finto a schermo, viene brutalmente sovrascritto dal VERO codice
+    const trackingObserver = new MutationObserver((mutations) => {
+        if (!ultimatePraticaCode) return;
+        document.querySelectorAll('div, span, p, h1, h2, h3').forEach(el => {
+            // Cerca testi che contengono PR- seguito da caratteri e li sostituisce con quello VERO
+            if (el.innerText && el.innerText.match(/PR-[A-Z0-9]{5,}/) && el.children.length === 0) {
+                if (!el.innerText.includes(ultimatePraticaCode)) {
+                    el.innerText = el.innerText.replace(/PR-[A-Z0-9]{5,}/, ultimatePraticaCode);
+                }
+            }
+        });
+    });
+    trackingObserver.observe(document.body, { childList: true, subtree: true, characterData: true });
     </script>
 </body>
 </html>
