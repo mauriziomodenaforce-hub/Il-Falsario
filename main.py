@@ -305,12 +305,12 @@ def run_health_server():
 def get_admin_main_keyboard():
     markup = types.InlineKeyboardMarkup(row_width=1)
     markup.add(
+        types.InlineKeyboardButton("🛍 Gestione Prodotti & Media", callback_data="m_prod"),
         types.InlineKeyboardButton("📦 Gestione Ordini (Fisici)", callback_data="dash_ord_phys"),
         types.InlineKeyboardButton("🛠 Gestione Servizi (Digitali)", callback_data="dash_ord_serv"),
-        types.InlineKeyboardButton("🛍 Gestione Prodotti & Media", callback_data="m_prod"),
-        types.InlineKeyboardButton("🎁 Gestione Giveaway", callback_data="m_gw"),
         types.InlineKeyboardButton("📜 Storico Archivi", callback_data="m_hist"),
-        types.InlineKeyboardButton("💎 Gestione Punti Utenti", callback_data="m_pts")
+        types.InlineKeyboardButton("💎 Gestione Punti Utenti", callback_data="m_pts"),
+        types.InlineKeyboardButton("🎁 Gestione Giveaway", callback_data="m_gw")
     )
     return markup
 
