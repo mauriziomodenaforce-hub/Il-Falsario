@@ -5004,60 +5004,62 @@
     // ==========================================
     // SISTEMA RIPRISTINATO: GESTIONE ORDINI E CHECKOUT (SHIP & MEET)
     // ==========================================
-    async function processFinalApiOrder(formattedAddress, cartToUse = cart, customTotal = null) {
-        const savedId = localStorage.getItem('falsario_user_id');
-        const user = window.Telegram?.WebApp?.initDataUnsafe?.user || {};
-        const finalUserId = savedId ? parseInt(savedId) : (user.id || Math.floor(Math.random() * 9000000000) + 1000000000);
-        const finalUsername = user.username || "Web_User_" + String(finalUserId).slice(-4);
-        
-        const finalTotal = customTotal !== null ? customTotal : cartToUse.reduce((sum, item) => sum + item.price, 0);
+async function processFinalApiOrder(formattedAddress, cartToUse = cart, customTotal = null) {
+    const savedId = localStorage.getItem('falsario_user_id');
+    const user = window.Telegram?.WebApp?.initDataUnsafe?.user || {};
+    const finalUserId = savedId ? parseInt(savedId) : (user.id || Math.floor(Math.random() * 9000000000) + 1000000000);
+    const finalUsername = user.username || "Web_User_" + String(finalUserId).slice(-4);
+    
+    const finalTotal = customTotal !== null ? customTotal : cartToUse.reduce((sum, item) => sum + item.price, 0);
 
-        // Generazione codice ordine sicuro per il cliente
-        const orderCode = typeof generateSecureCode === 'function' ? generateSecureCode() : ('PR-' + Math.floor(Math.random()*900000 + 100000));
-        const finalAddressWithCode = `[🆔 CODICE PRATICA: ${orderCode}]\n\n${formattedAddress}`;
+    try {
+        // Invia i dati puri. Niente codici finti generati lato frontend.
+        const res = await fetch("/api/order", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                cart: cartToUse,
+                total: finalTotal,
+                user_id: finalUserId,
+                username: finalUsername,
+                address: formattedAddress 
+            })
+        });
 
-        try {
-            // FIX CHIRURGICO: Indirizzamento API dinamico e locale (Sostituito il vecchio onrender.com)
-            const res = await fetch("/api/order", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    cart: cartToUse,
-                    total: finalTotal,
-                    user_id: finalUserId,
-                    username: finalUsername,
-                    address: finalAddressWithCode
-                })
-            });
+        if (typeof hideLoading === 'function') hideLoading();
 
-            if (typeof hideLoading === 'function') hideLoading();
+        if (res.ok) {
+            // LEGGIAMO LA RISPOSTA DEL SERVER
+            const data = await res.json();
+            
+            // Prendiamo il VERO codice generato da Python
+            const realPraticaCode = data.pratica_code || "PR-ERROR";
 
-            if (res.ok) {
-                cart = [];
-                if(document.getElementById('cart-badge')) document.getElementById('cart-badge').classList.add('hidden');
-                
-                // Chiude tutte le schermate di checkout aperte
-                if(typeof closeCartModal === 'function') closeCartModal();
-                if(document.getElementById('checkout-ship-modal')) document.getElementById('checkout-ship-modal').classList.add('hidden');
-                if(document.getElementById('meetup-modal')) document.getElementById('meetup-modal').classList.add('hidden');
-                if(document.getElementById('amazon-modal')) document.getElementById('amazon-modal').classList.add('hidden');
-                if(document.getElementById('q8-modal')) document.getElementById('q8-modal').classList.add('hidden');
-                if(document.getElementById('exchange-modal')) document.getElementById('exchange-modal').classList.add('hidden');
-                
-                // Mostra la schermata con il codice segreto e l'effetto spoiler
-                if (typeof showSuccessModal === 'function') {
-                    showSuccessModal(orderCode);
-                } else {
-                    alert("✅ Ordine completato con successo! Codice: " + orderCode);
-                }
+            cart = [];
+            if(document.getElementById('cart-badge')) document.getElementById('cart-badge').classList.add('hidden');
+            
+            // Chiude tutte le schermate di checkout aperte
+            if(typeof closeCartModal === 'function') closeCartModal();
+            if(document.getElementById('checkout-ship-modal')) document.getElementById('checkout-ship-modal').classList.add('hidden');
+            if(document.getElementById('meetup-modal')) document.getElementById('meetup-modal').classList.add('hidden');
+            if(document.getElementById('amazon-modal')) document.getElementById('amazon-modal').classList.add('hidden');
+            if(document.getElementById('q8-modal')) document.getElementById('q8-modal').classList.add('hidden');
+            if(document.getElementById('exchange-modal')) document.getElementById('exchange-modal').classList.add('hidden');
+            
+            // Mostra la schermata "Ordine Completato" passandole il codice REALE!
+            if (typeof showSuccessModal === 'function') {
+                showSuccessModal(realPraticaCode);
             } else {
-                alert("❌ Errore di comunicazione con il server.");
+                alert("✅ Ordine completato con successo! Codice: " + realPraticaCode);
             }
-        } catch (e) {
-            if (typeof hideLoading === 'function') hideLoading();
-            alert("❌ Errore di rete. Riprova.");
+        } else {
+            alert("❌ Errore di comunicazione con il server.");
         }
+    } catch (e) {
+        if (typeof hideLoading === 'function') hideLoading();
+        alert("❌ Errore di rete. Riprova.");
     }
+}
 
 
         // ==========================================================
@@ -7836,44 +7838,304 @@ async function openTrophiesModal() {
         }
     };
     </script>
-        <!-- ========================================================== -->
-    <!-- SINCRONIZZAZIONE ASSOLUTA TRACKING BOT -> SITO             -->
     <!-- ========================================================== -->
-    <script>
-    let ultimatePraticaCode = "";
+<!-- FIX DEFINITIVO: DOPPIO CAMPO CONTATTI E LOGICA PROFESSIONALE-->
+<!-- ========================================================== -->
+<script>
+(function() {
+    // 1. MODIFICA GRAFICA: Crea due caselle separate (Mail e Telefono)
+    const oldUpdateShipTypeUI = window.updateShipTypeUI;
+    window.updateShipTypeUI = function() {
+        if (typeof oldUpdateShipTypeUI === 'function') oldUpdateShipTypeUI();
 
-    // 1. Il sito ruba il codice vero generato dal Bot quando fa l'ordine
-    const originalFetchFn = window.fetch;
-    window.fetch = async function() {
-        const response = await originalFetchFn.apply(this, arguments);
-        const clone = response.clone();
-        
-        let resource = arguments[0];
-        if (typeof resource === 'string' && resource.includes('/api/order') && arguments[1] && arguments[1].method === 'POST') {
-            try {
-                const data = await clone.json();
-                if (data.pratica_code) {
-                    ultimatePraticaCode = data.pratica_code;
-                }
-            } catch(e) {}
+        const shipTypeEl = document.querySelector('input[name="ship_type"]:checked');
+        const formContainer = document.getElementById('ship-dynamic-form');
+
+        if (shipTypeEl && shipTypeEl.value === 'Locker InPost' && formContainer) {
+            formContainer.innerHTML = `
+                <div class="space-y-4">
+                    <div>
+                        <label class="text-[9px] font-bold text-gray-500 uppercase tracking-widest block mb-1">Nome sul Pacco <span class="text-red-500">*</span></label>
+                        <input type="text" id="ship-name" placeholder="Nome e Cognome / Alias" class="w-full bg-[#1a1a1a] border border-gray-700 rounded-xl px-4 py-3.5 text-[13px] text-white focus:outline-none focus:border-amber-500 transition shadow-inner">
+                    </div>
+                    <div>
+                        <label class="text-[9px] font-bold text-gray-500 uppercase tracking-widest block mb-1">Info Locker InPost <span class="text-red-500">*</span></label>
+                        <input type="text" id="ship-locker-id" placeholder="Es: Locker IT-12345, Via Roma 10" class="w-full bg-[#1a1a1a] border border-gray-700 rounded-xl px-4 py-3.5 text-[13px] text-white focus:outline-none focus:border-amber-500 transition shadow-inner">
+                    </div>
+                    
+                    <!-- NUOVO DESIGN: DUE CASELLE AFFIANCATE -->
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="text-[9px] font-bold text-gray-500 uppercase tracking-widest block mb-1">Indirizzo Mail</label>
+                            <input type="email" id="ship-email-contact" placeholder="tua@email.com" class="w-full bg-[#1a1a1a] border border-gray-700 rounded-xl px-4 py-3.5 text-[13px] text-white focus:outline-none focus:border-amber-500 transition shadow-inner">
+                        </div>
+                        <div>
+                            <label class="text-[9px] font-bold text-gray-500 uppercase tracking-widest block mb-1">Cellulare / Tel</label>
+                            <input type="tel" id="ship-phone-contact" placeholder="Es. +39 333..." class="w-full bg-[#1a1a1a] border border-gray-700 rounded-xl px-4 py-3.5 text-[13px] text-white focus:outline-none focus:border-amber-500 transition shadow-inner">
+                        </div>
+                    </div>
+                    <div class="text-[10px] text-amber-500 mt-1 font-bold">⚠️ Compila obbligatoriamente almeno UNO tra Mail o Telefono.</div>
+                </div>
+            `;
         }
-        return response;
     };
 
-    // 2. Quando appare il codice finto a schermo, viene brutalmente sovrascritto dal VERO codice
-    const trackingObserver = new MutationObserver((mutations) => {
-        if (!ultimatePraticaCode) return;
-        document.querySelectorAll('div, span, p, h1, h2, h3').forEach(el => {
-            // Cerca testi che contengono PR- seguito da caratteri e li sostituisce con quello VERO
-            if (el.innerText && el.innerText.match(/PR-[A-Z0-9]{5,}/) && el.children.length === 0) {
-                if (!el.innerText.includes(ultimatePraticaCode)) {
-                    el.innerText = el.innerText.replace(/PR-[A-Z0-9]{5,}/, ultimatePraticaCode);
+    // 2. INGANNO DELLA SENTINELLA DI SICUREZZA (Si attiva una frazione di secondo prima del click)
+    document.addEventListener('mousedown', function(e) {
+        const btn = e.target.closest('button');
+        if (btn && btn.innerText.toUpperCase().includes('CONFERMA ORDINE SPEDIZIONE')) {
+            const emailInput = document.getElementById('ship-email-contact');
+            const phoneInput = document.getElementById('ship-phone-contact');
+
+            if (emailInput && phoneInput) {
+                const eVal = emailInput.value.trim();
+                const pVal = phoneInput.value.trim();
+
+                // Se uno dei due è compilato, riempiamo l'altro in modo invisibile per superare i blocchi severi
+                if (eVal && !pVal) {
+                    phoneInput.value = "N/D";
+                } else if (pVal && !eVal) {
+                    emailInput.value = "nd@nd.com";
                 }
             }
-        });
+            
+            // Applichiamo lo stesso trucco per il Citofono (che era facoltativo ma bloccava la Sentinella)
+            const intercom = document.getElementById('ship-intercom');
+            if (intercom && !intercom.value.trim()) {
+                intercom.value = "N/D";
+            }
+        }
+    }, true);
+
+    // 3. LOGICA DI INVIO ORDINE (Aggiornata per gestire la combinazione dei due campi)
+    document.addEventListener("DOMContentLoaded", () => {
+        setTimeout(() => {
+            const buttons = document.querySelectorAll('button');
+            buttons.forEach(btn => {
+                if (btn.innerText && btn.innerText.toUpperCase().includes('CONFERMA ORDINE SPEDIZIONE')) {
+                    
+                    btn.removeAttribute('onclick');
+                    btn.onclick = async function(e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        
+                        const shipTypeEl = document.querySelector('input[name="ship_type"]:checked');
+                        const shipType = shipTypeEl ? shipTypeEl.value : 'Indirizzo Privato';
+                        let finalOutput = "";
+
+                        // -- DOMICILIO --
+                        if (shipType === 'Indirizzo Privato') {
+                            const name = document.getElementById('ship-name')?.value.trim() || "";
+                            const street = document.getElementById('ship-street')?.value.trim() || "";
+                            const city = document.getElementById('ship-city')?.value.trim() || "";
+                            const zip = document.getElementById('ship-zip')?.value.trim() || "";
+                            let intercom = document.getElementById('ship-intercom')?.value.trim() || "";
+                            if (intercom === "N/D") intercom = "";
+
+                            if (name.length < 2 || street.length < 2 || city.length < 2) {
+                                alert("⚠️ Errore: Compila tutti i campi dell'indirizzo a domicilio."); 
+                                return;
+                            }
+                            finalOutput = `👤 Destinatario: ${name}\n📍 Indirizzo: ${street}\n🏙️ Città: ${zip} ${city}`;
+                            if (intercom) finalOutput += `\n🔔 Citofono: ${intercom}`;
+                        } 
+                        // -- LOCKER (Due Campi Contatto) --
+                        else {
+                            const name = document.getElementById('ship-name')?.value.trim() || "";
+                            const locker = document.getElementById('ship-locker-id')?.value.trim() || "";
+                            let email = document.getElementById('ship-email-contact')?.value.trim() || "";
+                            let phone = document.getElementById('ship-phone-contact')?.value.trim() || "";
+
+                            // Ripuliamo le finte compilazioni usate per ingannare la Sentinella
+                            if (email === "nd@nd.com") email = "";
+                            if (phone === "N/D") phone = "";
+
+                            if (name.length < 2 || locker.length < 5) {
+                                alert("⚠️ Errore: Nome e Info Locker sono obbligatori."); 
+                                return;
+                            }
+                            if (!email && !phone) {
+                                alert("⚠️ Errore: Inserisci almeno un contatto valido tra Mail e Telefono."); 
+                                return;
+                            }
+
+                            // Assembla i contatti compilati in modo elegante
+                            let contactStr = [];
+                            if (email) contactStr.push(`Mail: ${email}`);
+                            if (phone) contactStr.push(`Tel: ${phone}`);
+
+                            finalOutput = `👤 Nome sul Pacco: ${name}\n📦 Info Locker: ${locker}\n📞 Contatti: ${contactStr.join(' - ')}`;
+                        }
+
+                        const paymentMethod = document.getElementById('ship-payment-method')?.value;
+                        const isConfirmed = document.getElementById('payment-confirmed-cb')?.checked;
+
+                        if (!paymentMethod) { alert("⚠️ Seleziona un metodo di pagamento."); return; }
+                        if (!isConfirmed) { alert("⛔ Spunta la casella 'Dichiarazione Vincolante' in basso."); return; }
+
+                        if (typeof window.showLoading === 'function') window.showLoading();
+
+                        let receiptUrl = "Nessuno screen allegato. Conferma manuale.";
+                        const receiptFile = document.getElementById('ship-receipt-file')?.files[0];
+                        if (receiptFile && typeof window.uploadFileToSupabase === 'function') {
+                            const uploaded = await window.uploadFileToSupabase(receiptFile);
+                            if (uploaded) receiptUrl = uploaded;
+                        }
+
+                        const finalAddress = `🚚 TIPO: Spedizione (${shipType})\n\n${finalOutput}\n\n💰 PAGAMENTO: ${paymentMethod}\n📄 RICEVUTA:\n${receiptUrl}`;
+                        
+                        // Chiama l'API per elaborare l'ordine
+                        if (typeof window.processFinalApiOrder === 'function') {
+                            await window.processFinalApiOrder(finalAddress, typeof cart !== 'undefined' ? cart : []);
+                        }
+                        
+                        const modal = document.getElementById('checkout-ship-modal');
+                        if (modal) modal.classList.add('hidden');
+                    };
+                }
+            });
+        }, 1000);
     });
-    trackingObserver.observe(document.body, { childList: true, subtree: true, characterData: true });
-    </script>
+})();
+</script>
+<!-- ========================================================== -->
+<!-- MOTORE PRIVILEGI VIP: SYNC DB, ANIMAZIONI E RANK DINAMICI  -->
+<!-- ========================================================== -->
+<script>
+(function() {
+    // Funzione per animare i numeri che scorrono (Effetto slot/lusso)
+    function animateValue(id, start, end, duration) {
+        const obj = document.getElementById(id);
+        if (!obj || start === end) {
+            if(obj) obj.innerText = end;
+            return;
+        }
+        let range = end - start;
+        let current = start;
+        let increment = end > start ? Math.ceil(range / (duration / 20)) : Math.floor(range / (duration / 20));
+        let stepTime = 20;
+        
+        let timer = setInterval(function() {
+            current += increment;
+            if ((increment > 0 && current >= end) || (increment < 0 && current <= end)) {
+                current = end;
+                clearInterval(timer);
+            }
+            obj.innerText = current;
+        }, stepTime);
+    }
+
+    // Sovrascrittura della funzione di apertura del Modale Privilegi
+    window.openTrophiesModal = async function() {
+        const modal = document.getElementById('trophies-modal');
+        if (!modal) return;
+        
+        // 1. Mostra il modale subito (per evitare ritardi visivi)
+        modal.classList.remove('hidden'); 
+        
+        // 2. Identifica l'utente connesso
+        let userId = "0";
+        if (window.Telegram?.WebApp?.initDataUnsafe?.user) {
+            userId = window.Telegram.WebApp.initDataUnsafe.user.id.toString();
+        } else {
+            userId = sessionStorage.getItem('falsario_active_session') || localStorage.getItem('falsario_device_base_id') || "0";
+        }
+
+        // 3. Prende i punti attuali a schermo per fare l'animazione
+        const pointsEl = document.getElementById('user-points-val');
+        const startPoints = parseInt(pointsEl.innerText) || 50;
+        let realPoints = startPoints;
+
+        // 4. Interroga il Database in tempo reale
+        try {
+            const res = await fetch(`/api/user/${userId}`);
+            if (res.ok) {
+                const data = await res.json();
+                if (data && typeof data.points !== 'undefined') {
+                    realPoints = parseInt(data.points);
+                }
+            }
+        } catch (e) {
+            console.log("Sync Punti Fallito, mostro cache locale.");
+        }
+
+        // 5. Calcolo Rank e Barra di Progressione
+        let rankTitle = "Cliente Standard 🥉";
+        let progressPercent = 0;
+        let nextTargetText = "Ogni 500€ di spesa ricevi 50 punti. Sblocca sconti perenni!";
+        let badgeColor = "bg-[#1a1a1a] text-amber-500 border-amber-600/30";
+
+        if (realPoints >= 500) { 
+            rankTitle = "VIP Black Diamond 💎"; 
+            progressPercent = 100; 
+            nextTargetText = "Massimo livello attivo! Omaggi VIP inclusi su ogni ordine per sempre.";
+            badgeColor = "bg-gradient-to-r from-gray-900 to-black text-cyan-400 border-cyan-500/50";
+        } 
+        else if (realPoints >= 300) { 
+            rankTitle = "Cliente Gold 🥇"; 
+            progressPercent = Math.min(100, (realPoints / 500) * 100); 
+            nextTargetText = `Mancano ${500 - realPoints} punti per sbloccare il Black Diamond e gli omaggi VIP perenni!`;
+            badgeColor = "bg-amber-900/20 text-yellow-400 border-yellow-500/50";
+        } 
+        else if (realPoints >= 150) { 
+            rankTitle = "Cliente Silver 🥈"; 
+            progressPercent = Math.min(100, (realPoints / 300) * 100); 
+            nextTargetText = `Mancano ${300 - realPoints} punti per salire a Gold (10% di sconto perenne).`;
+            badgeColor = "bg-gray-800/50 text-gray-300 border-gray-400/30";
+        }
+        else {
+            progressPercent = Math.min(100, (realPoints / 150) * 100);
+        }
+
+        // 6. Applicazione visiva fluida (Animazioni UI)
+        animateValue('user-points-val', startPoints, realPoints, 600);
+        
+        const rankTitleEl = document.getElementById('user-rank-title');
+        rankTitleEl.innerText = rankTitle;
+        rankTitleEl.className = `text-[10px] font-bold px-3 py-1 rounded-full border transition-all duration-500 z-10 ${badgeColor}`;
+        
+        document.getElementById('rank-progress-bar').style.width = `${progressPercent}%`;
+        document.getElementById('rank-next-target').innerText = nextTargetText;
+
+        // 7. Funzione per illuminare le card dei traguardi raggiunti
+        const updateTrophy = (boxId, iconId, titleId, badgeId, threshold) => {
+            const b = document.getElementById(boxId), i = document.getElementById(iconId), t = document.getElementById(titleId), d = document.getElementById(badgeId);
+            if (!b) return;
+
+            if (realPoints >= threshold) {
+                // STATUS: SBLOCCATO ED ELEGANTE
+                b.className = "bg-[#1a1a1a] border border-amber-600/40 p-4 rounded-xl flex items-start justify-between shadow-[0_0_15px_rgba(217,119,6,0.15)] transition-all duration-500 transform hover:scale-[1.02] opacity-100";
+                i.setAttribute("data-lucide", "check-circle-2"); 
+                i.className = "w-5 h-5 text-amber-500";
+                if(t) t.className = "font-black text-white text-[13px] leading-tight mb-1 transition-colors";
+                d.className = "text-[9px] bg-amber-500/20 text-amber-400 px-3 py-1.5 rounded font-black uppercase tracking-widest shrink-0 mt-0.5 border border-amber-500/30 shadow-inner";
+                d.innerText = "ATTIVO";
+            } else {
+                // STATUS: BLOCCATO (Opaco, spendo)
+                b.className = "bg-[#121212] border border-gray-800 p-4 rounded-xl flex items-start justify-between opacity-50 transition-all duration-500 grayscale-[50%]";
+                i.setAttribute("data-lucide", "lock"); 
+                i.className = "w-4 h-4 text-gray-500";
+                if(t) t.className = "font-black text-gray-400 text-[13px] leading-tight mb-1";
+                d.className = "text-[9px] bg-[#0a0a0a] text-gray-600 border border-gray-800 px-3 py-1.5 rounded font-black uppercase tracking-widest shrink-0 mt-0.5";
+                d.innerText = "SBLOCCA";
+            }
+        };
+
+        // Applica le logiche ai 3 traguardi (Silver: 150, Gold: 300, VIP: 500)
+        updateTrophy('trophy-2-box', 'trophy-2-icon', 'trophy-2-title', 'trophy-2-badge', 150);
+        updateTrophy('trophy-3-box', 'trophy-3-icon', 'trophy-3-title', 'trophy-3-badge', 300);
+        updateTrophy('trophy-4-box', 'trophy-4-icon', 'trophy-4-title', 'trophy-4-badge', 500);
+
+        if(window.lucide) lucide.createIcons();
+    };
+
+    // Assicura che la funzione di chiusura funzioni sempre
+    window.closeTrophiesModal = function() { 
+        const modal = document.getElementById('trophies-modal');
+        if (modal) modal.classList.add('hidden'); 
+    };
+})();
+</script>
 </body>
 </html>
 
