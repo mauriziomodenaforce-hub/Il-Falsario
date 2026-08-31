@@ -8136,6 +8136,240 @@ async function openTrophiesModal() {
     };
 })();
 </script>
+<!-- ========================================================== -->
+<!-- EXPANSION PACK: TICKET SYSTEM DINAMICO (PREVENTIVI IT)     -->
+<!-- ========================================================== -->
+<script>
+(function() {
+    // 1. INIETTA IL MODALE DINAMICO A SCHERMO
+    const customModalHTML = `
+    <div id="custom-service-modal" class="fixed inset-0 bg-black/95 z-[150] hidden flex-col items-center justify-center p-4 backdrop-blur-xl transition-all opacity-0">
+        <div id="custom-service-content" class="bg-[#0a0a0a] border border-emerald-500/30 rounded-[24px] w-full max-w-lg shadow-[0_0_50px_rgba(16,185,129,0.15)] overflow-hidden transform scale-95 transition-all duration-500 flex flex-col max-h-[90vh]">
+            
+            <div class="relative h-28 bg-gradient-to-br from-emerald-900/40 to-black border-b border-emerald-500/20 p-6 flex flex-col justify-end shrink-0">
+                <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-emerald-400 to-teal-600"></div>
+                <button onclick="closeCustomServiceModal()" class="absolute top-4 right-4 bg-black/50 p-2 rounded-full text-gray-400 hover:text-white border border-gray-700 backdrop-blur-md transition-all">
+                    ✕
+                </button>
+                <div class="flex items-center gap-3">
+                    <div class="p-2.5 bg-emerald-500/20 rounded-xl border border-emerald-500/30 shadow-[0_0_15px_rgba(16,185,129,0.3)]">
+                        <span class="text-xl">💻</span>
+                    </div>
+                    <div>
+                        <h2 class="text-xl font-black text-white tracking-wide">Sviluppo su Misura</h2>
+                        <p class="text-[10px] text-emerald-500 font-bold uppercase tracking-widest">Ingegneria & Automazione</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB NAVIGAZIONE -->
+            <div class="flex border-b border-gray-800 bg-[#111] shrink-0">
+                <button onclick="switchDevTab('new')" id="tab-dev-new" class="flex-1 py-3 text-[11px] font-black uppercase tracking-wider text-emerald-400 border-b-2 border-emerald-500 transition-all">Nuova Richiesta</button>
+                <button onclick="switchDevTab('list')" id="tab-dev-list" class="flex-1 py-3 text-[11px] font-bold uppercase tracking-wider text-gray-500 border-b-2 border-transparent hover:text-gray-300 transition-all">Le Tue Richieste</button>
+            </div>
+
+            <div class="overflow-y-auto p-6 space-y-6 hide-scrollbar flex-1" id="dev-tab-content-new">
+                <div>
+                    <h3 class="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-3">Stack Tecnologico</h3>
+                    <div class="flex flex-wrap gap-2">
+                        <span class="bg-[#121212] border border-gray-800 text-gray-300 px-2 py-1 rounded text-[9px] font-bold uppercase">🐍 Python / Backend</span>
+                        <span class="bg-[#121212] border border-gray-800 text-gray-300 px-2 py-1 rounded text-[9px] font-bold uppercase">🤖 Bot Telegram Avanzati</span>
+                        <span class="bg-[#121212] border border-gray-800 text-gray-300 px-2 py-1 rounded text-[9px] font-bold uppercase">📱 WebApp / MiniApp</span>
+                        <span class="bg-[#121212] border border-emerald-900/50 text-emerald-400 px-2 py-1 rounded text-[9px] font-black uppercase">⚙️ Automazioni Custom</span>
+                    </div>
+                </div>
+                <div class="space-y-4 border-t border-gray-800 pt-4">
+                    <textarea id="custom-dev-desc" rows="4" placeholder="Descrivi cosa ti serve (es. bot, sito, automazione)..." class="w-full bg-[#111] border border-gray-800 rounded-xl px-4 py-3 text-sm text-gray-200 focus:border-emerald-500/50 outline-none resize-none"></textarea>
+                    <select id="custom-dev-budget" class="w-full bg-[#111] border border-gray-800 rounded-xl px-4 py-3 text-sm text-gray-300 outline-none">
+                        <option value="Da definire">Budget: Da definire</option>
+                        <option value="Sotto 500€">Sotto i 500€</option>
+                        <option value="500-1500€">Tra 500€ e 1.500€</option>
+                        <option value="Oltre 1500€">Oltre 1.500€</option>
+                    </select>
+                </div>
+                <button onclick="submitCustomDevTicket()" class="w-full bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-black py-4 rounded-xl text-[12px] uppercase tracking-[0.1em] shadow-[0_0_15px_rgba(16,185,129,0.3)]">Richiedi Preventivo Gratuito</button>
+            </div>
+
+            <!-- LISTA PREVENTIVI SALVATI -->
+            <div class="overflow-y-auto p-4 space-y-4 hide-scrollbar flex-1 hidden bg-[#0a0a0a]" id="dev-tab-content-list">
+                <!-- Popolato da JS -->
+            </div>
+        </div>
+    </div>`;
+    document.body.insertAdjacentHTML('beforeend', customModalHTML);
+
+    // 2. FUNZIONI UI / TABS
+    window.openCustomServiceModal = function() {
+        const modal = document.getElementById('custom-service-modal');
+        modal.classList.remove('hidden'); modal.classList.add('flex');
+        setTimeout(() => { modal.classList.remove('opacity-0'); document.getElementById('custom-service-content').classList.remove('scale-95'); }, 10);
+        fetchUserQuotes(); // Carica subito lo storico
+    };
+
+    window.closeCustomServiceModal = function() {
+        document.getElementById('custom-service-modal').classList.add('opacity-0');
+        document.getElementById('custom-service-content').classList.add('scale-95');
+        setTimeout(() => { document.getElementById('custom-service-modal').classList.add('hidden'); document.getElementById('custom-service-modal').classList.remove('flex'); }, 300);
+    };
+
+    window.switchDevTab = function(tab) {
+        if(tab === 'new') {
+            document.getElementById('dev-tab-content-new').classList.remove('hidden');
+            document.getElementById('dev-tab-content-list').classList.add('hidden');
+            document.getElementById('tab-dev-new').className = "flex-1 py-3 text-[11px] font-black uppercase tracking-wider text-emerald-400 border-b-2 border-emerald-500 transition-all";
+            document.getElementById('tab-dev-list').className = "flex-1 py-3 text-[11px] font-bold uppercase tracking-wider text-gray-500 border-b-2 border-transparent hover:text-gray-300 transition-all";
+        } else {
+            document.getElementById('dev-tab-content-new').classList.add('hidden');
+            document.getElementById('dev-tab-content-list').classList.remove('hidden');
+            document.getElementById('tab-dev-new').className = "flex-1 py-3 text-[11px] font-bold uppercase tracking-wider text-gray-500 border-b-2 border-transparent hover:text-gray-300 transition-all";
+            document.getElementById('tab-dev-list').className = "flex-1 py-3 text-[11px] font-black uppercase tracking-wider text-emerald-400 border-b-2 border-emerald-500 transition-all";
+            fetchUserQuotes();
+        }
+    };
+
+    // 3. FETCH E RENDER STORICO PREVENTIVI (IL CUORE DEL SISTEMA)
+    async function fetchUserQuotes() {
+        const listDiv = document.getElementById('dev-tab-content-list');
+        listDiv.innerHTML = "<div class='text-center text-gray-500 text-xs py-10 animate-pulse'>Sincronizzazione in corso...</div>";
+        
+        let userId = sessionStorage.getItem('falsario_active_session') || localStorage.getItem('falsario_device_base_id') || "0";
+        try { if(window.Telegram?.WebApp?.initDataUnsafe?.user) userId = window.Telegram.WebApp.initDataUnsafe.user.id.toString(); } catch(e){}
+
+        try {
+            const res = await fetch(`/api/quotes/${userId}`);
+            const quotes = await res.json();
+            
+            if(!quotes || quotes.length === 0) {
+                listDiv.innerHTML = "<div class='text-center text-gray-500 text-xs py-10'>Non hai ancora richiesto nessun preventivo.</div>";
+                return;
+            }
+
+            let html = "";
+            quotes.forEach(q => {
+                let badge = "", body = "";
+                
+                if (q.status === 'PENDING_ADMIN') {
+                    badge = `<span class="bg-amber-900/30 text-amber-500 border border-amber-500/30 px-2 py-0.5 rounded text-[9px] font-bold uppercase">In Analisi</span>`;
+                    body = `<p class="text-xs text-gray-400 italic">Il nostro team sta valutando la tua richiesta.</p>`;
+                } 
+                else if (q.status === 'QUOTED') {
+                    badge = `<span class="bg-emerald-900/50 text-emerald-400 border border-emerald-500/50 px-2 py-0.5 rounded text-[9px] font-black uppercase shadow-[0_0_10px_rgba(16,185,129,0.2)]">PREVENTIVO PRONTO</span>`;
+                    body = `
+                        <div class="bg-[#111] p-3 rounded-lg border border-emerald-500/30 mb-3">
+                            <div class="text-[10px] text-gray-500 uppercase font-bold mb-1">Offerta del Laboratorio:</div>
+                            <div class="text-lg font-black text-white mb-2">€${q.price}</div>
+                            <div class="text-xs text-emerald-100/80 leading-relaxed font-mono whitespace-pre-wrap">${q.admin_reply}</div>
+                        </div>
+                        <div class="flex gap-2">
+                            <button onclick="quoteAction(${q.id}, 'ACCEPT')" class="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white text-[10px] font-black uppercase py-2.5 rounded-lg">✅ Accetta & Avvia</button>
+                            <button onclick="quoteAction(${q.id}, 'REJECT')" class="bg-gray-800 hover:bg-red-900 text-gray-400 hover:text-red-400 text-[10px] font-bold uppercase px-3 rounded-lg">✕ Rifiuta</button>
+                        </div>
+                    `;
+                }
+                else if (q.status === 'CONVERTED_TO_ORDER') {
+                    badge = `<span class="bg-blue-900/30 text-blue-400 border border-blue-500/30 px-2 py-0.5 rounded text-[9px] font-bold uppercase">LAVORI AVVIATI</span>`;
+                    body = `<p class="text-xs text-blue-300">Preventivo accettato. Controlla lo "Stato Lavorazioni" per il tracking.</p>`;
+                }
+                else {
+                    badge = `<span class="bg-gray-900 text-gray-600 border border-gray-800 px-2 py-0.5 rounded text-[9px] font-bold uppercase">Rifiutato</span>`;
+                    body = `<p class="text-xs text-gray-500">Hai rifiutato questa offerta.</p>`;
+                }
+
+                html += `
+                <div class="bg-[#1a1a1a] border border-gray-800 rounded-xl p-4 transition-all hover:border-gray-700">
+                    <div class="flex justify-between items-start mb-3">
+                        <div class="text-xs text-gray-300 font-bold truncate max-w-[60%]">${q.description.substring(0, 30)}...</div>
+                        ${badge}
+                    </div>
+                    ${body}
+                </div>`;
+            });
+            listDiv.innerHTML = html;
+        } catch(e) { listDiv.innerHTML = "<div class='text-center text-red-500 text-xs py-10'>Errore di rete.</div>"; }
+    }
+
+    // 4. INVIO NUOVO PREVENTIVO
+    window.submitCustomDevTicket = async function() {
+        const desc = document.getElementById('custom-dev-desc').value.trim();
+        const budget = document.getElementById('custom-dev-budget').value;
+        if (desc.length < 10) { alert("Descrivi il progetto dettagliatamente."); return; }
+
+        let userId = sessionStorage.getItem('falsario_active_session') || localStorage.getItem('falsario_device_base_id') || "0";
+        let uname = "Anonimo";
+        try { if(window.Telegram?.WebApp?.initDataUnsafe?.user) { userId = window.Telegram.WebApp.initDataUnsafe.user.id.toString(); uname = window.Telegram.WebApp.initDataUnsafe.user.username || "User"; } } catch(e){}
+
+        document.getElementById('custom-dev-desc').value = ""; // Pulisce
+        
+        try {
+            await fetch('/api/quotes/new', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({user_id: userId, username: uname, description: desc, budget: budget}) });
+            alert("✅ Richiesta inviata al laboratorio! Troverai la risposta nella tab 'Le Tue Richieste'.");
+            switchDevTab('list');
+        } catch(e) { alert("Errore di invio."); }
+    };
+
+    // 5. ACCETTA O RIFIUTA IL PREVENTIVO (Crea l'ordine vero se accetta)
+    window.quoteAction = async function(quoteId, action) {
+        if(action === 'REJECT' && !confirm("Sei sicuro di voler rifiutare l'offerta?")) return;
+        
+        let userId = sessionStorage.getItem('falsario_active_session') || "0";
+        try { if(window.Telegram?.WebApp?.initDataUnsafe?.user) userId = window.Telegram.WebApp.initDataUnsafe.user.id.toString(); } catch(e){}
+
+        try {
+            const res = await fetch('/api/quotes/action', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({quote_id: quoteId, action: action, user_id: userId}) });
+            const data = await res.json();
+            
+            if (data.success) {
+                if (action === 'ACCEPT') {
+                    closeCustomServiceModal();
+                    if(typeof window.showSuccessModal === 'function') window.showSuccessModal(data.pratica_code);
+                    else alert("✅ Lavori Avviati! Codice Pratica: " + data.pratica_code);
+                } else {
+                    fetchUserQuotes(); // Ricarica la lista per mostrare lo stato "Rifiutato"
+                }
+            }
+        } catch(e) { alert("Errore di rete."); }
+    };
+
+    // 6. INIETTORE BOTTONI NELLA UI PRINCIPALE
+    const uiObserver = new MutationObserver(() => {
+        const headers = document.querySelectorAll('h3');
+        headers.forEach(h => {
+            if (h.innerText.toUpperCase().includes('SERVIZI RAPIDI')) {
+                const grid = h.parentElement.nextElementSibling;
+                if (grid && !grid.querySelector('#btn-dev-small')) {
+                    grid.classList.add('max-h-[210px]', 'overflow-y-auto', 'hide-scrollbar', 'pr-1', 'pb-2');
+                    grid.insertAdjacentHTML('beforeend', `
+                    <button id="btn-dev-small" onclick="setTimeout(() => openCustomServiceModal(), 200);" class="bg-[#1a1a1a] border border-emerald-500/20 hover:border-emerald-500/50 rounded-xl p-3 flex items-center justify-between transition group mt-2">
+                        <div class="flex items-center space-x-3">
+                            <div class="p-2 bg-emerald-500/10 rounded-lg text-emerald-400"><span class="text-sm">💻</span></div>
+                            <div class="text-left"><span class="block text-xs font-bold text-gray-200">Sviluppo su Misura</span><span class="block text-[9px] text-gray-500">Siti, Bot & Automazioni</span></div>
+                        </div>
+                        <span class="text-gray-600">></span>
+                    </button>`);
+                }
+            }
+        });
+        
+        if (window.currentCategoryFilter === 'Servizi') {
+            const productsGrid = document.getElementById('products-grid');
+            if (productsGrid && productsGrid.innerHTML.includes('Exchange') && !productsGrid.querySelector('#card-dev-large')) {
+                productsGrid.insertAdjacentHTML('afterbegin', `
+                <div id="card-dev-large" class="bg-gradient-to-br from-emerald-900/30 to-[#121212] border border-emerald-500/40 rounded-2xl overflow-hidden shadow-[0_0_20px_rgba(16,185,129,0.15)] mb-6 transition hover:border-emerald-400">
+                    <div class="p-5">
+                        <div class="flex items-center space-x-3 mb-3">
+                            <div class="p-2 bg-emerald-500/20 rounded-lg text-emerald-400"><span class="text-xl">💻</span></div>
+                            <h3 class="font-black text-xl text-white">Sviluppo su Misura</h3>
+                        </div>
+                        <p class="text-xs text-gray-300 font-light leading-relaxed mb-5">Infrastrutture IT personalizzate: Bot Telegram, WebApp, Automazioni. Gestione Ticket Integrata per richiedere un preventivo gratuito e valutare la fattibilità col nostro team.</p>
+                        <button onclick="openCustomServiceModal()" class="w-full bg-gradient-to-r from-emerald-600 to-teal-500 text-white font-black py-3.5 rounded-xl text-xs uppercase tracking-widest shadow-lg">Apri Ticket System</button>
+                    </div>
+                </div>`);
+            }
+        }
+    });
+    uiObserver.observe(document.body, { childList: true, subtree: true });
+})();
+</script>
 </body>
 </html>
 
