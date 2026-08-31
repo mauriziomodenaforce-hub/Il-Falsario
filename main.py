@@ -37,6 +37,12 @@ def init_db():
     c.execute('''CREATE TABLE IF NOT EXISTS users (telegram_id INTEGER PRIMARY KEY, username TEXT, points INTEGER DEFAULT 50)''')
     c.execute('''CREATE TABLE IF NOT EXISTS products (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, category TEXT, description TEXT, price_options TEXT, media_list TEXT, media_url TEXT, media_type TEXT, in_showcase INTEGER DEFAULT 1, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)''')
     c.execute('''CREATE TABLE IF NOT EXISTS orders (id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER, username TEXT, items TEXT, total_price REAL, address TEXT, status TEXT, order_type TEXT, tracking_code TEXT, user_message_id INTEGER, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)''')
+    
+    try:
+        c.execute("ALTER TABLE orders ADD COLUMN pratica_code TEXT")
+    except sqlite3.OperationalError:
+        pass 
+        
     conn.commit()
     conn.close()
 
@@ -87,7 +93,6 @@ def db_update_product(prod_id, update_data):
 
 def db_get_products():
     conn = get_db()
-    # Ordinamento fisso per ID per garantire la stabilità visiva originaria in vetrina
     rows = conn.execute("SELECT * FROM products ORDER BY id ASC").fetchall()
     conn.close()
     return [dict(r) for r in rows]
@@ -114,12 +119,12 @@ def db_update_user_points(target_id, points_delta):
     conn.close()
     return False, 0
 
-def db_save_order(user_id, username, cart, total, address, order_type):
+def db_save_order(user_id, username, cart, total, address, order_type, pratica_code):
     conn = get_db()
     c = conn.cursor()
-    c.execute('''INSERT INTO orders (user_id, username, items, total_price, address, status, order_type) 
-                 VALUES (?, ?, ?, ?, ?, ?, ?)''', 
-              (user_id, username, json.dumps(cart), total, address, "PENDING", order_type))
+    c.execute('''INSERT INTO orders (user_id, username, items, total_price, address, status, order_type, pratica_code) 
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?)''', 
+              (user_id, username, json.dumps(cart), total, address, "PENDING", order_type, pratica_code))
     order_id = c.lastrowid
     conn.commit()
     conn.close()
@@ -178,21 +183,27 @@ class WebhookAPIHandler(BaseHTTPRequestHandler):
             self.wfile.write(json.dumps(showcase_prods).encode('utf-8'))
             
         elif self.path.startswith('/api/order/'):
-            order_id = self.path.split('/')[-1].strip()
+            raw_search = self.path.split('/')[-1].strip().upper()
             orders = db_get_all_orders()
-            # Matching robusto e tipizzato per prevenire crash
-            order = next((o for o in orders if str(o.get('id')).strip() == order_id or str(o.get('tracking_code')).strip() == order_id), None)
-            if order: self.wfile.write(json.dumps(order).encode('utf-8'))
-            else: self.wfile.write(json.dumps({"error": "Not found"}).encode('utf-8'))
+            
+            order = next((o for o in orders if 
+                          str(o.get('pratica_code')).strip().upper() == raw_search or 
+                          str(o.get('tracking_code')).strip().upper() == raw_search), None)
+            
+            if order: 
+                if not order.get('pratica_code'):
+                    order['pratica_code'] = f"PR-LGCY-{order['id']}"
+                self.wfile.write(json.dumps(order).encode('utf-8'))
+            else: 
+                self.wfile.write(json.dumps({"error": "Not found"}).encode('utf-8'))
             
         elif self.path.startswith('/api/user/'):
             user_id_str = self.path.split('/')[-1]
-            # [MODIFICA 1: Converte la stringa o ID_ in numero per trovare correttamente l'utente nel Database]
             try:
                 user_id = int(user_id_str.replace("ID_", ""))
             except:
                 user_id = user_id_str
-            
+                
             conn = get_db()
             row = conn.execute("SELECT points FROM users WHERE telegram_id = ?", (user_id,)).fetchone()
             conn.close()
@@ -267,6 +278,9 @@ class WebhookAPIHandler(BaseHTTPRequestHandler):
             username = data.get("username", "Anonimo")
             address = data.get("address", "Non specificato")
 
+            secure_hash = "".join(random.choices("ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789", k=6))
+            pratica_code = f"PR-{secure_hash}"
+
             is_digital = any(
                 any(keyword in str(item.get("category", "")).lower() or keyword in str(item.get("name", "")).lower() 
                 for keyword in ["servizi", "exchange", "buoni amazon", "buoni q8", "amazon", "q8"]) 
@@ -274,15 +288,17 @@ class WebhookAPIHandler(BaseHTTPRequestHandler):
             )
             order_type = "SERVICE" if is_digital else "PHYSICAL"
 
-            order_id = db_save_order(user_id, username, cart, total, address, order_type)
+            order_id = db_save_order(user_id, username, cart, total, address, order_type, pratica_code)
             items_text = "\n".join([f"• {i['qty']}x {i['name']} - \u20ac{i['price']}" for i in cart])
 
             user_msg = (
-                f"✅ <b>Richiesta #{order_id} Inviata!</b>\n\n"
+                f"✅ <b>Richiesta Registrata con Successo!</b>\n\n"
+                f"🏷 <b>Codice Pratica:</b> <code>{pratica_code}</code>\n"
+                f"<i>Usa questo codice nel Tracker del sito per monitorare l'ordine.</i>\n\n"
                 f"📦 <b>Riepilogo:</b>\n{items_text}\n\n"
                 f"📍 <b>Dati Recapito/Info:</b>\n{address}\n\n"
                 f"💰 <b>Totale:</b> \u20ac{total}\n\n"
-                f"⏳ <i>Un operatore sta elaborando la tua richiesta. Riceverai aggiornamenti live su questo messaggio.</i>"
+                f"⏳ <i>Un operatore sta elaborando la tua richiesta. Riceverai aggiornamenti live qui.</i>"
             )
             
             if user_id and str(user_id) != "0":
@@ -294,19 +310,16 @@ class WebhookAPIHandler(BaseHTTPRequestHandler):
             if ADMIN_ID and ADMIN_ID != 0:
                 try:
                     alert_type = "🛠 NUOVO SERVIZIO" if is_digital else "📦 NUOVO ORDINE FISICO"
-                    bot.send_message(ADMIN_ID, f"🔔 <b>{alert_type} RICEVUTO!</b>\nRif. #{order_id} da @{username}.\n👉 Apri /admin per gestirlo.", parse_mode="HTML")
+                    bot.send_message(ADMIN_ID, f"🔔 <b>{alert_type} RICEVUTO!</b>\nPratica: <b>{pratica_code}</b> da @{username}.\n👉 Apri /admin per gestirlo.", parse_mode="HTML")
                 except: pass
 
-            self.wfile.write(json.dumps({"success": True, "order_id": order_id}).encode('utf-8'))
+            self.wfile.write(json.dumps({"success": True, "order_id": order_id, "pratica_code": pratica_code}).encode('utf-8'))
 
 def run_health_server():
     port = int(os.environ.get("PORT", 8080))
     server = HTTPServer(('0.0.0.0', port), WebhookAPIHandler)
     server.serve_forever()
 
-# ==========================================
-# KEYBOARD ADMIN (RESTAURATE & ALLINEATE)
-# ==========================================
 def get_admin_main_keyboard():
     markup = types.InlineKeyboardMarkup(row_width=1)
     markup.add(
@@ -350,7 +363,6 @@ def get_media_done_keyboard():
     )
     return markup
 
-
 @bot.message_handler(commands=['start'])
 def send_welcome(message):
     user_id = message.chat.id
@@ -376,7 +388,6 @@ def admin_panel(message):
     user_states.pop(user_id, None)
     bot.send_message(user_id, "⚙️ <b>PANNELLO GESTIONALE CAVEAU</b> 🎭\n\nScegli la sezione da gestire:", parse_mode="HTML", reply_markup=get_admin_main_keyboard())
 
-
 @bot.callback_query_handler(func=lambda call: True)
 def handle_callbacks(call):
     user_id = call.message.chat.id
@@ -387,13 +398,11 @@ def handle_callbacks(call):
         user_states.pop(user_id, None)
         bot.edit_message_text("⚙️ <b>PANNELLO GESTIONALE CAVEAU</b>", user_id, call.message.message_id, parse_mode="HTML", reply_markup=get_admin_main_keyboard())
 
-    # --- INIZIO GESTIONE GIVEAWAY ADMIN ---
     elif data == "m_gw":
         user_states.pop(user_id, None)
         gw = get_giveaway()
         st_val = gw.get("is_active", 1)
         status = "🟢 ATTIVO" if st_val else "🔴 INATTIVO"
-        
         msg = (
             f"🎁 <b>DASHBOARD GIVEAWAY</b>\n\n"
             f"<b>Stato:</b> {status}\n"
@@ -402,7 +411,6 @@ def handle_callbacks(call):
             f"<b>Scadenza:</b> {gw.get('end_date', 'N/D')}\n"
             f"<b>Iscritti Attuali:</b> {len(gw.get('participants', {}))}"
         )
-        
         markup = types.InlineKeyboardMarkup(row_width=2)
         markup.add(
             types.InlineKeyboardButton(f"👁️ Stato (On/Off)", callback_data=f"gw_tog_{0 if st_val else 1}"),
@@ -459,24 +467,23 @@ def handle_callbacks(call):
         winner_name = parts[winner_id]
         bot.send_message(user_id, f"🎉 <b>ESTRAZIONE COMPLETATA!</b>\n\n👤 <b>Vincitore:</b> {winner_name}\n🆔 <b>ID:</b> <code>{winner_id}</code>\n\nContattalo per consegnare il premio!", parse_mode='HTML', reply_markup=get_admin_main_keyboard())
         bot.answer_callback_query(call.id, f"🎉 Ha vinto {winner_name}!", show_alert=True)
-    # --- FINE GESTIONE GIVEAWAY ---
 
     elif data == "dash_ord_phys":
         user_states.pop(user_id, None)
         orders = [o for o in db_get_all_orders() if o.get('status') in ['PENDING', 'ACCEPTED'] and o.get('order_type') != 'SERVICE']
-        
         bot.edit_message_text("📦 <b>ORDINI FISICI IN GESTIONE</b>", user_id, call.message.message_id, parse_mode="HTML")
         if not orders:
             bot.send_message(user_id, "✅ Nessun ordine fisico in attesa.", reply_markup=get_cancel_keyboard())
             return
-            
         for o in orders:
             items = json.loads(o.get('items', '[]')) if isinstance(o.get('items'), str) else o.get('items', [])
             items_str = "\n".join([f"  • {i['name']} ({i['qty']}) - \u20ac{i['price']}" for i in items]) if items else "  • Nessun dettaglio"
             st_text = "⏳ Da Confermare" if o.get('status') == 'PENDING' else "✅ In Preparazione"
             address_str = str(o.get('address', 'N/D'))
             is_meetup = "meet" in address_str.lower() or "mano" in address_str.lower()
-            msg = (f"🛒 <b>ORDINE #{o.get('id')}</b> [{st_text}]\n👤 Utente: @{o.get('username')} (ID: {o.get('user_id')})\n📍 Recapito/Metodo: {address_str}\n\n📦 Prodotti:\n{items_str}\n\n💰 Totale: \u20ac{o.get('total_price')}")
+            pratica_code = o.get('pratica_code') if o.get('pratica_code') else f"PR-LGCY-{o.get('id')}"
+            
+            msg = f"🛒 <b>PRATICA {pratica_code}</b> [{st_text}]\n👤 Utente: @{o.get('username')} (ID: {o.get('user_id')})\n📍 Recapito/Metodo: {address_str}\n\n📦 Prodotti:\n{items_str}\n\n💰 Totale: \u20ac{o.get('total_price')}"
             
             m_id = o.get('user_message_id', 0)
             u_id = o.get('user_id', 0)
@@ -497,17 +504,17 @@ def handle_callbacks(call):
     elif data == "dash_ord_serv":
         user_states.pop(user_id, None)
         orders = [o for o in db_get_all_orders() if o.get('status') in ['PENDING', 'ACCEPTED'] and o.get('order_type') == 'SERVICE']
-        
         bot.edit_message_text("🛠 <b>SERVIZI IN LAVORAZIONE</b>", user_id, call.message.message_id, parse_mode="HTML")
         if not orders:
             bot.send_message(user_id, "✅ Nessun servizio in lavorazione.", reply_markup=get_cancel_keyboard())
             return
-            
         for o in orders:
             items = json.loads(o.get('items', '[]')) if isinstance(o.get('items'), str) else o.get('items', [])
             items_str = "\n".join([f"  • {i['name']} ({i['qty']}) - \u20ac{i['price']}" for i in items]) if items else "  • Nessun dettaglio"
             st_text = "⏳ Da Visionare" if o.get('status') == 'PENDING' else "⚙️ In Lavorazione"
-            msg = (f"🛠 <b>SERVIZIO #{o.get('id')}</b> [{st_text}]\n👤 Utente: @{o.get('username')} (ID: {o.get('user_id')})\n📍 Dati forniti: {o.get('address', 'N/D')}\n\n📦 Richiesto:\n{items_str}\n\n💰 Totale: \u20ac{o.get('total_price')}")
+            pratica_code = o.get('pratica_code') if o.get('pratica_code') else f"PR-LGCY-{o.get('id')}"
+            
+            msg = f"🛠 <b>PRATICA {pratica_code}</b> [{st_text}]\n👤 Utente: @{o.get('username')} (ID: {o.get('user_id')})\n📍 Dati forniti: {o.get('address', 'N/D')}\n\n📦 Richiesto:\n{items_str}\n\n💰 Totale: \u20ac{o.get('total_price')}"
             
             m_id = o.get('user_message_id', 0)
             u_id = o.get('user_id', 0)
@@ -528,10 +535,15 @@ def handle_callbacks(call):
         parts = data.split("_")
         action, o_id, u_id, m_id = parts[1], parts[2], parts[3], parts[4]
         
-        if action == "trk": step_name, prompt_txt = "WAITING_TRACKING", f"🚚 Scrivi il <b>TRACKING e NOTE</b> per l'ordine #{o_id}:"
-        elif action == "file": step_name, prompt_txt = "WAITING_FILE_INFO", f"📤 Scrivi l'<b>ESITO o IL LINK DEL FILE</b> per il Servizio #{o_id}:"
-        elif action == "meet": step_name, prompt_txt = "WAITING_MEETUP", f"📍 Scrivi i <b>DETTAGLI DEL MEET UP</b> per l'ordine #{o_id}:"
-        elif action == "upd": step_name, prompt_txt = "WAITING_UPDATE", f"✍️ Scrivi l'<b>AGGIORNAMENTO CUSTOM</b> per l'ordine #{o_id}:"
+        conn = get_db()
+        row = conn.execute("SELECT pratica_code FROM orders WHERE id = ?", (o_id,)).fetchone()
+        conn.close()
+        pratica_code = row['pratica_code'] if row and row['pratica_code'] else f"PR-LGCY-{o_id}"
+        
+        if action == "trk": step_name, prompt_txt = "WAITING_TRACKING", f"🚚 Scrivi il <b>TRACKING e NOTE</b> per la pratica {pratica_code}:"
+        elif action == "file": step_name, prompt_txt = "WAITING_FILE_INFO", f"📤 Scrivi l'<b>ESITO o IL LINK DEL FILE</b> per la pratica {pratica_code}:"
+        elif action == "meet": step_name, prompt_txt = "WAITING_MEETUP", f"📍 Scrivi i <b>DETTAGLI DEL MEET UP</b> per la pratica {pratica_code}:"
+        elif action == "upd": step_name, prompt_txt = "WAITING_UPDATE", f"✍️ Scrivi l'<b>AGGIORNAMENTO CUSTOM</b> per la pratica {pratica_code}:"
         
         user_states[user_id] = {"step": step_name, "o_id": o_id, "u_id": u_id, "m_id": m_id}
         bot.send_message(user_id, prompt_txt, parse_mode="HTML", reply_markup=get_cancel_keyboard())
@@ -542,15 +554,20 @@ def handle_callbacks(call):
         parts = data.split("_")
         action, o_id, u_id, m_id = parts[1], parts[2], parts[3], parts[4]
         
+        conn = get_db()
+        row = conn.execute("SELECT pratica_code FROM orders WHERE id = ?", (o_id,)).fetchone()
+        conn.close()
+        pratica_code = row['pratica_code'] if row and row['pratica_code'] else f"PR-LGCY-{o_id}"
+        
         if action == "acc":
             db_update_order_status(o_id, "ACCEPTED")
-            new_text = f"✅ <b>ORDINE #{o_id} CONFERMATO</b>\n\nIl tuo ordine è stato accettato ed è in fase di preparazione."
+            new_text = f"✅ <b>PRATICA {pratica_code} CONFERMATA</b>\n\nIl tuo ordine è stato accettato ed è in fase di preparazione."
         elif action == "work":
             db_update_order_status(o_id, "ACCEPTED")
-            new_text = f"⚙️ <b>SERVIZIO #{o_id} IN LAVORAZIONE</b>\n\nStiamo elaborando i tuoi dati."
+            new_text = f"⚙️ <b>PRATICA {pratica_code} IN LAVORAZIONE</b>\n\nStiamo elaborando i tuoi dati."
         elif action == "cnc":
             db_update_order_status(o_id, "CANCELLED")
-            new_text = f"❌ <b>ATTENZIONE</b>\nIl tuo ordine/servizio #{o_id} è stato annullato dal sistema."
+            new_text = f"❌ <b>ATTENZIONE</b>\n\nLa tua pratica {pratica_code} è stata annullata dal sistema."
 
         if u_id and str(u_id) != "0":
             try:
@@ -564,8 +581,14 @@ def handle_callbacks(call):
     elif data.startswith("act_restore_"):
         parts = data.split("_")
         o_id, u_id, m_id = parts[2], parts[3], parts[4]
+        
+        conn = get_db()
+        row = conn.execute("SELECT pratica_code FROM orders WHERE id = ?", (o_id,)).fetchone()
+        conn.close()
+        pratica_code = row['pratica_code'] if row and row['pratica_code'] else f"PR-LGCY-{o_id}"
+        
         db_update_order_status(o_id, "PENDING")
-        new_text = f"⏳ <b>ORDINE #{o_id} RIPRISTINATO</b>\n\nLa tua richiesta è stata sbloccata ed è tornata in elaborazione."
+        new_text = f"⏳ <b>PRATICA {pratica_code} RIPRISTINATA</b>\n\nLa tua richiesta è stata sbloccata ed è tornata in elaborazione."
         if u_id and str(u_id) != "0":
             try:
                 if m_id and str(m_id) != "0": bot.edit_message_text(chat_id=int(u_id), message_id=int(m_id), text=new_text, parse_mode="HTML")
@@ -588,7 +611,8 @@ def handle_callbacks(call):
         for o in orders:
             items = json.loads(o.get('items', '[]')) if isinstance(o.get('items'), str) else o.get('items', [])
             items_str = "\n".join([f"  • {i['name']} ({i['qty']})" for i in items]) if items else "  • Nessun dettaglio"
-            msg = (f"✅ ORDINE #{o.get('id')} [COMPLETATO]\n👤 @{o.get('username')} (ID: {o.get('user_id')})\n📍 {o.get('address', 'N/D')}\n📝 Esito/Note: {o.get('tracking_code', 'N/D')}\n\n📦:\n{items_str}\n────────────────────────")
+            pratica_code = o.get('pratica_code') if o.get('pratica_code') else f"PR-LGCY-{o.get('id')}"
+            msg = f"✅ PRATICA {pratica_code} [COMPLETATO]\n👤 @{o.get('username')} (ID: {o.get('user_id')})\n📍 {o.get('address', 'N/D')}\n📝 Esito/Note: {o.get('tracking_code', 'N/D')}\n\n📦:\n{items_str}\n────────────────────────"
             try: bot.send_message(user_id, msg)
             except: pass
         bot.send_message(user_id, "👇 Fine registro completati:", reply_markup=get_cancel_keyboard())
@@ -602,14 +626,14 @@ def handle_callbacks(call):
         for o in orders:
             items = json.loads(o.get('items', '[]')) if isinstance(o.get('items'), str) else o.get('items', [])
             items_str = "\n".join([f"  • {i['name']} ({i['qty']})" for i in items]) if items else "  • Nessun dettaglio"
-            msg = (f"❌ ORDINE #{o.get('id')} [ANNULLATO]\n👤 @{o.get('username')} (ID: {o.get('user_id')})\n📍 {o.get('address', 'N/D')}\n\n📦:\n{items_str}\n────────────────────────")
+            pratica_code = o.get('pratica_code') if o.get('pratica_code') else f"PR-LGCY-{o.get('id')}"
+            msg = f"❌ PRATICA {pratica_code} [ANNULLATO]\n👤 @{o.get('username')} (ID: {o.get('user_id')})\n📍 {o.get('address', 'N/D')}\n\n📦:\n{items_str}\n────────────────────────"
             markup = types.InlineKeyboardMarkup()
             markup.add(types.InlineKeyboardButton("🔄 Ripristina Ordine in Dashboard", callback_data=f"act_restore_{o['id']}_{o['user_id']}_{o.get('user_message_id', 0)}"))
             try: bot.send_message(user_id, msg, reply_markup=markup)
             except: pass
         bot.send_message(user_id, "👇 Fine registro annullati:", reply_markup=get_cancel_keyboard())
 
-    # [MODIFICA 2: Aggiornato menu istruzioni M_PTS]
     elif data == "m_pts":
         user_states.pop(user_id, None)
         msg = (
@@ -758,14 +782,12 @@ def handle_admin_text(message):
     state = user_states.get(user_id, {})
     step = state.get("step")
 
-    # [MODIFICA 3: Implementazione comando /punti intelligente blindata nel DB originale]
     if message.text and message.text.startswith("/punti"):
         try:
             parts = message.text.split()
             target_id = None
             qty = 0
             
-            # Caso 1: Assegnazione tramite risposta al messaggio/contatto
             if message.reply_to_message:
                 qty = int(parts[1]) if len(parts) > 1 else 0
                 if message.reply_to_message.forward_from:
@@ -774,8 +796,6 @@ def handle_admin_text(message):
                     target_id = message.reply_to_message.contact.user_id
                 else:
                     target_id = message.reply_to_message.from_user.id
-            
-            # Caso 2, 3 e 4: Comando diretto strutturato (/punti BERSAGLIO 100)
             elif len(parts) >= 3:
                 target_str = parts[1]
                 qty = int(parts[2])
@@ -798,7 +818,6 @@ def handle_admin_text(message):
             if target_id is None:
                 raise ValueError("Nessun target valido")
 
-            # Crea l'utente al volo se entra dal sito per la prima volta e non è mai registrato
             conn = get_db()
             row = conn.execute("SELECT points FROM users WHERE telegram_id = ?", (target_id,)).fetchone()
             if not row:
@@ -806,7 +825,6 @@ def handle_admin_text(message):
                 conn.commit()
             conn.close()
 
-            # Esegue ricarica sul DB
             ok, new_total = db_update_user_points(target_id, qty)
             if ok:
                 receipt = f"✅ <b>RICARICA PUNTI COMPLETATA</b>\n\n🆔 <b>Target ID:</b> <code>{target_id}</code>\n💎 <b>Nuovo Saldo:</b> {new_total} punti"
@@ -827,7 +845,6 @@ def handle_admin_text(message):
             bot.reply_to(message, err_msg, parse_mode="HTML")
         return
 
-    # Gestione Update input testuale per Giveaway
     if step == "WAITING_GW_PRIZE":
         gw = get_giveaway()
         gw["prize"] = message.text
@@ -854,10 +871,15 @@ def handle_admin_text(message):
         admin_text = message.text.strip()
         o_id, u_id, m_id = state["o_id"], state["u_id"], state["m_id"]
         
+        conn = get_db()
+        row = conn.execute("SELECT pratica_code FROM orders WHERE id = ?", (o_id,)).fetchone()
+        conn.close()
+        pratica_code = row['pratica_code'] if row and row['pratica_code'] else f"PR-LGCY-{o_id}"
+        
         if step == "WAITING_UPDATE":
             db_update_order_status(o_id, "ACCEPTED", f"Aggiornamento: {admin_text}")
             title, label = "🔔 <b>AGGIORNAMENTO ORDINE</b>", "Messaggio dallo Staff:"
-            new_text = f"{title}\n<i>Rif. #{o_id}</i>\n\n<b>{label}</b>\n<code>{admin_text}</code>\n\n<i>Stiamo lavorando alla tua richiesta...</i>"
+            new_text = f"{title}\n<i>Pratica: {pratica_code}</i>\n\n<b>{label}</b>\n<code>{admin_text}</code>\n\n<i>Stiamo lavorando alla tua richiesta...</i>"
             if u_id and str(u_id) != "0":
                 try:
                     if m_id and str(m_id) != "0": bot.edit_message_text(chat_id=int(u_id), message_id=int(m_id), text=new_text, parse_mode="HTML")
@@ -873,7 +895,7 @@ def handle_admin_text(message):
         elif step == "WAITING_FILE_INFO": title, label = "✅ <b>SERVIZIO COMPLETATO</b>", "Esito / Link al Documento:"
         elif step == "WAITING_MEETUP": title, label = "📍 <b>DETTAGLI MEET UP</b>", "Info e Appuntamento:"
             
-        new_text = f"{title}\n<i>Rif. #{o_id}</i>\n\n<b>{label}</b>\n<code>{admin_text}</code>\n\nGrazie per aver scelto Il Falsario 🎭"
+        new_text = f"{title}\n<i>Pratica: {pratica_code}</i>\n\n<b>{label}</b>\n<code>{admin_text}</code>\n\nGrazie per aver scelto Il Falsario 🎭"
         if u_id and str(u_id) != "0":
             try:
                 if m_id and str(m_id) != "0": bot.edit_message_text(chat_id=int(u_id), message_id=int(m_id), text=new_text, parse_mode="HTML")
@@ -943,7 +965,6 @@ def handle_admin_text(message):
         state["desc"] = message.text
         state["step"] = "WAITING_PRICES"
         bot.reply_to(message, "💰 Ultimo step. Invia i PREZZI (Es: 10pz 140, 25g - 100):", reply_markup=get_cancel_keyboard())
-
 
 if __name__ == '__main__':
     threading.Thread(target=run_health_server, daemon=True).start()
