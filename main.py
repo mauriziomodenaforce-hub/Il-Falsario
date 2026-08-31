@@ -37,6 +37,7 @@ def init_db():
     c.execute('''CREATE TABLE IF NOT EXISTS users (telegram_id INTEGER PRIMARY KEY, username TEXT, points INTEGER DEFAULT 50)''')
     c.execute('''CREATE TABLE IF NOT EXISTS products (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, category TEXT, description TEXT, price_options TEXT, media_list TEXT, media_url TEXT, media_type TEXT, in_showcase INTEGER DEFAULT 1, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)''')
     c.execute('''CREATE TABLE IF NOT EXISTS orders (id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER, username TEXT, items TEXT, total_price REAL, address TEXT, status TEXT, order_type TEXT, tracking_code TEXT, user_message_id INTEGER, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)''')
+    c.execute('''CREATE TABLE IF NOT EXISTS quotes (id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER, username TEXT, description TEXT, budget TEXT, admin_reply TEXT, price REAL, status TEXT, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)''')
     
     try:
         c.execute("ALTER TABLE orders ADD COLUMN pratica_code TEXT")
@@ -149,6 +150,34 @@ def db_update_order_status(order_id, status, tracking=""):
     conn.commit()
     conn.close()
 
+def db_save_quote(user_id, username, description, budget):
+    conn = get_db()
+    c = conn.cursor()
+    c.execute('''INSERT INTO quotes (user_id, username, description, budget, status) VALUES (?, ?, ?, ?, ?)''', 
+              (user_id, username, description, budget, "PENDING_ADMIN"))
+    qid = c.lastrowid
+    conn.commit()
+    conn.close()
+    return qid
+
+def db_get_user_quotes(user_id):
+    conn = get_db()
+    rows = conn.execute("SELECT * FROM quotes WHERE user_id = ? ORDER BY created_at DESC", (user_id,)).fetchall()
+    conn.close()
+    return [dict(r) for r in rows]
+
+def db_update_quote(quote_id, status, price=0.0, admin_reply=""):
+    conn = get_db()
+    conn.execute("UPDATE quotes SET status = ?, price = ?, admin_reply = ? WHERE id = ?", (status, price, admin_reply, quote_id))
+    conn.commit()
+    conn.close()
+
+def db_get_pending_quotes():
+    conn = get_db()
+    rows = conn.execute("SELECT * FROM quotes WHERE status = 'PENDING_ADMIN' ORDER BY created_at ASC").fetchall()
+    conn.close()
+    return [dict(r) for r in rows]
+
 def upload_to_local_storage(file_bytes, mime_type, file_extension):
     try:
         filename = f"media_{int(time.time())}_{uuid.uuid4().hex[:6]}.{file_extension}"
@@ -185,30 +214,31 @@ class WebhookAPIHandler(BaseHTTPRequestHandler):
         elif self.path.startswith('/api/order/'):
             raw_search = self.path.split('/')[-1].strip().upper()
             orders = db_get_all_orders()
-            
-            order = next((o for o in orders if 
-                          str(o.get('pratica_code')).strip().upper() == raw_search or 
-                          str(o.get('tracking_code')).strip().upper() == raw_search), None)
+            order = next((o for o in orders if str(o.get('pratica_code')).strip().upper() == raw_search or str(o.get('tracking_code')).strip().upper() == raw_search), None)
             
             if order: 
-                if not order.get('pratica_code'):
-                    order['pratica_code'] = f"PR-LGCY-{order['id']}"
+                if not order.get('pratica_code'): order['pratica_code'] = f"PR-LGCY-{order['id']}"
                 self.wfile.write(json.dumps(order).encode('utf-8'))
             else: 
                 self.wfile.write(json.dumps({"error": "Not found"}).encode('utf-8'))
             
         elif self.path.startswith('/api/user/'):
             user_id_str = self.path.split('/')[-1]
-            try:
-                user_id = int(user_id_str.replace("ID_", ""))
-            except:
-                user_id = user_id_str
+            try: user_id = int(user_id_str.replace("ID_", ""))
+            except: user_id = user_id_str
                 
             conn = get_db()
             row = conn.execute("SELECT points FROM users WHERE telegram_id = ?", (user_id,)).fetchone()
             conn.close()
             if row: self.wfile.write(json.dumps({"points": row['points']}).encode('utf-8'))
             else: self.wfile.write(json.dumps({"points": 50}).encode('utf-8'))
+            
+        elif self.path.startswith('/api/quotes/'):
+            user_id_str = self.path.split('/')[-1]
+            try: user_id = int(user_id_str.replace("ID_", ""))
+            except: user_id = user_id_str
+            self.wfile.write(json.dumps(db_get_user_quotes(user_id)).encode('utf-8'))
+            
         else:
             self.wfile.write(b'{"status": "ok"}')
 
@@ -270,6 +300,64 @@ class WebhookAPIHandler(BaseHTTPRequestHandler):
             save_giveaway(g)
             self.wfile.write(json.dumps({"success": True}).encode('utf-8'))
             return
+
+        elif self.path == '/api/quotes/new':
+            user_id = data.get("user_id")
+            username = data.get("username", "Anonimo")
+            desc = data.get("description", "")
+            budget = data.get("budget", "")
+            
+            qid = db_save_quote(user_id, username, desc, budget)
+            
+            if ADMIN_ID and ADMIN_ID != 0:
+                try: bot.send_message(ADMIN_ID, f"💡 <b>NUOVO TICKET SVILUPPO IT!</b>\nDa: @{username} (ID: {user_id})\nBudget: {budget}\n\n👉 Apri 'Gestione Servizi Digitali' -> 'Preventivi su Misura' per rispondere.", parse_mode="HTML")
+                except: pass
+            self.wfile.write(json.dumps({"success": True}).encode('utf-8'))
+
+        elif self.path == '/api/quotes/action':
+            quote_id = data.get("quote_id")
+            action = data.get("action")
+            user_id = data.get("user_id")
+            
+            # NUOVA API: CANCELLAZIONE DEFINITIVA DAL REGISTRO
+            if action == 'DELETE':
+                conn = get_db()
+                conn.execute("DELETE FROM quotes WHERE id = ?", (quote_id,))
+                conn.commit()
+                conn.close()
+                self.wfile.write(json.dumps({"success": True}).encode('utf-8'))
+                return
+
+            conn = get_db()
+            q = conn.execute("SELECT * FROM quotes WHERE id = ?", (quote_id,)).fetchone()
+            conn.close()
+            
+            if not q:
+                self.wfile.write(json.dumps({"error": "Preventivo non trovato"}).encode('utf-8'))
+                return
+
+            if action == 'REJECT':
+                db_update_quote(quote_id, "REJECTED_BY_USER", q['price'], q['admin_reply'])
+                if ADMIN_ID and ADMIN_ID != 0:
+                    try: bot.send_message(ADMIN_ID, f"❌ Il cliente (ID:{user_id}) ha rifiutato l'offerta per il Ticket #{quote_id}.")
+                    except: pass
+                self.wfile.write(json.dumps({"success": True}).encode('utf-8'))
+
+            elif action == 'ACCEPT':
+                secure_hash = "".join(random.choices("ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789", k=6))
+                pratica_code = f"PR-DEV{secure_hash[:4]}"
+                
+                cart = [{"name": "Sviluppo IT su Misura", "qty": 1, "price": q['price'], "category": "Servizi"}]
+                address = f"PROGETTO APPROVATO:\n{q['description']}\n\nAccordo: {q['admin_reply']}\nSaldo concordato in chat."
+                
+                order_id = db_save_order(user_id, q['username'], cart, q['price'], address, "SERVICE", pratica_code)
+                db_update_quote(quote_id, "CONVERTED_TO_ORDER", q['price'], q['admin_reply'])
+                
+                if ADMIN_ID and ADMIN_ID != 0:
+                    try: bot.send_message(ADMIN_ID, f"🎉 <b>PREVENTIVO ACCETTATO!</b>\nGenerata la Pratica: <b>{pratica_code}</b> per il servizio IT da {q['price']}€.", parse_mode="HTML")
+                    except: pass
+                    
+                self.wfile.write(json.dumps({"success": True, "pratica_code": pratica_code}).encode('utf-8'))
 
         elif self.path == '/api/order':
             cart = data.get("cart", [])
@@ -436,16 +524,16 @@ def handle_callbacks(call):
         call.data = "m_gw"
         handle_callbacks(call)
 
+    # --- SOSTITUITO SEND_MESSAGE CON EDIT_MESSAGE_TEXT PER UX FLUIDA (ZERO SPAZZATURA) ---
     elif data == "gw_prize":
         user_states[user_id] = {"step": "WAITING_GW_PRIZE"}
-        bot.send_message(user_id, "🏆 Scrivi il nuovo PREMIO in palio (es. 100€ Bitcoin):", reply_markup=get_cancel_keyboard())
+        bot.edit_message_text("🏆 Scrivi il nuovo PREMIO in palio (es. 100€ Bitcoin):", user_id, call.message.message_id, reply_markup=get_cancel_keyboard())
     elif data == "gw_desc":
         user_states[user_id] = {"step": "WAITING_GW_DESC"}
-        bot.send_message(user_id, "📝 Scrivi la nuova DESCRIZIONE dell'evento:", reply_markup=get_cancel_keyboard())
+        bot.edit_message_text("📝 Scrivi la nuova DESCRIZIONE dell'evento:", user_id, call.message.message_id, reply_markup=get_cancel_keyboard())
     elif data == "gw_date":
         user_states[user_id] = {"step": "WAITING_GW_DATE"}
-        bot.send_message(user_id, "⏳ Scrivi la SCADENZA (es. 31 Ottobre):", reply_markup=get_cancel_keyboard())
-
+        bot.edit_message_text("⏳ Scrivi la SCADENZA (es. 31 Ottobre):", user_id, call.message.message_id, reply_markup=get_cancel_keyboard())
     elif data == "gw_list":
         gw = get_giveaway()
         parts = gw.get("participants", {})
@@ -454,9 +542,7 @@ def handle_callbacks(call):
             return
         msg = "📋 <b>Lista Iscritti Giveaway:</b>\n\n"
         for uid, uname in parts.items(): msg += f"👤 {uname} (ID: <code>{uid}</code>)\n"
-        bot.send_message(user_id, msg, parse_mode='HTML', reply_markup=get_cancel_keyboard())
-        bot.answer_callback_query(call.id, "Lista generata!")
-
+        bot.edit_message_text(msg, user_id, call.message.message_id, parse_mode='HTML', reply_markup=get_cancel_keyboard())
     elif data == "gw_draw":
         gw = get_giveaway()
         parts = gw.get("participants", {})
@@ -465,7 +551,7 @@ def handle_callbacks(call):
             return
         winner_id = random.choice(list(parts.keys()))
         winner_name = parts[winner_id]
-        bot.send_message(user_id, f"🎉 <b>ESTRAZIONE COMPLETATA!</b>\n\n👤 <b>Vincitore:</b> {winner_name}\n🆔 <b>ID:</b> <code>{winner_id}</code>\n\nContattalo per consegnare il premio!", parse_mode='HTML', reply_markup=get_admin_main_keyboard())
+        bot.edit_message_text(f"🎉 <b>ESTRAZIONE COMPLETATA!</b>\n\n👤 <b>Vincitore:</b> {winner_name}\n🆔 <b>ID:</b> <code>{winner_id}</code>\n\nContattalo per consegnare il premio!", user_id, call.message.message_id, parse_mode='HTML', reply_markup=get_admin_main_keyboard())
         bot.answer_callback_query(call.id, f"🎉 Ha vinto {winner_name}!", show_alert=True)
 
     elif data == "dash_ord_phys":
@@ -503,10 +589,20 @@ def handle_callbacks(call):
 
     elif data == "dash_ord_serv":
         user_states.pop(user_id, None)
+        markup = types.InlineKeyboardMarkup(row_width=1)
+        markup.add(
+            types.InlineKeyboardButton("🛒 Servizi Standard (Exchange, Buoni)", callback_data="dash_ord_serv_std"),
+            types.InlineKeyboardButton("💡 Preventivi su Misura (Ticket)", callback_data="dash_quotes"),
+            types.InlineKeyboardButton("🔙 Torna al Menu", callback_data="m_main")
+        )
+        bot.edit_message_text("🛠 <b>GESTIONE SERVIZI DIGITALI</b>\n\nScegli il reparto operativo:", user_id, call.message.message_id, parse_mode="HTML", reply_markup=markup)
+
+    elif data == "dash_ord_serv_std":
+        user_states.pop(user_id, None)
         orders = [o for o in db_get_all_orders() if o.get('status') in ['PENDING', 'ACCEPTED'] and o.get('order_type') == 'SERVICE']
-        bot.edit_message_text("🛠 <b>SERVIZI IN LAVORAZIONE</b>", user_id, call.message.message_id, parse_mode="HTML")
+        bot.edit_message_text("🛠 <b>SERVIZI STANDARD IN LAVORAZIONE</b>", user_id, call.message.message_id, parse_mode="HTML")
         if not orders:
-            bot.send_message(user_id, "✅ Nessun servizio in lavorazione.", reply_markup=get_cancel_keyboard())
+            bot.send_message(user_id, "✅ Nessun servizio standard in lavorazione.", reply_markup=get_cancel_keyboard())
             return
         for o in orders:
             items = json.loads(o.get('items', '[]')) if isinstance(o.get('items'), str) else o.get('items', [])
@@ -531,6 +627,34 @@ def handle_callbacks(call):
             except: pass
         bot.send_message(user_id, "👇 Fine lista:", reply_markup=get_cancel_keyboard())
 
+    elif data == "dash_quotes":
+        user_states.pop(user_id, None)
+        quotes = db_get_pending_quotes()
+        bot.edit_message_text("💡 <b>PREVENTIVI SU MISURA IN ATTESA</b>\n\nAnalizza le richieste e formula un'offerta.", user_id, call.message.message_id, parse_mode="HTML")
+        if not quotes:
+            bot.send_message(user_id, "✅ Nessuna richiesta di sviluppo in attesa.", reply_markup=get_cancel_keyboard())
+            return
+        
+        for q in quotes:
+            msg = f"👨‍💻 <b>TICKET #{q['id']} - SVILUPPO IT</b>\n👤 Da: @{q['username']} (ID: {q['user_id']})\n💰 Budget Indicativo: {q['budget']}\n\n📝 <b>Richiesta:</b>\n{q['description']}"
+            markup = types.InlineKeyboardMarkup()
+            markup.add(types.InlineKeyboardButton("✍️ Formula Preventivo", callback_data=f"act_quote_{q['id']}"))
+            markup.add(types.InlineKeyboardButton("❌ Non Fattibile (Rifiuta)", callback_data=f"rej_quote_{q['id']}"))
+            bot.send_message(user_id, msg, parse_mode="HTML", reply_markup=markup)
+        bot.send_message(user_id, "👇 Opzioni:", reply_markup=get_cancel_keyboard())
+
+    elif data.startswith("act_quote_"):
+        q_id = data.split("_")[2]
+        user_states[user_id] = {"step": "WAITING_QUOTE_OFFER", "q_id": q_id}
+        bot.edit_message_text("✍️ Inserisci il <b>PREZZO</b> e la tua <b>RISPOSTA</b> separati da un trattino.\n\n<i>Esempio: 450 - Il bot si può fare, consegna in 4 giorni.</i>", user_id, call.message.message_id, parse_mode="HTML", reply_markup=get_cancel_keyboard())
+
+    elif data.startswith("rej_quote_"):
+        q_id = data.split("_")[2]
+        db_update_quote(q_id, "REJECTED_BY_ADMIN", 0, "Siamo spiacenti ma il progetto non è attualmente fattibile o non rientra nei nostri standard operativi.")
+        bot.answer_callback_query(call.id, "❌ Preventivo Rifiutato.")
+        try: bot.edit_message_reply_markup(user_id, call.message.message_id, reply_markup=None)
+        except: pass
+
     elif data.startswith("act_trk_") or data.startswith("act_file_") or data.startswith("act_meet_") or data.startswith("act_upd_"):
         parts = data.split("_")
         action, o_id, u_id, m_id = parts[1], parts[2], parts[3], parts[4]
@@ -546,9 +670,7 @@ def handle_callbacks(call):
         elif action == "upd": step_name, prompt_txt = "WAITING_UPDATE", f"✍️ Scrivi l'<b>AGGIORNAMENTO CUSTOM</b> per la pratica {pratica_code}:"
         
         user_states[user_id] = {"step": step_name, "o_id": o_id, "u_id": u_id, "m_id": m_id}
-        bot.send_message(user_id, prompt_txt, parse_mode="HTML", reply_markup=get_cancel_keyboard())
-        try: bot.edit_message_reply_markup(user_id, call.message.message_id, reply_markup=None)
-        except: pass
+        bot.edit_message_text(prompt_txt, user_id, call.message.message_id, parse_mode="HTML", reply_markup=get_cancel_keyboard())
 
     elif data.startswith("act_acc_") or data.startswith("act_work_") or data.startswith("act_cnc_"):
         parts = data.split("_")
@@ -644,7 +766,7 @@ def handle_callbacks(call):
             "3️⃣ <b>Per ID Sito:</b> <code>/punti ID_123456789 100</code>\n"
             "4️⃣ <b>Per Risposta:</b> Rispondi a un utente/contatto scrivendo solo <code>/punti 100</code>"
         )
-        bot.send_message(user_id, msg, parse_mode="HTML", reply_markup=get_cancel_keyboard())
+        bot.edit_message_text(msg, user_id, call.message.message_id, parse_mode="HTML", reply_markup=get_cancel_keyboard())
 
     elif data == "m_prod":
         user_states.pop(user_id, None)
@@ -667,8 +789,10 @@ def handle_callbacks(call):
         user_states.pop(user_id, None)
         prods = db_get_products()
         if not prods:
-            bot.send_message(user_id, "📭 Nessun prodotto.", reply_markup=get_cancel_keyboard())
+            bot.edit_message_text("📭 Nessun prodotto.", user_id, call.message.message_id, reply_markup=get_cancel_keyboard())
             return
+        # Sostituiamo il menu in alto per pulire la chat, i prodotti verranno accodati.
+        bot.edit_message_text("📋 <b>LISTA PRODOTTI</b>\nEcco tutti i prodotti in vetrina:", user_id, call.message.message_id, parse_mode="HTML")
         for p in prods:
             st_val = p.get('in_showcase', 1) == 1
             status_str = '🟢 In Vetrina' if st_val else '🔴 Nascosto'
@@ -693,19 +817,19 @@ def handle_callbacks(call):
 
     elif data.startswith("edname_"):
         user_states[user_id] = {"step": "EDIT_NAME", "target_product": data.split("_")[1]}
-        bot.send_message(user_id, "✏️ Scrivi il NUOVO NOME:", reply_markup=get_cancel_keyboard())
+        bot.edit_message_text("✏️ Scrivi il NUOVO NOME:", user_id, call.message.message_id, reply_markup=get_cancel_keyboard())
 
     elif data.startswith("eddesc_"):
         user_states[user_id] = {"step": "EDIT_DESC", "target_product": data.split("_")[1]}
-        bot.send_message(user_id, "📝 Scrivi la NUOVA DESCRIZIONE:", reply_markup=get_cancel_keyboard())
+        bot.edit_message_text("📝 Scrivi la NUOVA DESCRIZIONE:", user_id, call.message.message_id, reply_markup=get_cancel_keyboard())
 
     elif data.startswith("edprc_"):
         user_states[user_id] = {"step": "EDIT_PRICES", "target_product": data.split("_")[1]}
-        bot.send_message(user_id, "💰 Scrivi le NUOVE VARIANTI (es. 10pz 140, 20pz 250):", reply_markup=get_cancel_keyboard())
+        bot.edit_message_text("💰 Scrivi le NUOVE VARIANTI (es. 10pz 140, 20pz 250):", user_id, call.message.message_id, reply_markup=get_cancel_keyboard())
 
     elif data.startswith("edmedia_"):
         user_states[user_id] = {"step": "WAITING_MEDIA_EDIT", "target_product": data.split("_")[1], "media_list": []}
-        bot.send_message(user_id, "📸 Invia le nuove foto/video.", reply_markup=get_media_done_keyboard())
+        bot.edit_message_text("📸 Invia le nuove foto/video.", user_id, call.message.message_id, reply_markup=get_media_done_keyboard())
 
     elif data.startswith("tog_"):
         parts = data.split("_")
@@ -734,11 +858,11 @@ def handle_callbacks(call):
         
         if st.get("step") == "WAITING_MEDIA":
             st["step"] = "WAITING_NAME"
-            bot.send_message(user_id, f"✅ Caricati {len(st['media_list'])} file!\n\n📝 Ora invia il NOME del prodotto:", reply_markup=get_cancel_keyboard())
+            bot.edit_message_text(f"✅ Caricati {len(st['media_list'])} file!\n\n📝 Ora invia il NOME del prodotto:", user_id, call.message.message_id, reply_markup=get_cancel_keyboard())
         elif st.get("step") == "WAITING_MEDIA_EDIT":
             media_list = st["media_list"]
             db_update_product(st["target_product"], {"media_list": media_list, "media_url": media_list[0]["url"], "media_type": media_list[0]["type"]})
-            bot.send_message(user_id, "✅ Media aggiornati!", reply_markup=get_admin_main_keyboard())
+            bot.edit_message_text("✅ Media aggiornati!", user_id, call.message.message_id, reply_markup=get_admin_main_keyboard())
             user_states.pop(user_id, None)
 
 @bot.message_handler(content_types=['photo', 'video'])
@@ -782,6 +906,27 @@ def handle_admin_text(message):
     state = user_states.get(user_id, {})
     step = state.get("step")
 
+    # RISPOSTA AL PREVENTIVO DA PARTE DELL'ADMIN
+    if step == "WAITING_QUOTE_OFFER":
+        try:
+            raw = message.text.split("-", 1)
+            price = float(raw[0].replace('€','').strip())
+            msg_reply = raw[1].strip() if len(raw) > 1 else "Preventivo approvato. Attendo tua conferma per iniziare."
+            
+            db_update_quote(state["q_id"], "QUOTED", price, msg_reply)
+            bot.reply_to(message, f"✅ Offerta di {price}€ inviata al cliente con successo.", reply_markup=get_admin_main_keyboard())
+            
+            conn = get_db()
+            q = conn.execute("SELECT user_id FROM quotes WHERE id = ?", (state["q_id"],)).fetchone()
+            conn.close()
+            if q and str(q['user_id']) != "0":
+                try: bot.send_message(int(q['user_id']), f"🔔 <b>PREVENTIVO RICEVUTO!</b>\nIl laboratorio ha risposto alla tua richiesta di sviluppo su misura.\n\n👉 Apri il Caveau, vai su 'Servizi su Misura' -> 'Le Tue Richieste' per leggere l'offerta e accettarla.", parse_mode="HTML")
+                except: pass
+            user_states.pop(user_id, None)
+        except:
+            bot.reply_to(message, "❌ Formato errato. Devi scrivere: PREZZO - MESSAGGIO\nEs: 400 - Si può fare. Riprova:")
+        return
+
     if message.text and message.text.startswith("/punti"):
         try:
             parts = message.text.split()
@@ -805,18 +950,14 @@ def handle_admin_text(message):
                     conn = get_db()
                     row = conn.execute("SELECT telegram_id FROM users WHERE username = ? COLLATE NOCASE", (username,)).fetchone()
                     conn.close()
-                    if row:
-                        target_id = row['telegram_id']
+                    if row: target_id = row['telegram_id']
                     else:
                         bot.reply_to(message, f"❌ Nessun utente @{username} trovato nel database del bot.")
                         return
-                elif target_str.upper().startswith("ID_"):
-                    target_id = int(target_str.upper().replace("ID_", ""))
-                else:
-                    target_id = int(target_str)
+                elif target_str.upper().startswith("ID_"): target_id = int(target_str.upper().replace("ID_", ""))
+                else: target_id = int(target_str)
             
-            if target_id is None:
-                raise ValueError("Nessun target valido")
+            if target_id is None: raise ValueError("Nessun target valido")
 
             conn = get_db()
             row = conn.execute("SELECT points FROM users WHERE telegram_id = ?", (target_id,)).fetchone()
@@ -968,7 +1109,7 @@ def handle_admin_text(message):
 
 if __name__ == '__main__':
     threading.Thread(target=run_health_server, daemon=True).start()
-    print("🤖 Bot Il Falsario (SERVER LOCALE 100% PRIVATO) Avviato!")
+    print("🤖 Bot Il Falsario (SERVER LOCALE) Avviato con TICKET SYSTEM!")
     while True:
         try:
             bot.remove_webhook()
