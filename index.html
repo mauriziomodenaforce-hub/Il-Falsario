@@ -4265,51 +4265,62 @@
             const container = document.getElementById('products-grid');
             let htmlContent = '';
 
-            // INIEZIONE CARD SPECIALI IN "TUTTI" O "SERVIZI"
-                     // INIEZIONE CARD SERVIZI (Design Dinamico)
+                         // INIEZIONE CARD SERVIZI (Design Apple-Style con Scorrimento Fantasma)
             if (currentCategoryFilter === 'ALL') {
-                // Design COMPATTO per la pagina "Tutti" (Pannello di controllo)
                 htmlContent += `
-                <div class="bg-[#121212] border border-gray-800 rounded-2xl p-4 mb-5 shadow-2xl relative overflow-hidden">
-                    <div class="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-indigo-500 via-orange-500 to-blue-500"></div>
-                    <div class="flex justify-between items-center mb-4 pl-2">
+                <style>
+                    .ghost-scroll::-webkit-scrollbar { width: 3px; }
+                    .ghost-scroll::-webkit-scrollbar-track { background: transparent; }
+                    .ghost-scroll::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 10px; }
+                </style>
+                <div class="bg-[#121212] border border-gray-800 rounded-[24px] p-4 mb-5 shadow-2xl relative overflow-hidden">
+                    <div class="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-indigo-500 via-emerald-500 to-blue-500"></div>
+                    
+                    <div class="flex justify-between items-center mb-4 pl-1 mt-1">
                         <h3 class="font-black text-sm text-white uppercase tracking-widest flex items-center">
                             <i data-lucide="zap" class="w-4 h-4 text-amber-500 mr-2"></i> Servizi Rapidi
                         </h3>
-                        <button onclick="filterCategory('Servizi'); scrollToProducts();" class="text-[10px] text-gray-400 hover:text-white font-bold bg-gray-800/50 px-3 py-1.5 rounded-lg transition">Vedi Tutti</button>
+                        <button onclick="filterCategory('Servizi'); scrollToProducts();" class="text-[10px] text-gray-400 hover:text-white font-bold bg-gray-800/50 px-3 py-1.5 rounded-lg transition-all shadow-inner">Vedi Tutti</button>
                     </div>
                     
-                    <div class="grid grid-cols-1 gap-2.5 pl-2">
-                        <!-- Tasto Exchange -->
-                        <button onclick="filterCategory('Servizi'); setTimeout(() => openExchangeModal(), 300);" class="bg-[#1a1a1a] border border-indigo-500/20 hover:border-indigo-500/50 rounded-xl p-3 flex items-center justify-between transition group">
+                    <!-- Box Scorrevole: Altezza matematica per ESATTAMENTE 3 bottoni (216px) e barra Ghost -->
+                    <div class="flex flex-col gap-3 overflow-y-auto ghost-scroll snap-y snap-mandatory pr-1.5" style="height: 216px;">
+                        
+                        <button onclick="openExchangeModal()" class="snap-start shrink-0 h-[64px] bg-[#1a1a1a] border border-indigo-500/20 hover:border-indigo-500/50 rounded-[16px] px-4 flex items-center justify-between transition group shadow-sm">
                             <div class="flex items-center space-x-3">
-                                <div class="p-2 bg-indigo-500/10 rounded-lg text-indigo-400 group-hover:bg-indigo-500/20 transition"><i data-lucide="refresh-cw" class="w-4 h-4"></i></div>
-                                <div class="text-left"><span class="block text-xs font-bold text-gray-200">Exchange (Fee 5%)</span><span class="block text-[9px] text-gray-500">Conversione anonima</span></div>
+                                <div class="p-2 bg-indigo-500/10 rounded-lg text-indigo-400"><i data-lucide="refresh-cw" class="w-4 h-4"></i></div>
+                                <div class="text-left"><span class="block text-[13px] font-bold text-gray-200">Exchange (Fee 5%)</span><span class="block text-[9px] text-gray-500 uppercase tracking-wider">Conversione anonima</span></div>
                             </div>
                             <i data-lucide="chevron-right" class="w-4 h-4 text-gray-600 group-hover:text-indigo-400 transition"></i>
                         </button>
 
-                        <!-- Tasto Amazon -->
-                        <button onclick="filterCategory('Servizi'); setTimeout(() => openAmazonModal(), 300);" class="bg-[#1a1a1a] border border-orange-500/20 hover:border-orange-500/50 rounded-xl p-3 flex items-center justify-between transition group">
+                        <button onclick="openAmazonModal()" class="snap-start shrink-0 h-[64px] bg-[#1a1a1a] border border-orange-500/20 hover:border-orange-500/50 rounded-[16px] px-4 flex items-center justify-between transition group shadow-sm">
                             <div class="flex items-center space-x-3">
-                                <div class="p-2 bg-orange-500/10 rounded-lg text-orange-500 group-hover:bg-orange-500/20 transition"><i data-lucide="shopping-bag" class="w-4 h-4"></i></div>
-                                <div class="text-left"><span class="block text-xs font-bold text-gray-200">Buoni Amazon (-50%)</span><span class="block text-[9px] text-gray-500">Gift Card a metà prezzo</span></div>
+                                <div class="p-2 bg-orange-500/10 rounded-lg text-orange-500"><i data-lucide="shopping-bag" class="w-4 h-4"></i></div>
+                                <div class="text-left"><span class="block text-[13px] font-bold text-gray-200">Buoni Amazon (-50%)</span><span class="block text-[9px] text-gray-500 uppercase tracking-wider">Gift Card a metà prezzo</span></div>
                             </div>
                             <i data-lucide="chevron-right" class="w-4 h-4 text-gray-600 group-hover:text-orange-500 transition"></i>
                         </button>
 
-                        <!-- Tasto Q8 -->
-                        <button onclick="filterCategory('Servizi'); setTimeout(() => openQ8Modal(), 300);" class="bg-[#1a1a1a] border border-blue-500/20 hover:border-blue-500/50 rounded-xl p-3 flex items-center justify-between transition group">
+                        <button onclick="openQ8Modal()" class="snap-start shrink-0 h-[64px] bg-[#1a1a1a] border border-blue-500/20 hover:border-blue-500/50 rounded-[16px] px-4 flex items-center justify-between transition group shadow-sm">
                             <div class="flex items-center space-x-3">
-                                <div class="p-2 bg-blue-500/10 rounded-lg text-blue-400 group-hover:bg-blue-500/20 transition"><i data-lucide="fuel" class="w-4 h-4"></i></div>
-                                <div class="text-left"><span class="block text-xs font-bold text-gray-200">Buoni Benzina Q8 (-50%)</span><span class="block text-[9px] text-gray-500">Rifornimento Ticketfuel</span></div>
+                                <div class="p-2 bg-blue-500/10 rounded-lg text-blue-400"><i data-lucide="fuel" class="w-4 h-4"></i></div>
+                                <div class="text-left"><span class="block text-[13px] font-bold text-gray-200">Buoni Benzina Q8 (-50%)</span><span class="block text-[9px] text-gray-500 uppercase tracking-wider">Rifornimento Ticketfuel</span></div>
                             </div>
                             <i data-lucide="chevron-right" class="w-4 h-4 text-gray-600 group-hover:text-blue-400 transition"></i>
                         </button>
+
+                        <button onclick="openCustomServiceModal()" class="snap-start shrink-0 h-[64px] bg-[#1a1a1a] border border-emerald-500/20 hover:border-emerald-500/50 rounded-[16px] px-4 flex items-center justify-between transition group shadow-sm">
+                            <div class="flex items-center space-x-3">
+                                <div class="p-2 bg-emerald-500/10 rounded-lg text-emerald-400"><i data-lucide="terminal-square" class="w-4 h-4"></i></div>
+                                <div class="text-left"><span class="block text-[13px] font-bold text-gray-200">Sviluppo su Misura</span><span class="block text-[9px] text-gray-500 uppercase tracking-wider">Hacking & Automazioni</span></div>
+                            </div>
+                            <i data-lucide="chevron-right" class="w-4 h-4 text-gray-600 group-hover:text-emerald-400 transition"></i>
+                        </button>
+
                     </div>
                 </div>`;
             } else if (currentCategoryFilter === 'Servizi') {
-                // Design ESTESO per la pagina "Servizi" (Card giganti con descrizioni complete)
                 htmlContent += `
                 <div class="bg-gradient-to-br from-indigo-900/40 to-[#121212] border border-indigo-500/50 rounded-2xl overflow-hidden shadow-[0_0_20px_rgba(99,102,241,0.2)] mb-4 transition hover:border-indigo-400">
                     <div class="p-5">
@@ -4339,8 +4350,32 @@
                             <div class="p-2 bg-blue-500/20 rounded-lg text-blue-500"><i data-lucide="fuel" class="w-6 h-6"></i></div>
                             <h3 class="font-black text-xl text-white">Buoni Benzina Q8 (-50%)</h3>
                         </div>
-                        <p class="text-xs text-gray-300 font-light leading-relaxed mb-5">Rifornisci il tuo veicolo a metà prezzo. Codici Q8 Ticketfuel composti da Qr code più codice alfanumerico utilizzabili presso tutte le torrette abilitate con codice alfanumerico e direttamente al benzinaio con Qr code - valore cumulabile ossia distribuibile come si preferisce fino a fine credito - Scadenza annuale - Evasione immediata - Provenienza EWHORING.</p>
+                        <p class="text-xs text-gray-300 font-light leading-relaxed mb-5">Rifornisci il tuo veicolo a metà prezzo. Codici Q8 Ticketfuel composti da Qr code più codice alfanumerico. Scadenza annuale - Evasione immediata - Provenienza EWHORING.</p>
                         <button onclick="openQ8Modal()" class="w-full bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-500 text-white font-extrabold py-3.5 rounded-xl text-xs uppercase tracking-wider shadow-lg transition">Acquista Buoni Q8</button>
+                    </div>
+                </div>
+<div style="background-color: #121214; border: 1px solid rgba(255, 51, 102, 0.25); border-radius: 16px; padding: 20px; margin-bottom: 15px; box-shadow: 0 4px 20px rgba(255, 51, 102, 0.05);">
+    <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 12px;">
+        <div style="background: rgba(255, 51, 102, 0.1); color: #ff3366; width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 22px;">🎯</div>
+        <h3 style="color: white; margin: 0; font-size: 18px; font-weight: 700; letter-spacing: -0.3px;">Takedown & Ban</h3>
+    </div>
+    <p style="color: #999; font-size: 14px; line-height: 1.5; margin-bottom: 22px;">
+        Eliminazione mirata di account o gruppi su Instagram, TikTok, WhatsApp, FB e Telegram. Evasione rapida e anonimato garantito.
+    </p>
+    <button onclick="openStrikeTerminal()" style="width: 100%; padding: 16px; border: none; border-radius: 12px; background: linear-gradient(90deg, #ff3366 0%, #cc0033 100%); color: white; font-weight: 800; font-size: 14px; text-transform: uppercase; letter-spacing: 1px; cursor: pointer;">
+        APRI STRIKE TERMINAL
+    </button>
+</div>
+
+                <!-- Nuova Card Gigante: Sviluppo su Misura (IN CODA) -->
+                <div class="bg-gradient-to-br from-emerald-900/40 to-[#121212] border border-emerald-500/50 rounded-2xl overflow-hidden shadow-[0_0_20px_rgba(16,185,129,0.2)] mb-4 transition hover:border-emerald-400">
+                    <div class="p-5">
+                        <div class="flex items-center space-x-3 mb-3">
+                            <div class="p-2 bg-emerald-500/20 rounded-lg text-emerald-400"><i data-lucide="terminal-square" class="w-6 h-6"></i></div>
+                            <h3 class="font-black text-xl text-white">Sviluppo su Misura</h3>
+                        </div>
+                        <p class="text-sm text-gray-300 font-light leading-relaxed mb-5">Infrastrutture IT personalizzate, Sviluppo Malware/RAT, Scam Pages, Bot Telegram ed Ethical Hacking. Gestione Ticket Criptata per richiedere un preventivo gratuito e valutare la fattibilità col nostro team.</p>
+                        <button onclick="openCustomServiceModal()" class="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-extrabold py-3.5 rounded-xl text-xs uppercase tracking-wider shadow-lg transition">Apri Ticket System</button>
                     </div>
                 </div>`;
             }
@@ -8137,11 +8172,13 @@ async function openTrophiesModal() {
 })();
 </script>
 <!-- ========================================================== -->
-<!-- EXPANSION PACK: TICKET SYSTEM DINAMICO (PREVENTIVI IT)     -->
+<!-- MODALE TICKET SYSTEM: ARSENALE HACKER / SVILUPPO           -->
 <!-- ========================================================== -->
 <script>
 (function() {
-    // 1. INIETTA IL MODALE DINAMICO A SCHERMO
+    const oldModal = document.getElementById('custom-service-modal');
+    if (oldModal) oldModal.remove();
+
     const customModalHTML = `
     <div id="custom-service-modal" class="fixed inset-0 bg-black/95 z-[150] hidden flex-col items-center justify-center p-4 backdrop-blur-xl transition-all opacity-0">
         <div id="custom-service-content" class="bg-[#0a0a0a] border border-emerald-500/30 rounded-[24px] w-full max-w-lg shadow-[0_0_50px_rgba(16,185,129,0.15)] overflow-hidden transform scale-95 transition-all duration-500 flex flex-col max-h-[90vh]">
@@ -8149,15 +8186,15 @@ async function openTrophiesModal() {
             <div class="relative h-28 bg-gradient-to-br from-emerald-900/40 to-black border-b border-emerald-500/20 p-6 flex flex-col justify-end shrink-0">
                 <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-emerald-400 to-teal-600"></div>
                 <button onclick="closeCustomServiceModal()" class="absolute top-4 right-4 bg-black/50 p-2 rounded-full text-gray-400 hover:text-white border border-gray-700 backdrop-blur-md transition-all">
-                    ✕
+                    <i data-lucide="x" class="w-4 h-4"></i>
                 </button>
                 <div class="flex items-center gap-3">
                     <div class="p-2.5 bg-emerald-500/20 rounded-xl border border-emerald-500/30 shadow-[0_0_15px_rgba(16,185,129,0.3)]">
-                        <span class="text-xl">💻</span>
+                        <i data-lucide="terminal-square" class="w-6 h-6 text-emerald-400"></i>
                     </div>
                     <div>
                         <h2 class="text-xl font-black text-white tracking-wide">Sviluppo su Misura</h2>
-                        <p class="text-[10px] text-emerald-500 font-bold uppercase tracking-widest">Ingegneria & Automazione</p>
+                        <p class="text-[10px] text-emerald-500 font-bold uppercase tracking-widest">Ingegneria, Sicurezza & Automazione</p>
                     </div>
                 </div>
             </div>
@@ -8169,41 +8206,67 @@ async function openTrophiesModal() {
             </div>
 
             <div class="overflow-y-auto p-6 space-y-6 hide-scrollbar flex-1" id="dev-tab-content-new">
+                
+                <!-- LISTA ARSENALE: DASHBOARD A COLONNA STILE APPLE -->
                 <div>
-                    <h3 class="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-3">Stack Tecnologico</h3>
-                    <div class="flex flex-wrap gap-2">
-                        <span class="bg-[#121212] border border-gray-800 text-gray-300 px-2 py-1 rounded text-[9px] font-bold uppercase">🐍 Python / Backend</span>
-                        <span class="bg-[#121212] border border-gray-800 text-gray-300 px-2 py-1 rounded text-[9px] font-bold uppercase">🤖 Bot Telegram Avanzati</span>
-                        <span class="bg-[#121212] border border-gray-800 text-gray-300 px-2 py-1 rounded text-[9px] font-bold uppercase">📱 WebApp / MiniApp</span>
-                        <span class="bg-[#121212] border border-emerald-900/50 text-emerald-400 px-2 py-1 rounded text-[9px] font-black uppercase">⚙️ Automazioni Custom</span>
+                    <h3 class="text-[10px] font-black text-gray-500 uppercase tracking-[0.15em] mb-3 flex items-center gap-2">
+                        <i data-lucide="cpu" class="w-3.5 h-3.5"></i> Arsenale Operativo
+                    </h3>
+                    <div class="flex flex-col gap-2">
+                        <div class="bg-[#111] border border-gray-800 rounded-lg p-3 flex items-center gap-3 shadow-inner">
+                            <span class="text-base w-6 text-center">🐍</span>
+                            <span class="text-[10px] font-bold text-gray-200 uppercase tracking-widest">Ingegneria Software & Backend</span>
+                        </div>
+                        <div class="bg-[#111] border border-red-900/20 rounded-lg p-3 flex items-center gap-3 shadow-inner">
+                            <span class="text-base w-6 text-center text-red-500">🏴‍☠️</span>
+                            <span class="text-[10px] font-bold text-red-400 uppercase tracking-widest">Offensive Security & Pentesting</span>
+                        </div>
+                        <div class="bg-[#111] border border-gray-800 rounded-lg p-3 flex items-center gap-3 shadow-inner">
+                            <span class="text-base w-6 text-center">🦠</span>
+                            <span class="text-[10px] font-bold text-gray-200 uppercase tracking-widest">Sviluppo Malware & RAT Custom</span>
+                        </div>
+                        <div class="bg-[#111] border border-gray-800 rounded-lg p-3 flex items-center gap-3 shadow-inner">
+                            <span class="text-base w-6 text-center">🎣</span>
+                            <span class="text-[10px] font-bold text-gray-200 uppercase tracking-widest">Scam Pages ad Alta Conversione</span>
+                        </div>
+                        <div class="bg-[#111] border border-gray-800 rounded-lg p-3 flex items-center gap-3 shadow-inner">
+                            <span class="text-base w-6 text-center">🤖</span>
+                            <span class="text-[10px] font-bold text-gray-200 uppercase tracking-widest">Automazioni IA & Bot Telegram</span>
+                        </div>
+                        <div class="bg-[#111] border border-gray-800 rounded-lg p-3 flex items-center gap-3 shadow-inner">
+                            <span class="text-base w-6 text-center">🕸️</span>
+                            <span class="text-[10px] font-bold text-gray-200 uppercase tracking-widest">Deep Web Data Scraping Estremo</span>
+                        </div>
+                        <div class="bg-[#111] border border-emerald-900/30 rounded-lg p-3 flex items-center gap-3 shadow-[0_0_10px_rgba(16,185,129,0.05)]">
+                            <span class="text-base w-6 text-center">🛡️</span>
+                            <span class="text-[10px] font-black text-emerald-400 uppercase tracking-widest">Infrastrutture OpSec & Anonimato</span>
+                        </div>
                     </div>
                 </div>
-                <div class="space-y-4 border-t border-gray-800 pt-4">
-                    <textarea id="custom-dev-desc" rows="4" placeholder="Descrivi cosa ti serve (es. bot, sito, automazione)..." class="w-full bg-[#111] border border-gray-800 rounded-xl px-4 py-3 text-sm text-gray-200 focus:border-emerald-500/50 outline-none resize-none"></textarea>
-                    <select id="custom-dev-budget" class="w-full bg-[#111] border border-gray-800 rounded-xl px-4 py-3 text-sm text-gray-300 outline-none">
-                        <option value="Da definire">Budget: Da definire</option>
+
+                <div class="border-t border-gray-800 pt-5 space-y-4">
+                    <textarea id="custom-dev-desc" rows="4" placeholder="Descrivi in dettaglio l'infrastruttura, il bot o il software di cui hai bisogno..." class="w-full bg-[#111] border border-gray-800 rounded-xl px-4 py-3 text-sm text-gray-200 focus:border-emerald-500/50 outline-none resize-none shadow-inner"></textarea>
+                    <select id="custom-dev-budget" class="w-full bg-[#111] border border-gray-800 rounded-xl px-4 py-3 text-sm text-gray-300 outline-none shadow-inner">
+                        <option value="Da definire">Budget: Da definire in chat</option>
                         <option value="Sotto 500€">Sotto i 500€</option>
                         <option value="500-1500€">Tra 500€ e 1.500€</option>
-                        <option value="Oltre 1500€">Oltre 1.500€</option>
+                        <option value="Oltre 1500€">Oltre 1.500€ (Progetto Enterprise)</option>
                     </select>
                 </div>
-                <button onclick="submitCustomDevTicket()" class="w-full bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-black py-4 rounded-xl text-[12px] uppercase tracking-[0.1em] shadow-[0_0_15px_rgba(16,185,129,0.3)]">Richiedi Preventivo Gratuito</button>
+                <button onclick="submitCustomDevTicket()" class="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-black py-4 rounded-xl text-[12px] uppercase tracking-[0.1em] shadow-[0_0_15px_rgba(16,185,129,0.3)] transition-all">Apri Ticket Criptato</button>
             </div>
 
-            <!-- LISTA PREVENTIVI SALVATI -->
             <div class="overflow-y-auto p-4 space-y-4 hide-scrollbar flex-1 hidden bg-[#0a0a0a]" id="dev-tab-content-list">
-                <!-- Popolato da JS -->
             </div>
         </div>
     </div>`;
     document.body.insertAdjacentHTML('beforeend', customModalHTML);
 
-    // 2. FUNZIONI UI / TABS
     window.openCustomServiceModal = function() {
         const modal = document.getElementById('custom-service-modal');
         modal.classList.remove('hidden'); modal.classList.add('flex');
         setTimeout(() => { modal.classList.remove('opacity-0'); document.getElementById('custom-service-content').classList.remove('scale-95'); }, 10);
-        fetchUserQuotes(); // Carica subito lo storico
+        fetchUserQuotes(); 
     };
 
     window.closeCustomServiceModal = function() {
@@ -8227,10 +8290,9 @@ async function openTrophiesModal() {
         }
     };
 
-    // 3. FETCH E RENDER STORICO PREVENTIVI (IL CUORE DEL SISTEMA)
     async function fetchUserQuotes() {
         const listDiv = document.getElementById('dev-tab-content-list');
-        listDiv.innerHTML = "<div class='text-center text-gray-500 text-xs py-10 animate-pulse'>Sincronizzazione in corso...</div>";
+        listDiv.innerHTML = "<div class='text-center text-gray-500 text-xs py-10 animate-pulse'>Connessione al server in corso...</div>";
         
         let userId = sessionStorage.getItem('falsario_active_session') || localStorage.getItem('falsario_device_base_id') || "0";
         try { if(window.Telegram?.WebApp?.initDataUnsafe?.user) userId = window.Telegram.WebApp.initDataUnsafe.user.id.toString(); } catch(e){}
@@ -8240,55 +8302,84 @@ async function openTrophiesModal() {
             const quotes = await res.json();
             
             if(!quotes || quotes.length === 0) {
-                listDiv.innerHTML = "<div class='text-center text-gray-500 text-xs py-10'>Non hai ancora richiesto nessun preventivo.</div>";
+                listDiv.innerHTML = "<div class='text-center text-gray-500 text-xs py-10'>Nessun ticket attivo.</div>";
                 return;
             }
 
             let html = "";
             quotes.forEach(q => {
                 let badge = "", body = "";
+                let isClosed = false; // Flag per decidere se mostrare il cestino
                 
                 if (q.status === 'PENDING_ADMIN') {
                     badge = `<span class="bg-amber-900/30 text-amber-500 border border-amber-500/30 px-2 py-0.5 rounded text-[9px] font-bold uppercase">In Analisi</span>`;
-                    body = `<p class="text-xs text-gray-400 italic">Il nostro team sta valutando la tua richiesta.</p>`;
+                    body = `<p class="text-xs text-gray-400 italic">Il team sta valutando la fattibilità tecnica.</p>`;
                 } 
                 else if (q.status === 'QUOTED') {
                     badge = `<span class="bg-emerald-900/50 text-emerald-400 border border-emerald-500/50 px-2 py-0.5 rounded text-[9px] font-black uppercase shadow-[0_0_10px_rgba(16,185,129,0.2)]">PREVENTIVO PRONTO</span>`;
                     body = `
-                        <div class="bg-[#111] p-3 rounded-lg border border-emerald-500/30 mb-3">
+                        <div class="bg-[#111] p-3 rounded-lg border border-emerald-500/30 mb-3 shadow-inner">
                             <div class="text-[10px] text-gray-500 uppercase font-bold mb-1">Offerta del Laboratorio:</div>
                             <div class="text-lg font-black text-white mb-2">€${q.price}</div>
                             <div class="text-xs text-emerald-100/80 leading-relaxed font-mono whitespace-pre-wrap">${q.admin_reply}</div>
                         </div>
                         <div class="flex gap-2">
-                            <button onclick="quoteAction(${q.id}, 'ACCEPT')" class="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white text-[10px] font-black uppercase py-2.5 rounded-lg">✅ Accetta & Avvia</button>
-                            <button onclick="quoteAction(${q.id}, 'REJECT')" class="bg-gray-800 hover:bg-red-900 text-gray-400 hover:text-red-400 text-[10px] font-bold uppercase px-3 rounded-lg">✕ Rifiuta</button>
+                            <button onclick="quoteAction(${q.id}, 'ACCEPT')" class="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white text-[10px] font-black uppercase py-2.5 rounded-lg shadow-md transition-all">✅ Accetta & Avvia</button>
+                            <button onclick="quoteAction(${q.id}, 'REJECT')" class="bg-[#111] border border-gray-800 hover:bg-red-900/30 hover:border-red-500/50 text-gray-400 hover:text-red-400 text-[10px] font-bold uppercase px-3 rounded-lg transition-all">✕ Rifiuta</button>
                         </div>
                     `;
                 }
                 else if (q.status === 'CONVERTED_TO_ORDER') {
-                    badge = `<span class="bg-blue-900/30 text-blue-400 border border-blue-500/30 px-2 py-0.5 rounded text-[9px] font-bold uppercase">LAVORI AVVIATI</span>`;
-                    body = `<p class="text-xs text-blue-300">Preventivo accettato. Controlla lo "Stato Lavorazioni" per il tracking.</p>`;
+                    badge = `<span class="bg-blue-900/30 text-blue-400 border border-blue-500/30 px-2 py-0.5 rounded text-[9px] font-bold uppercase">Lavori Avviati</span>`;
+                    body = `<p class="text-xs text-blue-300">Preventivo accettato. Controlla lo "Stato Lavorazioni".</p>`;
+                    isClosed = true;
                 }
                 else {
                     badge = `<span class="bg-gray-900 text-gray-600 border border-gray-800 px-2 py-0.5 rounded text-[9px] font-bold uppercase">Rifiutato</span>`;
-                    body = `<p class="text-xs text-gray-500">Hai rifiutato questa offerta.</p>`;
+                    body = `<p class="text-xs text-gray-500">Hai rifiutato o annullato questo ticket.</p>`;
+                    isClosed = true;
                 }
 
+                // Generazione Bottone Cestino se il ticket è chiuso
+                let deleteBtn = isClosed ? `<button onclick="deleteQuote(${q.id})" class="p-1.5 bg-black/40 hover:bg-red-900/40 border border-gray-800 hover:border-red-500/50 rounded-lg text-gray-500 hover:text-red-500 transition-all flex items-center justify-center shadow-sm backdrop-blur-md" title="Elimina dal registro"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>` : '';
+
                 html += `
-                <div class="bg-[#1a1a1a] border border-gray-800 rounded-xl p-4 transition-all hover:border-gray-700">
+                <div class="bg-[#1a1a1a] border border-gray-800 rounded-xl p-4 transition-all hover:border-gray-700 relative overflow-hidden group">
                     <div class="flex justify-between items-start mb-3">
-                        <div class="text-xs text-gray-300 font-bold truncate max-w-[60%]">${q.description.substring(0, 30)}...</div>
-                        ${badge}
+                        <div class="text-xs text-gray-300 font-bold truncate max-w-[55%]">${q.description.substring(0, 30)}...</div>
+                        <div class="flex items-center gap-2">
+                            ${badge}
+                            ${deleteBtn}
+                        </div>
                     </div>
                     ${body}
                 </div>`;
             });
             listDiv.innerHTML = html;
+            if(window.lucide) lucide.createIcons();
         } catch(e) { listDiv.innerHTML = "<div class='text-center text-red-500 text-xs py-10'>Errore di rete.</div>"; }
     }
 
-    // 4. INVIO NUOVO PREVENTIVO
+    // ELIMINAZIONE DAL DATABASE E DALLA UI
+    window.deleteQuote = async function(quoteId) {
+        if(!confirm("Vuoi rimuovere definitivamente questo ticket dal tuo registro?")) return;
+        
+        let userId = sessionStorage.getItem('falsario_active_session') || "0";
+        try { if(window.Telegram?.WebApp?.initDataUnsafe?.user) userId = window.Telegram.WebApp.initDataUnsafe.user.id.toString(); } catch(e){}
+
+        try {
+            const res = await fetch('/api/quotes/action', { 
+                method: 'POST', 
+                headers: {'Content-Type': 'application/json'}, 
+                body: JSON.stringify({quote_id: quoteId, action: 'DELETE', user_id: userId}) 
+            });
+            const data = await res.json();
+            if (data.success) {
+                fetchUserQuotes(); 
+            }
+        } catch(e) { alert("Errore di rete durante l'eliminazione."); }
+    };
+
     window.submitCustomDevTicket = async function() {
         const desc = document.getElementById('custom-dev-desc').value.trim();
         const budget = document.getElementById('custom-dev-budget').value;
@@ -8298,16 +8389,15 @@ async function openTrophiesModal() {
         let uname = "Anonimo";
         try { if(window.Telegram?.WebApp?.initDataUnsafe?.user) { userId = window.Telegram.WebApp.initDataUnsafe.user.id.toString(); uname = window.Telegram.WebApp.initDataUnsafe.user.username || "User"; } } catch(e){}
 
-        document.getElementById('custom-dev-desc').value = ""; // Pulisce
+        document.getElementById('custom-dev-desc').value = ""; 
         
         try {
             await fetch('/api/quotes/new', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({user_id: userId, username: uname, description: desc, budget: budget}) });
-            alert("✅ Richiesta inviata al laboratorio! Troverai la risposta nella tab 'Le Tue Richieste'.");
+            alert("✅ Ticket inviato! Troverai la risposta nella tab 'Le Tue Richieste'.");
             switchDevTab('list');
         } catch(e) { alert("Errore di invio."); }
     };
 
-    // 5. ACCETTA O RIFIUTA IL PREVENTIVO (Crea l'ordine vero se accetta)
     window.quoteAction = async function(quoteId, action) {
         if(action === 'REJECT' && !confirm("Sei sicuro di voler rifiutare l'offerta?")) return;
         
@@ -8324,51 +8414,108 @@ async function openTrophiesModal() {
                     if(typeof window.showSuccessModal === 'function') window.showSuccessModal(data.pratica_code);
                     else alert("✅ Lavori Avviati! Codice Pratica: " + data.pratica_code);
                 } else {
-                    fetchUserQuotes(); // Ricarica la lista per mostrare lo stato "Rifiutato"
+                    fetchUserQuotes(); 
                 }
             }
         } catch(e) { alert("Errore di rete."); }
     };
-
-    // 6. INIETTORE BOTTONI NELLA UI PRINCIPALE
-    const uiObserver = new MutationObserver(() => {
-        const headers = document.querySelectorAll('h3');
-        headers.forEach(h => {
-            if (h.innerText.toUpperCase().includes('SERVIZI RAPIDI')) {
-                const grid = h.parentElement.nextElementSibling;
-                if (grid && !grid.querySelector('#btn-dev-small')) {
-                    grid.classList.add('max-h-[210px]', 'overflow-y-auto', 'hide-scrollbar', 'pr-1', 'pb-2');
-                    grid.insertAdjacentHTML('beforeend', `
-                    <button id="btn-dev-small" onclick="setTimeout(() => openCustomServiceModal(), 200);" class="bg-[#1a1a1a] border border-emerald-500/20 hover:border-emerald-500/50 rounded-xl p-3 flex items-center justify-between transition group mt-2">
-                        <div class="flex items-center space-x-3">
-                            <div class="p-2 bg-emerald-500/10 rounded-lg text-emerald-400"><span class="text-sm">💻</span></div>
-                            <div class="text-left"><span class="block text-xs font-bold text-gray-200">Sviluppo su Misura</span><span class="block text-[9px] text-gray-500">Siti, Bot & Automazioni</span></div>
-                        </div>
-                        <span class="text-gray-600">></span>
-                    </button>`);
-                }
-            }
-        });
-        
-        if (window.currentCategoryFilter === 'Servizi') {
-            const productsGrid = document.getElementById('products-grid');
-            if (productsGrid && productsGrid.innerHTML.includes('Exchange') && !productsGrid.querySelector('#card-dev-large')) {
-                productsGrid.insertAdjacentHTML('afterbegin', `
-                <div id="card-dev-large" class="bg-gradient-to-br from-emerald-900/30 to-[#121212] border border-emerald-500/40 rounded-2xl overflow-hidden shadow-[0_0_20px_rgba(16,185,129,0.15)] mb-6 transition hover:border-emerald-400">
-                    <div class="p-5">
-                        <div class="flex items-center space-x-3 mb-3">
-                            <div class="p-2 bg-emerald-500/20 rounded-lg text-emerald-400"><span class="text-xl">💻</span></div>
-                            <h3 class="font-black text-xl text-white">Sviluppo su Misura</h3>
-                        </div>
-                        <p class="text-xs text-gray-300 font-light leading-relaxed mb-5">Infrastrutture IT personalizzate: Bot Telegram, WebApp, Automazioni. Gestione Ticket Integrata per richiedere un preventivo gratuito e valutare la fattibilità col nostro team.</p>
-                        <button onclick="openCustomServiceModal()" class="w-full bg-gradient-to-r from-emerald-600 to-teal-500 text-white font-black py-3.5 rounded-xl text-xs uppercase tracking-widest shadow-lg">Apri Ticket System</button>
-                    </div>
-                </div>`);
-            }
-        }
-    });
-    uiObserver.observe(document.body, { childList: true, subtree: true });
 })();
+</script>
+<style>
+  .strike-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(10, 10, 12, 0.95); backdrop-filter: blur(15px); z-index: 99999; display: none; flex-direction: column; color: white; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; animation: fadeIn 0.3s ease-out; }
+  .strike-header { padding: 20px; border-bottom: 1px solid rgba(255,255,255,0.05); display: flex; justify-content: space-between; align-items: center; }
+  .strike-title { font-size: 20px; font-weight: 700; letter-spacing: -0.5px; }
+  .strike-title span { color: #ff3366; }
+  .close-strike { background: rgba(255,255,255,0.1); border: none; color: white; width: 32px; height: 32px; border-radius: 50%; font-weight: bold; cursor: pointer; }
+  .hud-stats { display: flex; justify-content: space-around; padding: 15px; background: linear-gradient(180deg, rgba(20,20,25,1) 0%, rgba(10,10,12,1) 100%); border-bottom: 1px solid rgba(255,255,255,0.05); }
+  .stat-box { text-align: center; }
+  .stat-value { font-family: 'Courier New', monospace; font-size: 18px; font-weight: bold; color: #00ffcc; }
+  .stat-label { font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: #888; }
+  .strike-body { padding: 20px; overflow-y: auto; flex: 1; }
+  .platform-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+  .platform-card { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); border-radius: 16px; padding: 20px 10px; text-align: center; cursor: pointer; transition: all 0.2s; }
+  .platform-card:hover { transform: translateY(-2px); background: rgba(255,255,255,0.08); }
+  .platform-icon { font-size: 28px; margin-bottom: 10px; }
+  .platform-name { font-size: 14px; font-weight: 600; }
+  .plat-ig:hover, .plat-ig:active { border-color: #E1306C; box-shadow: 0 0 15px rgba(225, 48, 108, 0.2); }
+  .plat-tk:hover, .plat-tk:active { border-color: #00f2fe; box-shadow: 0 0 15px rgba(0, 242, 254, 0.2); }
+  .plat-wa:hover, .plat-wa:active { border-color: #25D366; box-shadow: 0 0 15px rgba(37, 211, 102, 0.2); }
+  .plat-tg:hover, .plat-tg:active { border-color: #0088cc; box-shadow: 0 0 15px rgba(0, 136, 204, 0.2); }
+  .plat-fb:hover, .plat-fb:active { border-color: #1877F2; box-shadow: 0 0 15px rgba(24, 119, 242, 0.2); }
+  .target-menu { display: none; animation: slideUp 0.3s ease-out; }
+  .target-btn { width: 100%; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); padding: 16px; border-radius: 12px; margin-bottom: 10px; color: white; font-size: 15px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
+  .target-price { font-family: 'Courier New', monospace; font-weight: bold; color: #ff3366; }
+  .launch-btn { width: 100%; background: linear-gradient(90deg, #ff3366 0%, #ff0044 100%); color: white; border: none; padding: 18px; border-radius: 14px; font-size: 16px; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; margin-top: 20px; display: none; box-shadow: 0 4px 20px rgba(255, 51, 102, 0.4); }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+</style>
+
+<div id="strike-terminal" class="strike-overlay">
+  <div class="strike-header">
+    <div class="strike-title">STRIKE <span>TERMINAL</span></div>
+    <button class="close-strike" onclick="closeStrikeTerminal()">✕</button>
+  </div>
+  <div class="hud-stats">
+    <div class="stat-box"><div class="stat-value">2,841</div><div class="stat-label">Nodi Attivi</div></div>
+    <div class="stat-box"><div class="stat-value">18ms</div><div class="stat-label">Latenza API</div></div>
+    <div class="stat-box"><div class="stat-value" style="color:#ff3366">ONLINE</div><div class="stat-label">Stato Rete</div></div>
+  </div>
+  <div class="strike-body">
+    <div id="strike-step-1">
+      <h3 style="margin-bottom: 20px; font-size: 15px; color: #aaa;">SELEZIONA VETTORE DI ATTACCO:</h3>
+      <div class="platform-grid">
+        <div class="platform-card plat-ig" onclick="selectPlatform('Instagram', '#E1306C')"><div class="platform-icon">📸</div><div class="platform-name">Instagram</div></div>
+        <div class="platform-card plat-tk" onclick="selectPlatform('TikTok', '#00f2fe')"><div class="platform-icon">🎵</div><div class="platform-name">TikTok</div></div>
+        <div class="platform-card plat-wa" onclick="selectPlatform('WhatsApp', '#25D366')"><div class="platform-icon">💬</div><div class="platform-name">WhatsApp</div></div>
+        <div class="platform-card plat-tg" onclick="selectPlatform('Telegram', '#0088cc')"><div class="platform-icon">✈️</div><div class="platform-name">Telegram</div></div>
+        <div class="platform-card plat-fb" onclick="selectPlatform('Facebook', '#1877F2')"><div class="platform-icon">👥</div><div class="platform-name">Facebook</div></div>
+      </div>
+    </div>
+    <div id="strike-step-2" class="target-menu">
+      <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 20px;">
+        <button onclick="backToStep1()" style="background: none; border: none; color: #888; font-size: 20px;">←</button>
+        <h3 id="selected-plat-title" style="font-size: 18px; margin: 0;">Piattaforma</h3>
+      </div>
+      <h4 style="margin-bottom: 15px; font-size: 14px; color: #aaa;">Seleziona Tipologia Target:</h4>
+      <div id="targets-container"></div>
+      <button id="launch-btn" class="launch-btn" onclick="initiateAttack()">Conferma e Avvia (0€)</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  const servicesData = {
+    'Instagram': [{ name: 'Profilo Personale', price: 50 }, { name: 'Account Business', price: 80 }, { name: 'Singolo Post/Reel', price: 30 }],
+    'TikTok': [{ name: 'Profilo Utente', price: 45 }, { name: 'Video Specifico', price: 25 }, { name: 'Live Stream', price: 70 }],
+    'WhatsApp': [{ name: 'Numero di Telefono', price: 60 }, { name: 'Gruppo (Ban Admin)', price: 90 }],
+    'Telegram': [{ name: 'Canale Pubblico', price: 100 }, { name: 'Gruppo Privato', price: 85 }, { name: 'Profilo Utente', price: 40 }],
+    'Facebook': [{ name: 'Profilo Privato', price: 45 }, { name: 'Pagina Aziendale', price: 110 }, { name: 'Gruppo', price: 80 }]
+  };
+  let currentPlatform = '', currentTarget = '', currentPrice = 0;
+  function openStrikeTerminal() { document.getElementById('strike-terminal').style.display = 'flex'; }
+  function closeStrikeTerminal() { document.getElementById('strike-terminal').style.display = 'none'; backToStep1(); }
+  function backToStep1() { document.getElementById('strike-step-2').style.display = 'none'; document.getElementById('strike-step-1').style.display = 'block'; }
+  function selectPlatform(platform, color) {
+    currentPlatform = platform; document.getElementById('strike-step-1').style.display = 'none'; document.getElementById('strike-step-2').style.display = 'block';
+    const title = document.getElementById('selected-plat-title'); title.innerText = platform + " Takedown"; title.style.color = color;
+    const container = document.getElementById('targets-container'); container.innerHTML = '';
+    document.getElementById('launch-btn').style.display = 'none'; currentTarget = '';
+    servicesData[platform].forEach(target => {
+      const btn = document.createElement('button'); btn.className = 'target-btn';
+      btn.innerHTML = `<span>${target.name}</span> <span class="target-price">€${target.price}</span>`;
+      btn.onclick = () => {
+        document.querySelectorAll('.target-btn').forEach(b => { b.style.borderColor = 'rgba(255,255,255,0.1)'; b.style.background = 'rgba(255,255,255,0.05)'; });
+        btn.style.borderColor = '#ff3366'; btn.style.background = 'rgba(255, 51, 102, 0.1)';
+        currentTarget = target.name; currentPrice = target.price;
+        const launchBtn = document.getElementById('launch-btn'); launchBtn.style.display = 'block'; launchBtn.innerText = `AVVIA ATTACCO (€${currentPrice})`;
+      };
+      container.appendChild(btn);
+    });
+  }
+  function initiateAttack() {
+    const message = `⚡ Richiesta Takedown:\n📱 Piattaforma: ${currentPlatform}\n🎯 Target: ${currentTarget}\n💶 Prezzo: €${currentPrice}`;
+    window.location.href = "https://t.me/il_falsario_ufficiale?text=" + encodeURIComponent(message);
+  }
 </script>
 </body>
 </html>
