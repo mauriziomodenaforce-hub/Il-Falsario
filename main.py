@@ -15,13 +15,65 @@ TELEGRAM_TOKEN = os.environ.get('TELEGRAM_TOKEN', '').strip()
 WEB_APP_URL = os.environ.get('WEB_APP_URL', '').strip()
 ADMIN_ID = int(os.environ.get('ADMIN_ID', 0))
 
-DB_PATH = "falsario.db"
+DB_PATH = "/root/bot_shop/falsario.db"
 MEDIA_DIR = "/var/www/html/media"
 os.makedirs(MEDIA_DIR, exist_ok=True)
-GIVEAWAY_DB = 'giveaway_data.json'
+GIVEAWAY_DB = '/root/bot_shop/giveaway_data.json'
 
 bot = telebot.TeleBot(TELEGRAM_TOKEN)
 user_states = {}
+
+# ==========================================
+# OPSEC: TRACKER SPAZZINO E NOTIFICHE
+# ==========================================
+def track_msg(user_id, msg_id):
+    """Salva l'ID dei messaggi generati nelle liste per poterli cancellare dopo."""
+    user_states.setdefault(user_id, {}).setdefault("tracked", []).append(msg_id)
+
+def clear_tracked(user_id):
+    """Incenerisce all'istante tutti i messaggi della lista quando clicchi Torna Indietro."""
+    state = user_states.get(user_id, {})
+    for m_id in state.get("tracked", []):
+        try: bot.delete_message(user_id, m_id)
+        except: pass
+    state["tracked"] = []
+
+def send_admin_notification(chat_id, text, delay=300):
+    """Invia notifiche (Ordini/Ticket) che si vaporizzano dopo 5 minuti (300 secondi)."""
+    try:
+        msg = bot.send_message(chat_id, text, parse_mode="HTML")
+        def delete_task():
+            try: bot.delete_message(chat_id, msg.message_id)
+            except: pass
+        t = threading.Timer(delay, delete_task)
+        t.daemon = True
+        t.start()
+    except: pass
+
+def reset_panel_and_notify(user_id, success_text):
+    """Mostra un avviso di successo per 5 secondi e resetta la dashboard in sicurezza."""
+    clear_tracked(user_id)
+    state = user_states.setdefault(user_id, {})
+    state["step"] = None
+    
+    if success_text:
+        try:
+            temp_msg = bot.send_message(user_id, success_text, parse_mode="HTML")
+            threading.Timer(5, lambda: bot.delete_message(user_id, temp_msg.message_id)).start()
+        except: pass
+
+    panel_id = state.get("panel_id")
+    success = False
+    if panel_id:
+        try:
+            bot.edit_message_text("⚙️ <b>PANNELLO GESTIONALE CAVEAU</b> 🎭\n\nScegli la sezione da gestire:", user_id, panel_id, parse_mode="HTML", reply_markup=get_admin_main_keyboard())
+            success = True
+        except: pass
+    if not success:
+        try:
+            sent = bot.send_message(user_id, "⚙️ <b>PANNELLO GESTIONALE CAVEAU</b> 🎭\n\nScegli la sezione da gestire:", parse_mode="HTML", reply_markup=get_admin_main_keyboard())
+            state["panel_id"] = sent.message_id
+        except: pass
 
 # ==========================================
 # GESTIONE DATABASE E GIVEAWAY
@@ -38,28 +90,21 @@ def init_db():
     c.execute('''CREATE TABLE IF NOT EXISTS products (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, category TEXT, description TEXT, price_options TEXT, media_list TEXT, media_url TEXT, media_type TEXT, in_showcase INTEGER DEFAULT 1, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)''')
     c.execute('''CREATE TABLE IF NOT EXISTS orders (id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER, username TEXT, items TEXT, total_price REAL, address TEXT, status TEXT, order_type TEXT, tracking_code TEXT, user_message_id INTEGER, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)''')
     c.execute('''CREATE TABLE IF NOT EXISTS quotes (id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER, username TEXT, description TEXT, budget TEXT, admin_reply TEXT, price REAL, status TEXT, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)''')
-    
-    try:
-        c.execute("ALTER TABLE orders ADD COLUMN pratica_code TEXT")
-    except sqlite3.OperationalError:
-        pass 
-        
+    try: c.execute("ALTER TABLE orders ADD COLUMN pratica_code TEXT")
+    except sqlite3.OperationalError: pass 
     conn.commit()
     conn.close()
 
 init_db()
 
 def get_giveaway():
-    if not os.path.exists(GIVEAWAY_DB):
-        return {"is_active": 1, "description": "🎁 Evento Esclusivo", "prize": "100€", "end_date": "Da definire", "participants": {}}
+    if not os.path.exists(GIVEAWAY_DB): return {"is_active": 1, "description": "🎁 Evento Esclusivo", "prize": "100€", "end_date": "Da definire", "participants": {}}
     try:
         with open(GIVEAWAY_DB, 'r') as f: return json.load(f)
-    except:
-        return {"is_active": 1, "description": "🎁 Evento Esclusivo", "prize": "100€", "end_date": "Da definire", "participants": {}}
+    except: return {"is_active": 1, "description": "🎁 Evento Esclusivo", "prize": "100€", "end_date": "Da definire", "participants": {}}
 
 def save_giveaway(data):
-    with open(GIVEAWAY_DB, 'w') as f:
-        json.dump(data, f)
+    with open(GIVEAWAY_DB, 'w') as f: json.dump(data, f)
 
 def db_register_user(user_id, username):
     conn = get_db()
@@ -70,11 +115,7 @@ def db_register_user(user_id, username):
 def db_add_product(product_data):
     try:
         conn = get_db()
-        conn.execute('''INSERT INTO products (name, category, description, price_options, media_list, media_url, media_type, in_showcase) 
-                        VALUES (?, ?, ?, ?, ?, ?, ?, ?)''', 
-                     (product_data.get('name'), product_data.get('category'), product_data.get('description'), 
-                      json.dumps(product_data.get('price_options', [])), json.dumps(product_data.get('media_list', [])), 
-                      product_data.get('media_url'), product_data.get('media_type'), 1 if product_data.get('in_showcase', True) else 0))
+        conn.execute('''INSERT INTO products (name, category, description, price_options, media_list, media_url, media_type, in_showcase) VALUES (?, ?, ?, ?, ?, ?, ?, ?)''', (product_data.get('name'), product_data.get('category'), product_data.get('description'), json.dumps(product_data.get('price_options', [])), json.dumps(product_data.get('media_list', [])), product_data.get('media_url'), product_data.get('media_type'), 1 if product_data.get('in_showcase', True) else 0))
         conn.commit()
         conn.close()
         return True, "OK"
@@ -123,9 +164,7 @@ def db_update_user_points(target_id, points_delta):
 def db_save_order(user_id, username, cart, total, address, order_type, pratica_code):
     conn = get_db()
     c = conn.cursor()
-    c.execute('''INSERT INTO orders (user_id, username, items, total_price, address, status, order_type, pratica_code) 
-                 VALUES (?, ?, ?, ?, ?, ?, ?, ?)''', 
-              (user_id, username, json.dumps(cart), total, address, "PENDING", order_type, pratica_code))
+    c.execute('''INSERT INTO orders (user_id, username, items, total_price, address, status, order_type, pratica_code) VALUES (?, ?, ?, ?, ?, ?, ?, ?)''', (user_id, username, json.dumps(cart), total, address, "PENDING", order_type, pratica_code))
     order_id = c.lastrowid
     conn.commit()
     conn.close()
@@ -153,8 +192,7 @@ def db_update_order_status(order_id, status, tracking=""):
 def db_save_quote(user_id, username, description, budget):
     conn = get_db()
     c = conn.cursor()
-    c.execute('''INSERT INTO quotes (user_id, username, description, budget, status) VALUES (?, ?, ?, ?, ?)''', 
-              (user_id, username, description, budget, "PENDING_ADMIN"))
+    c.execute('''INSERT INTO quotes (user_id, username, description, budget, status) VALUES (?, ?, ?, ?, ?)''', (user_id, username, description, budget, "PENDING_ADMIN"))
     qid = c.lastrowid
     conn.commit()
     conn.close()
@@ -182,12 +220,9 @@ def upload_to_local_storage(file_bytes, mime_type, file_extension):
     try:
         filename = f"media_{int(time.time())}_{uuid.uuid4().hex[:6]}.{file_extension}"
         filepath = os.path.join(MEDIA_DIR, filename)
-        with open(filepath, 'wb') as f:
-            f.write(file_bytes)
-        public_url = f"{WEB_APP_URL}/media/{filename}"
-        return public_url, "OK"
-    except Exception as e:
-        return None, str(e)
+        with open(filepath, 'wb') as f: f.write(file_bytes)
+        return f"{WEB_APP_URL}/media/{filename}", "OK"
+    except Exception as e: return None, str(e)
 
 # ==========================================
 # SERVER API REST
@@ -210,37 +245,29 @@ class WebhookAPIHandler(BaseHTTPRequestHandler):
             all_prods = db_get_products()
             showcase_prods = [p for p in all_prods if p.get('in_showcase', 1) == 1]
             self.wfile.write(json.dumps(showcase_prods).encode('utf-8'))
-            
         elif self.path.startswith('/api/order/'):
             raw_search = self.path.split('/')[-1].strip().upper()
             orders = db_get_all_orders()
             order = next((o for o in orders if str(o.get('pratica_code')).strip().upper() == raw_search or str(o.get('tracking_code')).strip().upper() == raw_search), None)
-            
             if order: 
                 if not order.get('pratica_code'): order['pratica_code'] = f"PR-LGCY-{order['id']}"
                 self.wfile.write(json.dumps(order).encode('utf-8'))
-            else: 
-                self.wfile.write(json.dumps({"error": "Not found"}).encode('utf-8'))
-            
+            else: self.wfile.write(json.dumps({"error": "Not found"}).encode('utf-8'))
         elif self.path.startswith('/api/user/'):
             user_id_str = self.path.split('/')[-1]
             try: user_id = int(user_id_str.replace("ID_", ""))
             except: user_id = user_id_str
-                
             conn = get_db()
             row = conn.execute("SELECT points FROM users WHERE telegram_id = ?", (user_id,)).fetchone()
             conn.close()
             if row: self.wfile.write(json.dumps({"points": row['points']}).encode('utf-8'))
             else: self.wfile.write(json.dumps({"points": 50}).encode('utf-8'))
-            
         elif self.path.startswith('/api/quotes/'):
             user_id_str = self.path.split('/')[-1]
             try: user_id = int(user_id_str.replace("ID_", ""))
             except: user_id = user_id_str
             self.wfile.write(json.dumps(db_get_user_quotes(user_id)).encode('utf-8'))
-            
-        else:
-            self.wfile.write(b'{"status": "ok"}')
+        else: self.wfile.write(b'{"status": "ok"}')
 
     def do_POST(self):
         content_length = int(self.headers.get('Content-Length', 0))
@@ -268,19 +295,12 @@ class WebhookAPIHandler(BaseHTTPRequestHandler):
                 with open(filepath, 'wb') as f: f.write(img_data)
                 public_url = f"{WEB_APP_URL}/media/{filename}"
                 self.wfile.write(json.dumps({"url": public_url}).encode('utf-8'))
-            except Exception as e:
-                self.wfile.write(json.dumps({"error": str(e)}).encode('utf-8'))
+            except Exception as e: self.wfile.write(json.dumps({"error": str(e)}).encode('utf-8'))
             return
             
         elif self.path == '/api/giveaway':
             g = get_giveaway()
-            resp = {
-                "is_active": g.get("is_active", 0),
-                "description": g.get("description", ""),
-                "prize": g.get("prize", ""),
-                "end_date": g.get("end_date", ""),
-                "participants_count": len(g.get("participants", {}))
-            }
+            resp = {"is_active": g.get("is_active", 0), "description": g.get("description", ""), "prize": g.get("prize", ""), "end_date": g.get("end_date", ""), "participants_count": len(g.get("participants", {}))}
             self.wfile.write(json.dumps(resp).encode('utf-8'))
             return
 
@@ -288,14 +308,12 @@ class WebhookAPIHandler(BaseHTTPRequestHandler):
             user_id = str(data.get('id', ''))
             username = data.get('username', 'Anonimo')
             g = get_giveaway()
-            
             if not g.get("is_active"):
                 self.wfile.write(json.dumps({"success": False, "error": "Evento chiuso al momento."}).encode('utf-8'))
                 return
             if user_id in g.get("participants", {}):
                 self.wfile.write(json.dumps({"success": False, "error": "Sei già iscritto a questo evento!"}).encode('utf-8'))
                 return
-                
             g.setdefault("participants", {})[user_id] = username
             save_giveaway(g)
             self.wfile.write(json.dumps({"success": True}).encode('utf-8'))
@@ -306,20 +324,17 @@ class WebhookAPIHandler(BaseHTTPRequestHandler):
             username = data.get("username", "Anonimo")
             desc = data.get("description", "")
             budget = data.get("budget", "")
-            
             qid = db_save_quote(user_id, username, desc, budget)
             
+            # NOTIFICA ADMIN NUOVO PREVENTIVO (AUTODISTRUZIONE 5 MINUTI)
             if ADMIN_ID and ADMIN_ID != 0:
-                try: bot.send_message(ADMIN_ID, f"💡 <b>NUOVO TICKET SVILUPPO IT!</b>\nDa: @{username} (ID: {user_id})\nBudget: {budget}\n\n👉 Apri 'Gestione Servizi Digitali' -> 'Preventivi su Misura' per rispondere.", parse_mode="HTML")
-                except: pass
+                send_admin_notification(ADMIN_ID, f"💡 <b>NUOVO TICKET SVILUPPO IT!</b>\nDa: @{username} (ID: {user_id})\nBudget: {budget}\n\n👉 Apri 'Gestione Servizi Digitali' -> 'Preventivi su Misura' per rispondere.", delay=300)
             self.wfile.write(json.dumps({"success": True}).encode('utf-8'))
 
         elif self.path == '/api/quotes/action':
             quote_id = data.get("quote_id")
             action = data.get("action")
             user_id = data.get("user_id")
-            
-            # NUOVA API: CANCELLAZIONE DEFINITIVA DAL REGISTRO
             if action == 'DELETE':
                 conn = get_db()
                 conn.execute("DELETE FROM quotes WHERE id = ?", (quote_id,))
@@ -327,36 +342,26 @@ class WebhookAPIHandler(BaseHTTPRequestHandler):
                 conn.close()
                 self.wfile.write(json.dumps({"success": True}).encode('utf-8'))
                 return
-
             conn = get_db()
             q = conn.execute("SELECT * FROM quotes WHERE id = ?", (quote_id,)).fetchone()
             conn.close()
-            
             if not q:
                 self.wfile.write(json.dumps({"error": "Preventivo non trovato"}).encode('utf-8'))
                 return
-
             if action == 'REJECT':
                 db_update_quote(quote_id, "REJECTED_BY_USER", q['price'], q['admin_reply'])
                 if ADMIN_ID and ADMIN_ID != 0:
-                    try: bot.send_message(ADMIN_ID, f"❌ Il cliente (ID:{user_id}) ha rifiutato l'offerta per il Ticket #{quote_id}.")
-                    except: pass
+                    send_admin_notification(ADMIN_ID, f"❌ Il cliente (ID:{user_id}) ha rifiutato l'offerta per il Ticket #{quote_id}.", delay=300)
                 self.wfile.write(json.dumps({"success": True}).encode('utf-8'))
-
             elif action == 'ACCEPT':
                 secure_hash = "".join(random.choices("ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789", k=6))
                 pratica_code = f"PR-DEV{secure_hash[:4]}"
-                
                 cart = [{"name": "Sviluppo IT su Misura", "qty": 1, "price": q['price'], "category": "Servizi"}]
                 address = f"PROGETTO APPROVATO:\n{q['description']}\n\nAccordo: {q['admin_reply']}\nSaldo concordato in chat."
-                
                 order_id = db_save_order(user_id, q['username'], cart, q['price'], address, "SERVICE", pratica_code)
                 db_update_quote(quote_id, "CONVERTED_TO_ORDER", q['price'], q['admin_reply'])
-                
                 if ADMIN_ID and ADMIN_ID != 0:
-                    try: bot.send_message(ADMIN_ID, f"🎉 <b>PREVENTIVO ACCETTATO!</b>\nGenerata la Pratica: <b>{pratica_code}</b> per il servizio IT da {q['price']}€.", parse_mode="HTML")
-                    except: pass
-                    
+                    send_admin_notification(ADMIN_ID, f"🎉 <b>PREVENTIVO ACCETTATO!</b>\nGenerata la Pratica: <b>{pratica_code}</b> per il servizio IT da {q['price']}€.", delay=300)
                 self.wfile.write(json.dumps({"success": True, "pratica_code": pratica_code}).encode('utf-8'))
 
         elif self.path == '/api/order':
@@ -368,26 +373,13 @@ class WebhookAPIHandler(BaseHTTPRequestHandler):
 
             secure_hash = "".join(random.choices("ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789", k=6))
             pratica_code = f"PR-{secure_hash}"
-
-            is_digital = any(
-                any(keyword in str(item.get("category", "")).lower() or keyword in str(item.get("name", "")).lower() 
-                for keyword in ["servizi", "exchange", "buoni amazon", "buoni q8", "amazon", "q8"]) 
-                for item in cart
-            )
+            is_digital = any(any(keyword in str(item.get("category", "")).lower() or keyword in str(item.get("name", "")).lower() for keyword in ["servizi", "exchange", "buoni amazon", "buoni q8", "amazon", "q8"]) for item in cart)
             order_type = "SERVICE" if is_digital else "PHYSICAL"
 
             order_id = db_save_order(user_id, username, cart, total, address, order_type, pratica_code)
             items_text = "\n".join([f"• {i['qty']}x {i['name']} - \u20ac{i['price']}" for i in cart])
 
-            user_msg = (
-                f"✅ <b>Richiesta Registrata con Successo!</b>\n\n"
-                f"🏷 <b>Codice Pratica:</b> <code>{pratica_code}</code>\n"
-                f"<i>Usa questo codice nel Tracker del sito per monitorare l'ordine.</i>\n\n"
-                f"📦 <b>Riepilogo:</b>\n{items_text}\n\n"
-                f"📍 <b>Dati Recapito/Info:</b>\n{address}\n\n"
-                f"💰 <b>Totale:</b> \u20ac{total}\n\n"
-                f"⏳ <i>Un operatore sta elaborando la tua richiesta. Riceverai aggiornamenti live qui.</i>"
-            )
+            user_msg = f"✅ <b>Richiesta Registrata con Successo!</b>\n\n🏷 <b>Codice Pratica:</b> <code>{pratica_code}</code>\n<i>Usa questo codice nel Tracker del sito per monitorare l'ordine.</i>\n\n📦 <b>Riepilogo:</b>\n{items_text}\n\n📍 <b>Dati Recapito/Info:</b>\n{address}\n\n💰 <b>Totale:</b> \u20ac{total}\n\n⏳ <i>Un operatore sta elaborando la tua richiesta. Riceverai aggiornamenti live qui.</i>"
             
             if user_id and str(user_id) != "0":
                 try:
@@ -395,12 +387,10 @@ class WebhookAPIHandler(BaseHTTPRequestHandler):
                     db_update_order_msg_id(order_id, sent.message_id) 
                 except: pass
 
+            # NOTIFICA ADMIN NUOVO ORDINE (AUTODISTRUZIONE 5 MINUTI)
             if ADMIN_ID and ADMIN_ID != 0:
-                try:
-                    alert_type = "🛠 NUOVO SERVIZIO" if is_digital else "📦 NUOVO ORDINE FISICO"
-                    bot.send_message(ADMIN_ID, f"🔔 <b>{alert_type} RICEVUTO!</b>\nPratica: <b>{pratica_code}</b> da @{username}.\n👉 Apri /admin per gestirlo.", parse_mode="HTML")
-                except: pass
-
+                alert_type = "🛠 NUOVO SERVIZIO" if is_digital else "📦 NUOVO ORDINE FISICO"
+                send_admin_notification(ADMIN_ID, f"🔔 <b>{alert_type} RICEVUTO!</b>\nPratica: <b>{pratica_code}</b> da @{username}.\n👉 Apri /admin per gestirlo.", delay=300)
             self.wfile.write(json.dumps({"success": True, "order_id": order_id, "pratica_code": pratica_code}).encode('utf-8'))
 
 def run_health_server():
@@ -454,6 +444,8 @@ def get_media_done_keyboard():
 @bot.message_handler(commands=['start'])
 def send_welcome(message):
     user_id = message.chat.id
+    try: bot.delete_message(user_id, message.message_id)
+    except: pass
     username = message.from_user.username
     threading.Thread(target=db_register_user, args=(user_id, username), daemon=True).start()
     welcome_text = (
@@ -473,21 +465,47 @@ def send_welcome(message):
 def admin_panel(message):
     user_id = message.chat.id
     if user_id != ADMIN_ID: return
-    user_states.pop(user_id, None)
-    bot.send_message(user_id, "⚙️ <b>PANNELLO GESTIONALE CAVEAU</b> 🎭\n\nScegli la sezione da gestire:", parse_mode="HTML", reply_markup=get_admin_main_keyboard())
+    try: bot.delete_message(user_id, message.message_id)
+    except: pass
+    
+    clear_tracked(user_id)
+    state = user_states.setdefault(user_id, {})
+    state["step"] = None
+    
+    try:
+        sent = bot.send_message(user_id, "⚙️ <b>PANNELLO GESTIONALE CAVEAU</b> 🎭\n\nScegli la sezione da gestire:", parse_mode="HTML", reply_markup=get_admin_main_keyboard())
+        state["panel_id"] = sent.message_id
+    except: pass
 
 @bot.callback_query_handler(func=lambda call: True)
 def handle_callbacks(call):
     user_id = call.message.chat.id
     if user_id != ADMIN_ID: return
     data = call.data
+    state = user_states.setdefault(user_id, {})
+
+    # Se clicchiamo una categoria dal pannello, marchiamo il pannello come Ancora Sicura
+    if data in ["dash_ord_phys", "dash_ord_serv", "dash_ord_serv_std", "dash_quotes", "m_hist", "hist_shipped", "hist_cancelled", "m_pts", "m_prod", "p_add", "p_list", "m_gw"]:
+        state["panel_id"] = call.message.message_id
+        clear_tracked(user_id)
 
     if data == "m_main":
-        user_states.pop(user_id, None)
-        bot.edit_message_text("⚙️ <b>PANNELLO GESTIONALE CAVEAU</b>", user_id, call.message.message_id, parse_mode="HTML", reply_markup=get_admin_main_keyboard())
+        clear_tracked(user_id)
+        state["step"] = None
+        panel_id = state.get("panel_id")
+        success = False
+        if panel_id:
+            try:
+                bot.edit_message_text("⚙️ <b>PANNELLO GESTIONALE CAVEAU</b> 🎭\n\nScegli la sezione da gestire:", user_id, panel_id, parse_mode="HTML", reply_markup=get_admin_main_keyboard())
+                success = True
+            except: pass
+        if not success:
+            try:
+                sent = bot.send_message(user_id, "⚙️ <b>PANNELLO GESTIONALE CAVEAU</b> 🎭\n\nScegli la sezione da gestire:", parse_mode="HTML", reply_markup=get_admin_main_keyboard())
+                state["panel_id"] = sent.message_id
+            except: pass
 
     elif data == "m_gw":
-        user_states.pop(user_id, None)
         gw = get_giveaway()
         st_val = gw.get("is_active", 1)
         status = "🟢 ATTIVO" if st_val else "🔴 INATTIVO"
@@ -524,16 +542,25 @@ def handle_callbacks(call):
         call.data = "m_gw"
         handle_callbacks(call)
 
-    # --- SOSTITUITO SEND_MESSAGE CON EDIT_MESSAGE_TEXT PER UX FLUIDA (ZERO SPAZZATURA) ---
     elif data == "gw_prize":
-        user_states[user_id] = {"step": "WAITING_GW_PRIZE"}
-        bot.edit_message_text("🏆 Scrivi il nuovo PREMIO in palio (es. 100€ Bitcoin):", user_id, call.message.message_id, reply_markup=get_cancel_keyboard())
+        state["step"] = "WAITING_GW_PRIZE"
+        try:
+            sent = bot.send_message(user_id, "🏆 Scrivi il nuovo PREMIO in palio (es. 100€ Bitcoin):", reply_markup=get_cancel_keyboard())
+            track_msg(user_id, sent.message_id)
+        except: pass
     elif data == "gw_desc":
-        user_states[user_id] = {"step": "WAITING_GW_DESC"}
-        bot.edit_message_text("📝 Scrivi la nuova DESCRIZIONE dell'evento:", user_id, call.message.message_id, reply_markup=get_cancel_keyboard())
+        state["step"] = "WAITING_GW_DESC"
+        try:
+            sent = bot.send_message(user_id, "📝 Scrivi la nuova DESCRIZIONE dell'evento:", reply_markup=get_cancel_keyboard())
+            track_msg(user_id, sent.message_id)
+        except: pass
     elif data == "gw_date":
-        user_states[user_id] = {"step": "WAITING_GW_DATE"}
-        bot.edit_message_text("⏳ Scrivi la SCADENZA (es. 31 Ottobre):", user_id, call.message.message_id, reply_markup=get_cancel_keyboard())
+        state["step"] = "WAITING_GW_DATE"
+        try:
+            sent = bot.send_message(user_id, "⏳ Scrivi la SCADENZA (es. 31 Ottobre):", reply_markup=get_cancel_keyboard())
+            track_msg(user_id, sent.message_id)
+        except: pass
+
     elif data == "gw_list":
         gw = get_giveaway()
         parts = gw.get("participants", {})
@@ -542,7 +569,12 @@ def handle_callbacks(call):
             return
         msg = "📋 <b>Lista Iscritti Giveaway:</b>\n\n"
         for uid, uname in parts.items(): msg += f"👤 {uname} (ID: <code>{uid}</code>)\n"
-        bot.edit_message_text(msg, user_id, call.message.message_id, parse_mode='HTML', reply_markup=get_cancel_keyboard())
+        try:
+            sent = bot.send_message(user_id, msg, parse_mode='HTML', reply_markup=get_cancel_keyboard())
+            track_msg(user_id, sent.message_id)
+        except: pass
+        bot.answer_callback_query(call.id, "Lista generata!")
+
     elif data == "gw_draw":
         gw = get_giveaway()
         parts = gw.get("participants", {})
@@ -551,15 +583,20 @@ def handle_callbacks(call):
             return
         winner_id = random.choice(list(parts.keys()))
         winner_name = parts[winner_id]
-        bot.edit_message_text(f"🎉 <b>ESTRAZIONE COMPLETATA!</b>\n\n👤 <b>Vincitore:</b> {winner_name}\n🆔 <b>ID:</b> <code>{winner_id}</code>\n\nContattalo per consegnare il premio!", user_id, call.message.message_id, parse_mode='HTML', reply_markup=get_admin_main_keyboard())
+        try:
+            sent = bot.send_message(user_id, f"🎉 <b>ESTRAZIONE COMPLETATA!</b>\n\n👤 <b>Vincitore:</b> {winner_name}\n🆔 <b>ID:</b> <code>{winner_id}</code>\n\nContattalo per consegnare il premio!", parse_mode='HTML', reply_markup=get_cancel_keyboard())
+            track_msg(user_id, sent.message_id)
+        except: pass
         bot.answer_callback_query(call.id, f"🎉 Ha vinto {winner_name}!", show_alert=True)
 
     elif data == "dash_ord_phys":
-        user_states.pop(user_id, None)
         orders = [o for o in db_get_all_orders() if o.get('status') in ['PENDING', 'ACCEPTED'] and o.get('order_type') != 'SERVICE']
         bot.edit_message_text("📦 <b>ORDINI FISICI IN GESTIONE</b>", user_id, call.message.message_id, parse_mode="HTML")
         if not orders:
-            bot.send_message(user_id, "✅ Nessun ordine fisico in attesa.", reply_markup=get_cancel_keyboard())
+            try:
+                sent = bot.send_message(user_id, "✅ Nessun ordine fisico in attesa.", reply_markup=get_cancel_keyboard())
+                track_msg(user_id, sent.message_id)
+            except: pass
             return
         for o in orders:
             items = json.loads(o.get('items', '[]')) if isinstance(o.get('items'), str) else o.get('items', [])
@@ -583,12 +620,16 @@ def handle_callbacks(call):
                 markup.add(types.InlineKeyboardButton("✍️ Aggiornamento Custom", callback_data=f"act_upd_{o['id']}_{u_id}_{m_id}"))
                 markup.add(types.InlineKeyboardButton("❌ Annulla Ordine", callback_data=f"act_cnc_{o['id']}_{u_id}_{m_id}"))
                 
-            try: bot.send_message(user_id, msg, parse_mode="HTML", reply_markup=markup)
+            try: 
+                sent = bot.send_message(user_id, msg, parse_mode="HTML", reply_markup=markup)
+                track_msg(user_id, sent.message_id)
             except: pass
-        bot.send_message(user_id, "👇 Fine lista:", reply_markup=get_cancel_keyboard())
+        try:
+            sent = bot.send_message(user_id, "👇 Fine lista:", reply_markup=get_cancel_keyboard())
+            track_msg(user_id, sent.message_id)
+        except: pass
 
     elif data == "dash_ord_serv":
-        user_states.pop(user_id, None)
         markup = types.InlineKeyboardMarkup(row_width=1)
         markup.add(
             types.InlineKeyboardButton("🛒 Servizi Standard (Exchange, Buoni)", callback_data="dash_ord_serv_std"),
@@ -598,11 +639,13 @@ def handle_callbacks(call):
         bot.edit_message_text("🛠 <b>GESTIONE SERVIZI DIGITALI</b>\n\nScegli il reparto operativo:", user_id, call.message.message_id, parse_mode="HTML", reply_markup=markup)
 
     elif data == "dash_ord_serv_std":
-        user_states.pop(user_id, None)
         orders = [o for o in db_get_all_orders() if o.get('status') in ['PENDING', 'ACCEPTED'] and o.get('order_type') == 'SERVICE']
         bot.edit_message_text("🛠 <b>SERVIZI STANDARD IN LAVORAZIONE</b>", user_id, call.message.message_id, parse_mode="HTML")
         if not orders:
-            bot.send_message(user_id, "✅ Nessun servizio standard in lavorazione.", reply_markup=get_cancel_keyboard())
+            try:
+                sent = bot.send_message(user_id, "✅ Nessun servizio standard in lavorazione.", reply_markup=get_cancel_keyboard())
+                track_msg(user_id, sent.message_id)
+            except: pass
             return
         for o in orders:
             items = json.loads(o.get('items', '[]')) if isinstance(o.get('items'), str) else o.get('items', [])
@@ -623,16 +666,23 @@ def handle_callbacks(call):
                 markup.add(types.InlineKeyboardButton("✍️ Aggiornamento Custom", callback_data=f"act_upd_{o['id']}_{u_id}_{m_id}"))
                 markup.add(types.InlineKeyboardButton("❌ Annulla Servizio", callback_data=f"act_cnc_{o['id']}_{u_id}_{m_id}"))
                 
-            try: bot.send_message(user_id, msg, parse_mode="HTML", reply_markup=markup)
+            try: 
+                sent = bot.send_message(user_id, msg, parse_mode="HTML", reply_markup=markup)
+                track_msg(user_id, sent.message_id)
             except: pass
-        bot.send_message(user_id, "👇 Fine lista:", reply_markup=get_cancel_keyboard())
+        try:
+            sent = bot.send_message(user_id, "👇 Fine lista:", reply_markup=get_cancel_keyboard())
+            track_msg(user_id, sent.message_id)
+        except: pass
 
     elif data == "dash_quotes":
-        user_states.pop(user_id, None)
         quotes = db_get_pending_quotes()
         bot.edit_message_text("💡 <b>PREVENTIVI SU MISURA IN ATTESA</b>\n\nAnalizza le richieste e formula un'offerta.", user_id, call.message.message_id, parse_mode="HTML")
         if not quotes:
-            bot.send_message(user_id, "✅ Nessuna richiesta di sviluppo in attesa.", reply_markup=get_cancel_keyboard())
+            try:
+                sent = bot.send_message(user_id, "✅ Nessuna richiesta di sviluppo in attesa.", reply_markup=get_cancel_keyboard())
+                track_msg(user_id, sent.message_id)
+            except: pass
             return
         
         for q in quotes:
@@ -640,13 +690,24 @@ def handle_callbacks(call):
             markup = types.InlineKeyboardMarkup()
             markup.add(types.InlineKeyboardButton("✍️ Formula Preventivo", callback_data=f"act_quote_{q['id']}"))
             markup.add(types.InlineKeyboardButton("❌ Non Fattibile (Rifiuta)", callback_data=f"rej_quote_{q['id']}"))
-            bot.send_message(user_id, msg, parse_mode="HTML", reply_markup=markup)
-        bot.send_message(user_id, "👇 Opzioni:", reply_markup=get_cancel_keyboard())
+            try:
+                sent = bot.send_message(user_id, msg, parse_mode="HTML", reply_markup=markup)
+                track_msg(user_id, sent.message_id)
+            except: pass
+        try:
+            sent = bot.send_message(user_id, "👇 Opzioni:", reply_markup=get_cancel_keyboard())
+            track_msg(user_id, sent.message_id)
+        except: pass
 
     elif data.startswith("act_quote_"):
         q_id = data.split("_")[2]
-        user_states[user_id] = {"step": "WAITING_QUOTE_OFFER", "q_id": q_id}
-        bot.edit_message_text("✍️ Inserisci il <b>PREZZO</b> e la tua <b>RISPOSTA</b> separati da un trattino.\n\n<i>Esempio: 450 - Il bot si può fare, consegna in 4 giorni.</i>", user_id, call.message.message_id, parse_mode="HTML", reply_markup=get_cancel_keyboard())
+        state["step"] = "WAITING_QUOTE_OFFER"
+        state["q_id"] = q_id
+        clear_tracked(user_id)
+        try:
+            sent = bot.send_message(user_id, "✍️ Inserisci il <b>PREZZO</b> e la tua <b>RISPOSTA</b> separati da un trattino.\n\n<i>Esempio: 450 - Il bot si può fare, consegna in 4 giorni.</i>", parse_mode="HTML", reply_markup=get_cancel_keyboard())
+            track_msg(user_id, sent.message_id)
+        except: pass
 
     elif data.startswith("rej_quote_"):
         q_id = data.split("_")[2]
@@ -669,8 +730,12 @@ def handle_callbacks(call):
         elif action == "meet": step_name, prompt_txt = "WAITING_MEETUP", f"📍 Scrivi i <b>DETTAGLI DEL MEET UP</b> per la pratica {pratica_code}:"
         elif action == "upd": step_name, prompt_txt = "WAITING_UPDATE", f"✍️ Scrivi l'<b>AGGIORNAMENTO CUSTOM</b> per la pratica {pratica_code}:"
         
-        user_states[user_id] = {"step": step_name, "o_id": o_id, "u_id": u_id, "m_id": m_id}
-        bot.edit_message_text(prompt_txt, user_id, call.message.message_id, parse_mode="HTML", reply_markup=get_cancel_keyboard())
+        state.update({"step": step_name, "o_id": o_id, "u_id": u_id, "m_id": m_id})
+        clear_tracked(user_id)
+        try:
+            sent = bot.send_message(user_id, prompt_txt, parse_mode="HTML", reply_markup=get_cancel_keyboard())
+            track_msg(user_id, sent.message_id)
+        except: pass
 
     elif data.startswith("act_acc_") or data.startswith("act_work_") or data.startswith("act_cnc_"):
         parts = data.split("_")
@@ -721,30 +786,46 @@ def handle_callbacks(call):
         except: pass
 
     elif data == "m_hist":
-        user_states.pop(user_id, None)
         bot.edit_message_text("📜 <b>STORICO ARCHIVI</b>\n\nScegli quale registro visualizzare:", user_id, call.message.message_id, parse_mode="HTML", reply_markup=get_admin_hist_keyboard())
 
     elif data == "hist_shipped":
         orders = [o for o in db_get_all_orders() if o.get('status') == 'SHIPPED']
         if not orders:
-            bot.send_message(user_id, "📭 Nessun ordine completato nello storico.", reply_markup=get_cancel_keyboard())
+            try:
+                sent = bot.send_message(user_id, "📭 Nessun ordine completato nello storico.", reply_markup=get_cancel_keyboard())
+                track_msg(user_id, sent.message_id)
+            except: pass
             return
-        bot.send_message(user_id, f"🟩 <b>ARCHIVIO COMPLETATI</b> ({len(orders)} totali):", parse_mode="HTML")
+        try:
+            sent = bot.send_message(user_id, f"🟩 <b>ARCHIVIO COMPLETATI</b> ({len(orders)} totali):", parse_mode="HTML")
+            track_msg(user_id, sent.message_id)
+        except: pass
         for o in orders:
             items = json.loads(o.get('items', '[]')) if isinstance(o.get('items'), str) else o.get('items', [])
             items_str = "\n".join([f"  • {i['name']} ({i['qty']})" for i in items]) if items else "  • Nessun dettaglio"
             pratica_code = o.get('pratica_code') if o.get('pratica_code') else f"PR-LGCY-{o.get('id')}"
             msg = f"✅ PRATICA {pratica_code} [COMPLETATO]\n👤 @{o.get('username')} (ID: {o.get('user_id')})\n📍 {o.get('address', 'N/D')}\n📝 Esito/Note: {o.get('tracking_code', 'N/D')}\n\n📦:\n{items_str}\n────────────────────────"
-            try: bot.send_message(user_id, msg)
+            try: 
+                sent = bot.send_message(user_id, msg)
+                track_msg(user_id, sent.message_id)
             except: pass
-        bot.send_message(user_id, "👇 Fine registro completati:", reply_markup=get_cancel_keyboard())
+        try:
+            sent = bot.send_message(user_id, "👇 Fine registro completati:", reply_markup=get_cancel_keyboard())
+            track_msg(user_id, sent.message_id)
+        except: pass
 
     elif data == "hist_cancelled":
         orders = [o for o in db_get_all_orders() if o.get('status') == 'CANCELLED']
         if not orders:
-            bot.send_message(user_id, "📭 Nessun ordine annullato.", reply_markup=get_cancel_keyboard())
+            try:
+                sent = bot.send_message(user_id, "📭 Nessun ordine annullato.", reply_markup=get_cancel_keyboard())
+                track_msg(user_id, sent.message_id)
+            except: pass
             return
-        bot.send_message(user_id, f"🟥 <b>ARCHIVIO ANNULLATI</b> ({len(orders)} totali):", parse_mode="HTML")
+        try:
+            sent = bot.send_message(user_id, f"🟥 <b>ARCHIVIO ANNULLATI</b> ({len(orders)} totali):", parse_mode="HTML")
+            track_msg(user_id, sent.message_id)
+        except: pass
         for o in orders:
             items = json.loads(o.get('items', '[]')) if isinstance(o.get('items'), str) else o.get('items', [])
             items_str = "\n".join([f"  • {i['name']} ({i['qty']})" for i in items]) if items else "  • Nessun dettaglio"
@@ -752,12 +833,16 @@ def handle_callbacks(call):
             msg = f"❌ PRATICA {pratica_code} [ANNULLATO]\n👤 @{o.get('username')} (ID: {o.get('user_id')})\n📍 {o.get('address', 'N/D')}\n\n📦:\n{items_str}\n────────────────────────"
             markup = types.InlineKeyboardMarkup()
             markup.add(types.InlineKeyboardButton("🔄 Ripristina Ordine in Dashboard", callback_data=f"act_restore_{o['id']}_{o['user_id']}_{o.get('user_message_id', 0)}"))
-            try: bot.send_message(user_id, msg, reply_markup=markup)
+            try: 
+                sent = bot.send_message(user_id, msg, reply_markup=markup)
+                track_msg(user_id, sent.message_id)
             except: pass
-        bot.send_message(user_id, "👇 Fine registro annullati:", reply_markup=get_cancel_keyboard())
+        try:
+            sent = bot.send_message(user_id, "👇 Fine registro annullati:", reply_markup=get_cancel_keyboard())
+            track_msg(user_id, sent.message_id)
+        except: pass
 
     elif data == "m_pts":
-        user_states.pop(user_id, None)
         msg = (
             "💎 <b>MOTORE PUNTI INTELLIGENTE</b>\n\n"
             "Puoi caricare punti usando 4 metodi:\n\n"
@@ -769,30 +854,32 @@ def handle_callbacks(call):
         bot.edit_message_text(msg, user_id, call.message.message_id, parse_mode="HTML", reply_markup=get_cancel_keyboard())
 
     elif data == "m_prod":
-        user_states.pop(user_id, None)
         bot.edit_message_text("📦 <b>GESTIONE PRODOTTI & MEDIA</b>\n\nCosa desideri fare?", user_id, call.message.message_id, parse_mode="HTML", reply_markup=get_admin_prod_keyboard())
 
     elif data == "p_add":
-        user_states.pop(user_id, None)
         markup = types.InlineKeyboardMarkup(row_width=1)
-        cats = ["Meetup", "Documenti falsi", "Banconote false", "Monete false", "Coca", "Weed", "Hash", "Telefoni Criptati", "Servizi", "Giveaway", "Altro"]
+        cats = ["Meetup", "Documenti falsi", "Banconote false", "Monete false", "Coca", "Weed", "Hash", "Telefoni Criptati", "Servizi", "Altro"]
         markup.add(*[types.InlineKeyboardButton(c, callback_data=f"addcat_{c}") for c in cats])
         markup.add(types.InlineKeyboardButton("🔙 Torna al Menu Principale", callback_data="m_main"))
         bot.edit_message_text("Seleziona la categoria del prodotto:", user_id, call.message.message_id, reply_markup=markup)
 
     elif data.startswith("addcat_"):
         cat = data.replace("addcat_", "")
-        user_states[user_id] = {"category": cat, "step": "WAITING_MEDIA", "media_list": []}
+        state.update({"category": cat, "step": "WAITING_MEDIA", "media_list": []})
         bot.edit_message_text(f"Categoria: {cat}\n\n📸 Invia ORA Foto/Video del prodotto.", user_id, call.message.message_id, parse_mode="HTML", reply_markup=get_media_done_keyboard())
 
     elif data == "p_list":
-        user_states.pop(user_id, None)
         prods = db_get_products()
         if not prods:
-            bot.edit_message_text("📭 Nessun prodotto.", user_id, call.message.message_id, reply_markup=get_cancel_keyboard())
+            try:
+                sent = bot.send_message(user_id, "📭 Nessun prodotto.", reply_markup=get_cancel_keyboard())
+                track_msg(user_id, sent.message_id)
+            except: pass
             return
-        # Sostituiamo il menu in alto per pulire la chat, i prodotti verranno accodati.
-        bot.edit_message_text("📋 <b>LISTA PRODOTTI</b>\nEcco tutti i prodotti in vetrina:", user_id, call.message.message_id, parse_mode="HTML")
+        try:
+            sent_head = bot.send_message(user_id, "📋 <b>LISTA PRODOTTI IN VETRINA</b>:", parse_mode="HTML")
+            track_msg(user_id, sent_head.message_id)
+        except: pass
         for p in prods:
             st_val = p.get('in_showcase', 1) == 1
             status_str = '🟢 In Vetrina' if st_val else '🔴 Nascosto'
@@ -800,8 +887,14 @@ def handle_callbacks(call):
             markup = types.InlineKeyboardMarkup(row_width=2)
             markup.add(types.InlineKeyboardButton("👁️ On/Off", callback_data=f"tog_{p['id']}_{st_val}"), types.InlineKeyboardButton("✏️ Modifica", callback_data=f"edit_{p['id']}"))
             markup.add(types.InlineKeyboardButton("🗑️ Elimina", callback_data=f"del_{p['id']}"))
-            bot.send_message(user_id, msg, reply_markup=markup)
-        bot.send_message(user_id, "👇 Opzioni:", reply_markup=get_cancel_keyboard())
+            try:
+                sent = bot.send_message(user_id, msg, reply_markup=markup)
+                track_msg(user_id, sent.message_id)
+            except: pass
+        try:
+            sent_end = bot.send_message(user_id, "👇 Opzioni:", reply_markup=get_cancel_keyboard())
+            track_msg(user_id, sent_end.message_id)
+        except: pass
 
     elif data.startswith("edit_"):
         p_id = data.split("_")[1]
@@ -813,23 +906,38 @@ def handle_callbacks(call):
             types.InlineKeyboardButton("📸 Sostituisci Foto/Video", callback_data=f"edmedia_{p_id}"),
             types.InlineKeyboardButton("🔙 Torna alla Lista", callback_data="p_list")
         )
-        bot.edit_message_text("Cosa vuoi modificare?", user_id, call.message.message_id, reply_markup=markup)
+        clear_tracked(user_id)
+        try: bot.delete_message(user_id, call.message.message_id)
+        except: pass
+        bot.send_message(user_id, "Cosa vuoi modificare di questo prodotto?", reply_markup=markup)
 
     elif data.startswith("edname_"):
-        user_states[user_id] = {"step": "EDIT_NAME", "target_product": data.split("_")[1]}
-        bot.edit_message_text("✏️ Scrivi il NUOVO NOME:", user_id, call.message.message_id, reply_markup=get_cancel_keyboard())
+        state.update({"step": "EDIT_NAME", "target_product": data.split("_")[1]})
+        try:
+            sent = bot.send_message(user_id, "✏️ Scrivi il NUOVO NOME:", reply_markup=get_cancel_keyboard())
+            track_msg(user_id, sent.message_id)
+        except: pass
 
     elif data.startswith("eddesc_"):
-        user_states[user_id] = {"step": "EDIT_DESC", "target_product": data.split("_")[1]}
-        bot.edit_message_text("📝 Scrivi la NUOVA DESCRIZIONE:", user_id, call.message.message_id, reply_markup=get_cancel_keyboard())
+        state.update({"step": "EDIT_DESC", "target_product": data.split("_")[1]})
+        try:
+            sent = bot.send_message(user_id, "📝 Scrivi la NUOVA DESCRIZIONE:", reply_markup=get_cancel_keyboard())
+            track_msg(user_id, sent.message_id)
+        except: pass
 
     elif data.startswith("edprc_"):
-        user_states[user_id] = {"step": "EDIT_PRICES", "target_product": data.split("_")[1]}
-        bot.edit_message_text("💰 Scrivi le NUOVE VARIANTI (es. 10pz 140, 20pz 250):", user_id, call.message.message_id, reply_markup=get_cancel_keyboard())
+        state.update({"step": "EDIT_PRICES", "target_product": data.split("_")[1]})
+        try:
+            sent = bot.send_message(user_id, "💰 Scrivi le NUOVE VARIANTI (es. 10pz 140, 20pz 250):", reply_markup=get_cancel_keyboard())
+            track_msg(user_id, sent.message_id)
+        except: pass
 
     elif data.startswith("edmedia_"):
-        user_states[user_id] = {"step": "WAITING_MEDIA_EDIT", "target_product": data.split("_")[1], "media_list": []}
-        bot.edit_message_text("📸 Invia le nuove foto/video.", user_id, call.message.message_id, reply_markup=get_media_done_keyboard())
+        state.update({"step": "WAITING_MEDIA_EDIT", "target_product": data.split("_")[1], "media_list": []})
+        try:
+            sent = bot.send_message(user_id, "📸 Invia le nuove foto/video.", reply_markup=get_media_done_keyboard())
+            track_msg(user_id, sent.message_id)
+        except: pass
 
     elif data.startswith("tog_"):
         parts = data.split("_")
@@ -858,28 +966,40 @@ def handle_callbacks(call):
         
         if st.get("step") == "WAITING_MEDIA":
             st["step"] = "WAITING_NAME"
-            bot.edit_message_text(f"✅ Caricati {len(st['media_list'])} file!\n\n📝 Ora invia il NOME del prodotto:", user_id, call.message.message_id, reply_markup=get_cancel_keyboard())
+            try:
+                sent = bot.send_message(user_id, f"✅ Caricati {len(st['media_list'])} file!\n\n📝 Ora invia il NOME del prodotto:", reply_markup=get_cancel_keyboard())
+                track_msg(user_id, sent.message_id)
+            except: pass
         elif st.get("step") == "WAITING_MEDIA_EDIT":
             media_list = st["media_list"]
             db_update_product(st["target_product"], {"media_list": media_list, "media_url": media_list[0]["url"], "media_type": media_list[0]["type"]})
-            bot.edit_message_text("✅ Media aggiornati!", user_id, call.message.message_id, reply_markup=get_admin_main_keyboard())
-            user_states.pop(user_id, None)
+            reset_panel_and_notify(user_id, "✅ Media aggiornati con successo!")
 
 @bot.message_handler(content_types=['photo', 'video'])
 def handle_media(message):
     user_id = message.chat.id
     if user_id != ADMIN_ID: return
+    
+    # OPSEC: la foto che carichi si cancella all'istante
+    try: bot.delete_message(user_id, message.message_id)
+    except: pass
+    
     state = user_states.get(user_id, {})
     if state.get("step") not in ["WAITING_MEDIA", "WAITING_MEDIA_EDIT"]: return
 
-    wait_msg = bot.reply_to(message, "⏳ Salvataggio sul Server Locale in corso...")
+    try:
+        wait_msg = bot.send_message(user_id, "⏳ Salvataggio sul Server Locale in corso...")
+        track_msg(user_id, wait_msg.message_id)
+    except: wait_msg = None
 
     if message.photo:
         file_id = message.photo[-1].file_id
         media_type, mime, ext = 'image', 'image/jpeg', 'jpg'
     else:
         if message.video.file_size > 20 * 1024 * 1024:
-            bot.edit_message_text("❌ IL VIDEO PESA PIÙ DI 20MB. Telegram lo blocca. Comprimilo.", user_id, wait_msg.message_id)
+            if wait_msg:
+                try: bot.edit_message_text("❌ IL VIDEO PESA PIÙ DI 20MB. Telegram lo blocca. Comprimilo.", user_id, wait_msg.message_id)
+                except: pass
             return
         file_id = message.video.file_id
         media_type, mime, ext = 'video', 'video/mp4', 'mp4'
@@ -894,19 +1014,29 @@ def handle_media(message):
             if "media_list" not in user_states[user_id]: user_states[user_id]["media_list"] = []
             user_states[user_id]["media_list"].append({"url": public_url, "type": media_type})
             tot = len(user_states[user_id]["media_list"])
-            bot.edit_message_text(f"✅ Salvato Localmente!\n📸 Media #{tot} aggiunto.\nContinua o premi Fine.", user_id, wait_msg.message_id, reply_markup=get_media_done_keyboard())
+            if wait_msg:
+                try: bot.edit_message_text(f"✅ Salvato Localmente!\n📸 Media #{tot} aggiunto.\nContinua o premi Fine.", user_id, wait_msg.message_id, reply_markup=get_media_done_keyboard())
+                except: pass
         else:
-            bot.edit_message_text(f"❌ ERRORE SERVER:\n{err}", user_id, wait_msg.message_id)
+            if wait_msg:
+                try: bot.edit_message_text(f"❌ ERRORE SERVER:\n{err}", user_id, wait_msg.message_id)
+                except: pass
     except Exception as e:
-        bot.edit_message_text(f"❌ Errore scaricamento: {e}", user_id, wait_msg.message_id)
+        if wait_msg:
+            try: bot.edit_message_text(f"❌ Errore scaricamento: {e}", user_id, wait_msg.message_id)
+            except: pass
 
 @bot.message_handler(func=lambda m: m.chat.id == ADMIN_ID)
 def handle_admin_text(message):
     user_id = message.chat.id
+    
+    # OPSEC: tutto quello che scrivi si cancella all'istante
+    try: bot.delete_message(user_id, message.message_id)
+    except: pass
+    
     state = user_states.get(user_id, {})
     step = state.get("step")
 
-    # RISPOSTA AL PREVENTIVO DA PARTE DELL'ADMIN
     if step == "WAITING_QUOTE_OFFER":
         try:
             raw = message.text.split("-", 1)
@@ -914,17 +1044,23 @@ def handle_admin_text(message):
             msg_reply = raw[1].strip() if len(raw) > 1 else "Preventivo approvato. Attendo tua conferma per iniziare."
             
             db_update_quote(state["q_id"], "QUOTED", price, msg_reply)
-            bot.reply_to(message, f"✅ Offerta di {price}€ inviata al cliente con successo.", reply_markup=get_admin_main_keyboard())
             
+            # Reset e avviso temporaneo
+            reset_panel_and_notify(user_id, f"✅ Offerta di {price}€ inviata al cliente con successo.")
+            
+            # Notifica al cliente sul bot
             conn = get_db()
             q = conn.execute("SELECT user_id FROM quotes WHERE id = ?", (state["q_id"],)).fetchone()
             conn.close()
             if q and str(q['user_id']) != "0":
                 try: bot.send_message(int(q['user_id']), f"🔔 <b>PREVENTIVO RICEVUTO!</b>\nIl laboratorio ha risposto alla tua richiesta di sviluppo su misura.\n\n👉 Apri il Caveau, vai su 'Servizi su Misura' -> 'Le Tue Richieste' per leggere l'offerta e accettarla.", parse_mode="HTML")
                 except: pass
-            user_states.pop(user_id, None)
         except:
-            bot.reply_to(message, "❌ Formato errato. Devi scrivere: PREZZO - MESSAGGIO\nEs: 400 - Si può fare. Riprova:")
+            clear_tracked(user_id)
+            try:
+                sent = bot.send_message(user_id, "❌ Formato errato. Devi scrivere: PREZZO - MESSAGGIO\nEs: 400 - Si può fare. Riprova:", reply_markup=get_cancel_keyboard())
+                track_msg(user_id, sent.message_id)
+            except: pass
         return
 
     if message.text and message.text.startswith("/punti"):
@@ -950,14 +1086,18 @@ def handle_admin_text(message):
                     conn = get_db()
                     row = conn.execute("SELECT telegram_id FROM users WHERE username = ? COLLATE NOCASE", (username,)).fetchone()
                     conn.close()
-                    if row: target_id = row['telegram_id']
+                    if row:
+                        target_id = row['telegram_id']
                     else:
-                        bot.reply_to(message, f"❌ Nessun utente @{username} trovato nel database del bot.")
+                        reset_panel_and_notify(user_id, f"❌ Nessun utente @{username} trovato nel database del bot.")
                         return
-                elif target_str.upper().startswith("ID_"): target_id = int(target_str.upper().replace("ID_", ""))
-                else: target_id = int(target_str)
+                elif target_str.upper().startswith("ID_"):
+                    target_id = int(target_str.upper().replace("ID_", ""))
+                else:
+                    target_id = int(target_str)
             
-            if target_id is None: raise ValueError("Nessun target valido")
+            if target_id is None:
+                raise ValueError("Nessun target valido")
 
             conn = get_db()
             row = conn.execute("SELECT points FROM users WHERE telegram_id = ?", (target_id,)).fetchone()
@@ -969,11 +1109,11 @@ def handle_admin_text(message):
             ok, new_total = db_update_user_points(target_id, qty)
             if ok:
                 receipt = f"✅ <b>RICARICA PUNTI COMPLETATA</b>\n\n🆔 <b>Target ID:</b> <code>{target_id}</code>\n💎 <b>Nuovo Saldo:</b> {new_total} punti"
-                bot.reply_to(message, receipt, parse_mode="HTML")
+                reset_panel_and_notify(user_id, receipt)
                 try: bot.send_message(target_id, f"💎 <b>Aggiornamento Caveau:</b> il tuo saldo è stato ricaricato. Hai ora <b>{new_total} punti</b>.", parse_mode="HTML")
                 except: pass
             else: 
-                bot.reply_to(message, "❌ Errore critico database durante l'aggiornamento.")
+                reset_panel_and_notify(user_id, "❌ Errore critico database durante l'aggiornamento.")
         except Exception as e: 
             err_msg = (
                 "❌ <b>ERRORE DI SINTASSI</b>\n\n"
@@ -983,29 +1123,26 @@ def handle_admin_text(message):
                 "3️⃣ <code>/punti ID_123456789 100</code>\n"
                 "4️⃣ <i>Rispondi a un messaggio/contatto con:</i> <code>/punti 100</code>"
             )
-            bot.reply_to(message, err_msg, parse_mode="HTML")
+            reset_panel_and_notify(user_id, err_msg)
         return
 
     if step == "WAITING_GW_PRIZE":
         gw = get_giveaway()
         gw["prize"] = message.text
         save_giveaway(gw)
-        bot.reply_to(message, "✅ Premio aggiornato con successo!", reply_markup=get_admin_main_keyboard())
-        user_states.pop(user_id, None)
+        reset_panel_and_notify(user_id, "✅ Premio aggiornato con successo!")
         return
     elif step == "WAITING_GW_DESC":
         gw = get_giveaway()
         gw["description"] = message.text
         save_giveaway(gw)
-        bot.reply_to(message, "✅ Descrizione aggiornata con successo!", reply_markup=get_admin_main_keyboard())
-        user_states.pop(user_id, None)
+        reset_panel_and_notify(user_id, "✅ Descrizione aggiornata con successo!")
         return
     elif step == "WAITING_GW_DATE":
         gw = get_giveaway()
         gw["end_date"] = message.text
         save_giveaway(gw)
-        bot.reply_to(message, "✅ Scadenza aggiornata con successo!", reply_markup=get_admin_main_keyboard())
-        user_states.pop(user_id, None)
+        reset_panel_and_notify(user_id, "✅ Scadenza aggiornata con successo!")
         return
 
     if step in ["WAITING_TRACKING", "WAITING_FILE_INFO", "WAITING_MEETUP", "WAITING_UPDATE"]:
@@ -1026,8 +1163,7 @@ def handle_admin_text(message):
                     if m_id and str(m_id) != "0": bot.edit_message_text(chat_id=int(u_id), message_id=int(m_id), text=new_text, parse_mode="HTML")
                     else: bot.send_message(int(u_id), new_text, parse_mode="HTML")
                 except: pass
-            bot.reply_to(message, "✅ Aggiornamento Inviato!", reply_markup=get_admin_main_keyboard())
-            user_states.pop(user_id, None)
+            reset_panel_and_notify(user_id, "✅ Aggiornamento Inviato!")
             return
 
         db_update_order_status(o_id, "SHIPPED", admin_text)
@@ -1043,18 +1179,18 @@ def handle_admin_text(message):
                 else: bot.send_message(int(u_id), new_text, parse_mode="HTML")
             except: pass
                 
-        bot.reply_to(message, "✅ Operazione Completata! Archiviato nei Completati.", reply_markup=get_admin_main_keyboard())
-        user_states.pop(user_id, None)
+        reset_panel_and_notify(user_id, "✅ Operazione Completata! Archiviato nei Completati.")
+        return
 
     elif step == "EDIT_NAME":
         db_update_product(state["target_product"], {"name": message.text})
-        bot.reply_to(message, "✅ Nome aggiornato!", reply_markup=get_admin_main_keyboard())
-        user_states.pop(user_id, None)
+        reset_panel_and_notify(user_id, "✅ Nome aggiornato!")
+        return
 
     elif step == "EDIT_DESC":
         db_update_product(state["target_product"], {"description": message.text})
-        bot.reply_to(message, "✅ Descrizione aggiornata!", reply_markup=get_admin_main_keyboard())
-        user_states.pop(user_id, None)
+        reset_panel_and_notify(user_id, "✅ Descrizione aggiornata!")
+        return
 
     elif step in ["EDIT_PRICES", "WAITING_PRICES"]:
         try:
@@ -1080,8 +1216,7 @@ def handle_admin_text(message):
             
             if step == "EDIT_PRICES":
                 db_update_product(state["target_product"], {"price_options": prices})
-                bot.reply_to(message, "✅ Prezzi aggiornati!", reply_markup=get_admin_main_keyboard())
-                user_states.pop(user_id, None)
+                reset_panel_and_notify(user_id, "✅ Prezzi aggiornati!")
             else:
                 media_list = state.get("media_list", [])
                 payload = {
@@ -1091,25 +1226,37 @@ def handle_admin_text(message):
                     "price_options": prices, "description": state.get("desc", ""), "in_showcase": True
                 }
                 success, err_msg = db_add_product(payload)
-                if success: bot.reply_to(message, f"🎉 PRODOTTO PUBBLICATO!\n📦 {state['name']}", reply_markup=get_admin_main_keyboard())
-                else: bot.reply_to(message, f"❌ ERRORE DATABASE:\n{err_msg}", reply_markup=get_admin_main_keyboard())
-                user_states.pop(user_id, None)
+                if success: reset_panel_and_notify(user_id, f"🎉 PRODOTTO PUBBLICATO!\n📦 {state['name']}")
+                else: reset_panel_and_notify(user_id, f"❌ ERRORE DATABASE:\n{err_msg}")
         except:
-            bot.reply_to(message, "❌ Formato non riconosciuto. Es: 10pz 140, 25g - 100", reply_markup=get_cancel_keyboard())
+            clear_tracked(user_id)
+            try:
+                sent = bot.send_message(user_id, "❌ Formato non riconosciuto. Es: 10pz 140, 25g - 100", reply_markup=get_cancel_keyboard())
+                track_msg(user_id, sent.message_id)
+            except: pass
+        return
 
     elif step == "WAITING_NAME":
         state["name"] = message.text
         state["step"] = "WAITING_DESC"
-        bot.reply_to(message, "✍️ Nome salvato. Ora invia la DESCRIZIONE:", reply_markup=get_cancel_keyboard())
+        clear_tracked(user_id)
+        try:
+            sent = bot.send_message(user_id, "✍️ Nome salvato. Ora invia la DESCRIZIONE:", reply_markup=get_cancel_keyboard())
+            track_msg(user_id, sent.message_id)
+        except: pass
 
     elif step == "WAITING_DESC":
         state["desc"] = message.text
         state["step"] = "WAITING_PRICES"
-        bot.reply_to(message, "💰 Ultimo step. Invia i PREZZI (Es: 10pz 140, 25g - 100):", reply_markup=get_cancel_keyboard())
+        clear_tracked(user_id)
+        try:
+            sent = bot.send_message(user_id, "💰 Ultimo step. Invia i PREZZI (Es: 10pz 140, 25g - 100):", reply_markup=get_cancel_keyboard())
+            track_msg(user_id, sent.message_id)
+        except: pass
 
 if __name__ == '__main__':
     threading.Thread(target=run_health_server, daemon=True).start()
-    print("🤖 Bot Il Falsario (SERVER LOCALE) Avviato con TICKET SYSTEM!")
+    print("🤖 Bot Il Falsario (SERVER LOCALE) Avviato con TICKET SYSTEM E OPSEC!")
     while True:
         try:
             bot.remove_webhook()
