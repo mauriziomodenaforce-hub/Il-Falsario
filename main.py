@@ -89,6 +89,14 @@ def init_db():
     c.execute('''CREATE TABLE IF NOT EXISTS users (telegram_id INTEGER PRIMARY KEY, username TEXT, points INTEGER DEFAULT 50)''')
     c.execute('''CREATE TABLE IF NOT EXISTS products (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, category TEXT, description TEXT, price_options TEXT, media_list TEXT, media_url TEXT, media_type TEXT, in_showcase INTEGER DEFAULT 1, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)''')
     c.execute('''CREATE TABLE IF NOT EXISTS orders (id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER, username TEXT, items TEXT, total_price REAL, address TEXT, status TEXT, order_type TEXT, tracking_code TEXT, user_message_id INTEGER, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)''')
+    c.execute('''CREATE TABLE IF NOT EXISTS ticket_servizi (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER,
+        tipo_servizio TEXT,
+        stato TEXT DEFAULT 'In Attesa',
+        data_richiesta TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )''')
+
     c.execute('''CREATE TABLE IF NOT EXISTS quotes (id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER, username TEXT, description TEXT, budget TEXT, admin_reply TEXT, price REAL, status TEXT, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)''')
     try: c.execute("ALTER TABLE orders ADD COLUMN pratica_code TEXT")
     except sqlite3.OperationalError: pass 
@@ -326,7 +334,7 @@ class WebhookAPIHandler(BaseHTTPRequestHandler):
             budget = data.get("budget", "")
             qid = db_save_quote(user_id, username, desc, budget)
             
-            # NOTIFICA ADMIN NUOVO PREVENTIVO (AUTODISTRUZIONE 5 MINUTI)
+            # NOTIFICA ADMIN NUOVO PREVENTIVO
             if ADMIN_ID and ADMIN_ID != 0:
                 send_admin_notification(ADMIN_ID, f"💡 <b>NUOVO TICKET SVILUPPO IT!</b>\nDa: @{username} (ID: {user_id})\nBudget: {budget}\n\n👉 Apri 'Gestione Servizi Digitali' -> 'Preventivi su Misura' per rispondere.", delay=300)
             self.wfile.write(json.dumps({"success": True}).encode('utf-8'))
@@ -387,7 +395,7 @@ class WebhookAPIHandler(BaseHTTPRequestHandler):
                     db_update_order_msg_id(order_id, sent.message_id) 
                 except: pass
 
-            # NOTIFICA ADMIN NUOVO ORDINE (AUTODISTRUZIONE 5 MINUTI)
+            # NOTIFICA ADMIN NUOVO ORDINE
             if ADMIN_ID and ADMIN_ID != 0:
                 alert_type = "🛠 NUOVO SERVIZIO" if is_digital else "📦 NUOVO ORDINE FISICO"
                 send_admin_notification(ADMIN_ID, f"🔔 <b>{alert_type} RICEVUTO!</b>\nPratica: <b>{pratica_code}</b> da @{username}.\n👉 Apri /admin per gestirlo.", delay=300)
@@ -484,7 +492,6 @@ def handle_callbacks(call):
     data = call.data
     state = user_states.setdefault(user_id, {})
 
-    # Se clicchiamo una categoria dal pannello, marchiamo il pannello come Ancora Sicura
     if data in ["dash_ord_phys", "dash_ord_serv", "dash_ord_serv_std", "dash_quotes", "m_hist", "hist_shipped", "hist_cancelled", "m_pts", "m_prod", "p_add", "p_list", "m_gw"]:
         state["panel_id"] = call.message.message_id
         clear_tracked(user_id)
@@ -633,6 +640,7 @@ def handle_callbacks(call):
         markup = types.InlineKeyboardMarkup(row_width=1)
         markup.add(
             types.InlineKeyboardButton("🛒 Servizi Standard (Exchange, Buoni)", callback_data="dash_ord_serv_std"),
+            types.InlineKeyboardButton("⛔️ Gestione Servizio Ban", callback_data="admin_ban_list"),
             types.InlineKeyboardButton("💡 Preventivi su Misura (Ticket)", callback_data="dash_quotes"),
             types.InlineKeyboardButton("🔙 Torna al Menu", callback_data="m_main")
         )
@@ -852,6 +860,66 @@ def handle_callbacks(call):
             "4️⃣ <b>Per Risposta:</b> Rispondi a un utente/contatto scrivendo solo <code>/punti 100</code>"
         )
         bot.edit_message_text(msg, user_id, call.message.message_id, parse_mode="HTML", reply_markup=get_cancel_keyboard())
+
+    elif data == "admin_ban_list":
+        # Connessione al DB per cercare pratiche in attesa
+        conn = sqlite3.connect(DB_PATH)
+        cursor = conn.cursor()
+        cursor.execute("SELECT id, user_id, tipo_servizio, stato FROM ticket_servizi WHERE stato != 'Completato'")
+        tickets = cursor.fetchall()
+        conn.close()
+
+        if not tickets:
+            markup = types.InlineKeyboardMarkup()
+            markup.add(types.InlineKeyboardButton("⬅️ Torna Indietro", callback_data="m_main"))
+            bot.edit_message_text("✅ Non ci sono pratiche in coda.", chat_id=call.message.chat.id, message_id=call.message.message_id, reply_markup=markup)
+            return
+
+        # Prende il primo ticket in coda per gestirlo
+        ticket_id, user_id_cliente, tipo_servizio, stato = tickets[0]
+
+        markup = types.InlineKeyboardMarkup(row_width=2)
+        
+        markup.add(
+            types.InlineKeyboardButton("⏱ Dai Tempistica", callback_data=f"ticket_time_{ticket_id}"),
+            types.InlineKeyboardButton("🔄 Cambia Stato", callback_data=f"ticket_status_{ticket_id}")
+        )
+        markup.add(
+            types.InlineKeyboardButton("✅ Esito Positivo", callback_data=f"ticket_ok_{ticket_id}_{user_id_cliente}"),
+            types.InlineKeyboardButton("❌ Esito Negativo", callback_data=f"ticket_ko_{ticket_id}_{user_id_cliente}")
+        )
+        markup.add(
+            types.InlineKeyboardButton("✉️ Invia Messaggio al Cliente", callback_data=f"ticket_msg_{ticket_id}_{user_id_cliente}")
+        )
+        markup.add(
+            types.InlineKeyboardButton("⏭ Prossima Pratica", callback_data="admin_ban_list"),
+            types.InlineKeyboardButton("⬅️ Torna Indietro", callback_data="m_main")
+        )
+        
+        testo_plancia = (
+            f"⛔️ <b>PRATICA #{ticket_id}</b>\n\n"
+            f"<b>Servizio:</b> {tipo_servizio}\n"
+            f"<b>ID Cliente:</b> <code>{user_id_cliente}</code>\n"
+            f"<b>Stato Attuale:</b> {stato}\n\n"
+            "Scegli un'azione per gestire questa richiesta:"
+        )
+        bot.edit_message_text(testo_plancia, chat_id=call.message.chat.id, message_id=call.message.message_id, reply_markup=markup, parse_mode="HTML")
+
+    # Gestione dell'invio messaggio diretto al cliente
+    elif data.startswith("ticket_msg_"):
+        parti = data.split("_")
+        ticket_id = parti[2]
+        user_id_cliente = parti[3]
+        
+        # Mettiamo l'admin nello stato di attesa del messaggio
+        user_states[call.message.chat.id] = {"step": "SEND_TICKET_MSG", "target_user": user_id_cliente, "ticket_id": ticket_id}
+        
+        try: bot.delete_message(call.message.chat.id, call.message.message_id)
+        except: pass
+        
+        markup = types.InlineKeyboardMarkup()
+        markup.add(types.InlineKeyboardButton("Annulla", callback_data="admin_ban_list"))
+        bot.send_message(call.message.chat.id, f"Scrivi qui sotto il messaggio da inviare al cliente per la pratica #{ticket_id}:", reply_markup=markup)
 
     elif data == "m_prod":
         bot.edit_message_text("📦 <b>GESTIONE PRODOTTI & MEDIA</b>\n\nCosa desideri fare?", user_id, call.message.message_id, parse_mode="HTML", reply_markup=get_admin_prod_keyboard())
@@ -1181,6 +1249,24 @@ def handle_admin_text(message):
                 
         reset_panel_and_notify(user_id, "✅ Operazione Completata! Archiviato nei Completati.")
         return
+
+    # Se l'utente è un admin che sta scrivendo a un cliente
+    if user_states.get(message.chat.id, {}).get("step") == "SEND_TICKET_MSG":
+        target_user = user_states[message.chat.id]["target_user"]
+        ticket_id = user_states[message.chat.id]["ticket_id"]
+        testo_admin = message.text
+        
+        try:
+            # Invia il messaggio al cliente
+            bot.send_message(target_user, f"📩 <b>Aggiornamento Pratica #{ticket_id}:</b>\n\n{testo_admin}", parse_mode="HTML")
+            bot.send_message(message.chat.id, f"✅ Messaggio inviato al cliente (ID: {target_user}).")
+        except Exception as e:
+            bot.send_message(message.chat.id, "❌ Impossibile inviare il messaggio. Il cliente potrebbe aver bloccato il bot.")
+            
+        # Pulisce lo stato e lo rimanda alla lista
+        user_states[message.chat.id] = {}
+        return
+
 
     elif step == "EDIT_NAME":
         db_update_product(state["target_product"], {"name": message.text})
