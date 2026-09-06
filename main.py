@@ -327,6 +327,35 @@ class WebhookAPIHandler(BaseHTTPRequestHandler):
             self.wfile.write(json.dumps({"success": True}).encode('utf-8'))
             return
 
+        elif self.path.startswith('/api/strike_track/'):
+            track_id = self.path.split('/')[-1].replace('STK-', '').strip()
+            conn = get_db()
+            row = conn.execute("SELECT * FROM ticket_servizi WHERE id = ?", (track_id,)).fetchone()
+            conn.close()
+            if row:
+                self.wfile.write(json.dumps({"id": f"STK-{row['id']}", "stato": row['stato'], "dettagli": row['tipo_servizio']}).encode('utf-8'))
+            else:
+                self.wfile.write(json.dumps({"error": "Not found"}).encode('utf-8'))
+            return
+
+        elif self.path == '/api/strike':
+            user_id = data.get("user_id")
+            username = data.get("username", "Anonimo")
+            dettagli = data.get("dettagli", "")
+            
+            conn = get_db()
+            c = conn.cursor()
+            c.execute("INSERT INTO ticket_servizi (user_id, tipo_servizio, stato) VALUES (?, ?, ?)", (user_id, dettagli, "In Attesa Analisi Operatore"))
+            ticket_id = c.lastrowid
+            conn.commit()
+            conn.close()
+
+            if ADMIN_ID and ADMIN_ID != 0:
+                send_admin_notification(ADMIN_ID, f"🎯 <b>NUOVO STRIKE (TAKEDOWN)</b>\nDa: @{username}\nPratica Ban: <b>STK-{ticket_id}</b>\n👉 Apri /admin -> 'Gestione Servizi Digitali' -> 'Gestione Servizio Ban' per operare.", delay=300)
+            
+            self.wfile.write(json.dumps({"success": True, "ticket_id": f"STK-{ticket_id}"}).encode('utf-8'))
+            return
+
         elif self.path == '/api/quotes/new':
             user_id = data.get("user_id")
             username = data.get("username", "Anonimo")
