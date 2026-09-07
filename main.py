@@ -34,21 +34,26 @@ def clear_tracked(user_id):
     """Incenerisce all'istante tutti i messaggi della lista quando clicchi Torna Indietro."""
     state = user_states.get(user_id, {})
     for m_id in state.get("tracked", []):
-        try: bot.delete_message(user_id, m_id)
-        except: pass
+        try:
+            bot.delete_message(user_id, m_id)
+        except:
+            pass
     state["tracked"] = []
 
-def send_admin_notification(chat_id, text, delay=300):
-    """Invia notifiche (Ordini/Ticket) che si vaporizzano dopo 5 minuti (300 secondi)."""
+def send_admin_notification(chat_id, text, delay=3600):
+    """Invia notifiche (Ordini/Ticket) che si vaporizzano dopo 1 ORA (3600 secondi)."""
     try:
         msg = bot.send_message(chat_id, text, parse_mode="HTML")
         def delete_task():
-            try: bot.delete_message(chat_id, msg.message_id)
-            except: pass
+            try:
+                bot.delete_message(chat_id, msg.message_id)
+            except:
+                pass
         t = threading.Timer(delay, delete_task)
         t.daemon = True
         t.start()
-    except: pass
+    except:
+        pass
 
 def reset_panel_and_notify(user_id, success_text):
     """Mostra un avviso di successo per 5 secondi e resetta la dashboard in sicurezza."""
@@ -60,7 +65,8 @@ def reset_panel_and_notify(user_id, success_text):
         try:
             temp_msg = bot.send_message(user_id, success_text, parse_mode="HTML")
             threading.Timer(5, lambda: bot.delete_message(user_id, temp_msg.message_id)).start()
-        except: pass
+        except:
+            pass
 
     panel_id = state.get("panel_id")
     success = False
@@ -68,12 +74,15 @@ def reset_panel_and_notify(user_id, success_text):
         try:
             bot.edit_message_text("⚙️ <b>PANNELLO GESTIONALE CAVEAU</b> 🎭\n\nScegli la sezione da gestire:", user_id, panel_id, parse_mode="HTML", reply_markup=get_admin_main_keyboard())
             success = True
-        except: pass
+        except Exception as e:
+            if "message is not modified" in str(e).lower():
+                success = True
     if not success:
         try:
             sent = bot.send_message(user_id, "⚙️ <b>PANNELLO GESTIONALE CAVEAU</b> 🎭\n\nScegli la sezione da gestire:", parse_mode="HTML", reply_markup=get_admin_main_keyboard())
             state["panel_id"] = sent.message_id
-        except: pass
+        except:
+            pass
 
 # ==========================================
 # GESTIONE DATABASE E GIVEAWAY
@@ -93,26 +102,31 @@ def init_db():
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         user_id INTEGER,
         tipo_servizio TEXT,
-        stato TEXT DEFAULT 'In Attesa',
+        stato TEXT DEFAULT 'In Attesa Analisi Operatore',
         data_richiesta TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     )''')
-
     c.execute('''CREATE TABLE IF NOT EXISTS quotes (id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER, username TEXT, description TEXT, budget TEXT, admin_reply TEXT, price REAL, status TEXT, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)''')
-    try: c.execute("ALTER TABLE orders ADD COLUMN pratica_code TEXT")
-    except sqlite3.OperationalError: pass 
+    try:
+        c.execute("ALTER TABLE orders ADD COLUMN pratica_code TEXT")
+    except sqlite3.OperationalError:
+        pass 
     conn.commit()
     conn.close()
 
 init_db()
 
 def get_giveaway():
-    if not os.path.exists(GIVEAWAY_DB): return {"is_active": 1, "description": "🎁 Evento Esclusivo", "prize": "100€", "end_date": "Da definire", "participants": {}}
+    if not os.path.exists(GIVEAWAY_DB):
+        return {"is_active": 1, "description": "🎁 Evento Esclusivo", "prize": "100€", "end_date": "Da definire", "participants": {}}
     try:
-        with open(GIVEAWAY_DB, 'r') as f: return json.load(f)
-    except: return {"is_active": 1, "description": "🎁 Evento Esclusivo", "prize": "100€", "end_date": "Da definire", "participants": {}}
+        with open(GIVEAWAY_DB, 'r') as f:
+            return json.load(f)
+    except:
+        return {"is_active": 1, "description": "🎁 Evento Esclusivo", "prize": "100€", "end_date": "Da definire", "participants": {}}
 
 def save_giveaway(data):
-    with open(GIVEAWAY_DB, 'w') as f: json.dump(data, f)
+    with open(GIVEAWAY_DB, 'w') as f:
+        json.dump(data, f)
 
 def db_register_user(user_id, username):
     conn = get_db()
@@ -127,19 +141,23 @@ def db_add_product(product_data):
         conn.commit()
         conn.close()
         return True, "OK"
-    except Exception as e: return False, str(e)
+    except Exception as e:
+        return False, str(e)
 
 def db_update_product(prod_id, update_data):
     try:
         conn = get_db()
         for key, val in update_data.items():
-            if isinstance(val, list) or isinstance(val, dict): val = json.dumps(val)
-            elif isinstance(val, bool): val = 1 if val else 0
+            if isinstance(val, list) or isinstance(val, dict):
+                val = json.dumps(val)
+            elif isinstance(val, bool):
+                val = 1 if val else 0
             conn.execute(f"UPDATE products SET {key} = ? WHERE id = ?", (val, prod_id))
         conn.commit()
         conn.close()
         return True
-    except: return False
+    except:
+        return False
 
 def db_get_products():
     conn = get_db()
@@ -192,8 +210,10 @@ def db_get_all_orders():
 
 def db_update_order_status(order_id, status, tracking=""):
     conn = get_db()
-    if tracking: conn.execute("UPDATE orders SET status = ?, tracking_code = ? WHERE id = ?", (status, tracking, order_id))
-    else: conn.execute("UPDATE orders SET status = ? WHERE id = ?", (status, order_id))
+    if tracking:
+        conn.execute("UPDATE orders SET status = ?, tracking_code = ? WHERE id = ?", (status, tracking, order_id))
+    else:
+        conn.execute("UPDATE orders SET status = ? WHERE id = ?", (status, order_id))
     conn.commit()
     conn.close()
 
@@ -228,9 +248,11 @@ def upload_to_local_storage(file_bytes, mime_type, file_extension):
     try:
         filename = f"media_{int(time.time())}_{uuid.uuid4().hex[:6]}.{file_extension}"
         filepath = os.path.join(MEDIA_DIR, filename)
-        with open(filepath, 'wb') as f: f.write(file_bytes)
+        with open(filepath, 'wb') as f:
+            f.write(file_bytes)
         return f"{WEB_APP_URL}/media/{filename}", "OK"
-    except Exception as e: return None, str(e)
+    except Exception as e:
+        return None, str(e)
 
 # ==========================================
 # SERVER API REST
@@ -253,29 +275,53 @@ class WebhookAPIHandler(BaseHTTPRequestHandler):
             all_prods = db_get_products()
             showcase_prods = [p for p in all_prods if p.get('in_showcase', 1) == 1]
             self.wfile.write(json.dumps(showcase_prods).encode('utf-8'))
+            
         elif self.path.startswith('/api/order/'):
             raw_search = self.path.split('/')[-1].strip().upper()
             orders = db_get_all_orders()
             order = next((o for o in orders if str(o.get('pratica_code')).strip().upper() == raw_search or str(o.get('tracking_code')).strip().upper() == raw_search), None)
             if order: 
-                if not order.get('pratica_code'): order['pratica_code'] = f"PR-LGCY-{order['id']}"
+                if not order.get('pratica_code'):
+                    order['pratica_code'] = f"PR-LGCY-{order['id']}"
                 self.wfile.write(json.dumps(order).encode('utf-8'))
-            else: self.wfile.write(json.dumps({"error": "Not found"}).encode('utf-8'))
+            else:
+                self.wfile.write(json.dumps({"error": "Not found"}).encode('utf-8'))
+                
         elif self.path.startswith('/api/user/'):
             user_id_str = self.path.split('/')[-1]
-            try: user_id = int(user_id_str.replace("ID_", ""))
-            except: user_id = user_id_str
+            try:
+                user_id = int(user_id_str.replace("ID_", ""))
+            except:
+                user_id = user_id_str
             conn = get_db()
             row = conn.execute("SELECT points FROM users WHERE telegram_id = ?", (user_id,)).fetchone()
             conn.close()
-            if row: self.wfile.write(json.dumps({"points": row['points']}).encode('utf-8'))
-            else: self.wfile.write(json.dumps({"points": 50}).encode('utf-8'))
+            if row:
+                self.wfile.write(json.dumps({"points": row['points']}).encode('utf-8'))
+            else:
+                self.wfile.write(json.dumps({"points": 50}).encode('utf-8'))
+                
         elif self.path.startswith('/api/quotes/'):
             user_id_str = self.path.split('/')[-1]
-            try: user_id = int(user_id_str.replace("ID_", ""))
-            except: user_id = user_id_str
+            try:
+                user_id = int(user_id_str.replace("ID_", ""))
+            except:
+                user_id = user_id_str
             self.wfile.write(json.dumps(db_get_user_quotes(user_id)).encode('utf-8'))
-        else: self.wfile.write(b'{"status": "ok"}')
+            
+        elif self.path.startswith('/api/strike_track/'):
+            track_id = self.path.split('/')[-1].replace('STK-', '').strip()
+            conn = get_db()
+            row = conn.execute("SELECT * FROM ticket_servizi WHERE id = ?", (track_id,)).fetchone()
+            conn.close()
+            if row:
+                self.wfile.write(json.dumps({"id": f"STK-{row['id']}", "stato": row['stato'], "dettagli": row['tipo_servizio']}).encode('utf-8'))
+            else:
+                self.wfile.write(json.dumps({"error": "Not found"}).encode('utf-8'))
+            return
+            
+        else:
+            self.wfile.write(b'{"status": "ok"}')
 
     def do_POST(self):
         content_length = int(self.headers.get('Content-Length', 0))
@@ -285,8 +331,10 @@ class WebhookAPIHandler(BaseHTTPRequestHandler):
             return
             
         post_data = self.rfile.read(content_length).decode('utf-8')
-        try: data = json.loads(post_data)
-        except: data = {}
+        try:
+            data = json.loads(post_data)
+        except:
+            data = {}
 
         self.send_response(200)
         self.send_header('Content-Type', 'application/json')
@@ -295,15 +343,18 @@ class WebhookAPIHandler(BaseHTTPRequestHandler):
 
         if self.path == '/api/upload':
             b64_str = data.get("data", "")
-            if "," in b64_str: b64_str = b64_str.split(",")[1]
+            if "," in b64_str:
+                b64_str = b64_str.split(",")[1]
             try:
                 img_data = base64.b64decode(b64_str)
                 filename = f"receipt_{int(time.time())}_{uuid.uuid4().hex[:6]}.jpg"
                 filepath = os.path.join(MEDIA_DIR, filename)
-                with open(filepath, 'wb') as f: f.write(img_data)
+                with open(filepath, 'wb') as f:
+                    f.write(img_data)
                 public_url = f"{WEB_APP_URL}/media/{filename}"
                 self.wfile.write(json.dumps({"url": public_url}).encode('utf-8'))
-            except Exception as e: self.wfile.write(json.dumps({"error": str(e)}).encode('utf-8'))
+            except Exception as e:
+                self.wfile.write(json.dumps({"error": str(e)}).encode('utf-8'))
             return
             
         elif self.path == '/api/giveaway':
@@ -327,17 +378,6 @@ class WebhookAPIHandler(BaseHTTPRequestHandler):
             self.wfile.write(json.dumps({"success": True}).encode('utf-8'))
             return
 
-        elif self.path.startswith('/api/strike_track/'):
-            track_id = self.path.split('/')[-1].replace('STK-', '').strip()
-            conn = get_db()
-            row = conn.execute("SELECT * FROM ticket_servizi WHERE id = ?", (track_id,)).fetchone()
-            conn.close()
-            if row:
-                self.wfile.write(json.dumps({"id": f"STK-{row['id']}", "stato": row['stato'], "dettagli": row['tipo_servizio']}).encode('utf-8'))
-            else:
-                self.wfile.write(json.dumps({"error": "Not found"}).encode('utf-8'))
-            return
-
         elif self.path == '/api/strike':
             user_id = data.get("user_id")
             username = data.get("username", "Anonimo")
@@ -351,7 +391,7 @@ class WebhookAPIHandler(BaseHTTPRequestHandler):
             conn.close()
 
             if ADMIN_ID and ADMIN_ID != 0:
-                send_admin_notification(ADMIN_ID, f"🎯 <b>NUOVO STRIKE (TAKEDOWN)</b>\nDa: @{username}\nPratica Ban: <b>STK-{ticket_id}</b>\n👉 Apri /admin -> 'Gestione Servizi Digitali' -> 'Gestione Servizio Ban' per operare.", delay=300)
+                send_admin_notification(ADMIN_ID, f"🎯 <b>NUOVO STRIKE (TAKEDOWN)</b>\nDa: @{username}\nPratica Ban: <b>STK-{ticket_id}</b>\n👉 Apri /admin -> 'Gestione Servizi Digitali' -> 'Gestione Servizio Ban' per operare.", delay=3600)
             
             self.wfile.write(json.dumps({"success": True, "ticket_id": f"STK-{ticket_id}"}).encode('utf-8'))
             return
@@ -363,15 +403,15 @@ class WebhookAPIHandler(BaseHTTPRequestHandler):
             budget = data.get("budget", "")
             qid = db_save_quote(user_id, username, desc, budget)
             
-            # NOTIFICA ADMIN NUOVO PREVENTIVO
             if ADMIN_ID and ADMIN_ID != 0:
-                send_admin_notification(ADMIN_ID, f"💡 <b>NUOVO TICKET SVILUPPO IT!</b>\nDa: @{username} (ID: {user_id})\nBudget: {budget}\n\n👉 Apri 'Gestione Servizi Digitali' -> 'Preventivi su Misura' per rispondere.", delay=300)
+                send_admin_notification(ADMIN_ID, f"💡 <b>NUOVO TICKET SVILUPPO IT!</b>\nDa: @{username} (ID: {user_id})\nBudget: {budget}\n\n👉 Apri 'Gestione Servizi Digitali' -> 'Preventivi su Misura' per rispondere.", delay=3600)
             self.wfile.write(json.dumps({"success": True}).encode('utf-8'))
 
         elif self.path == '/api/quotes/action':
             quote_id = data.get("quote_id")
             action = data.get("action")
             user_id = data.get("user_id")
+            
             if action == 'DELETE':
                 conn = get_db()
                 conn.execute("DELETE FROM quotes WHERE id = ?", (quote_id,))
@@ -379,17 +419,21 @@ class WebhookAPIHandler(BaseHTTPRequestHandler):
                 conn.close()
                 self.wfile.write(json.dumps({"success": True}).encode('utf-8'))
                 return
+                
             conn = get_db()
             q = conn.execute("SELECT * FROM quotes WHERE id = ?", (quote_id,)).fetchone()
             conn.close()
+            
             if not q:
                 self.wfile.write(json.dumps({"error": "Preventivo non trovato"}).encode('utf-8'))
                 return
+                
             if action == 'REJECT':
                 db_update_quote(quote_id, "REJECTED_BY_USER", q['price'], q['admin_reply'])
                 if ADMIN_ID and ADMIN_ID != 0:
-                    send_admin_notification(ADMIN_ID, f"❌ Il cliente (ID:{user_id}) ha rifiutato l'offerta per il Ticket #{quote_id}.", delay=300)
+                    send_admin_notification(ADMIN_ID, f"❌ Il cliente (ID:{user_id}) ha rifiutato l'offerta per il Ticket #{quote_id}.", delay=3600)
                 self.wfile.write(json.dumps({"success": True}).encode('utf-8'))
+                
             elif action == 'ACCEPT':
                 secure_hash = "".join(random.choices("ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789", k=6))
                 pratica_code = f"PR-DEV{secure_hash[:4]}"
@@ -397,8 +441,9 @@ class WebhookAPIHandler(BaseHTTPRequestHandler):
                 address = f"PROGETTO APPROVATO:\n{q['description']}\n\nAccordo: {q['admin_reply']}\nSaldo concordato in chat."
                 order_id = db_save_order(user_id, q['username'], cart, q['price'], address, "SERVICE", pratica_code)
                 db_update_quote(quote_id, "CONVERTED_TO_ORDER", q['price'], q['admin_reply'])
+                
                 if ADMIN_ID and ADMIN_ID != 0:
-                    send_admin_notification(ADMIN_ID, f"🎉 <b>PREVENTIVO ACCETTATO!</b>\nGenerata la Pratica: <b>{pratica_code}</b> per il servizio IT da {q['price']}€.", delay=300)
+                    send_admin_notification(ADMIN_ID, f"🎉 <b>PREVENTIVO ACCETTATO!</b>\nGenerata la Pratica: <b>{pratica_code}</b> per il servizio IT da {q['price']}€.", delay=3600)
                 self.wfile.write(json.dumps({"success": True, "pratica_code": pratica_code}).encode('utf-8'))
 
         elif self.path == '/api/order':
@@ -422,12 +467,12 @@ class WebhookAPIHandler(BaseHTTPRequestHandler):
                 try:
                     sent = bot.send_message(int(user_id), user_msg, parse_mode="HTML")
                     db_update_order_msg_id(order_id, sent.message_id) 
-                except: pass
+                except:
+                    pass
 
-            # NOTIFICA ADMIN NUOVO ORDINE
             if ADMIN_ID and ADMIN_ID != 0:
                 alert_type = "🛠 NUOVO SERVIZIO" if is_digital else "📦 NUOVO ORDINE FISICO"
-                send_admin_notification(ADMIN_ID, f"🔔 <b>{alert_type} RICEVUTO!</b>\nPratica: <b>{pratica_code}</b> da @{username}.\n👉 Apri /admin per gestirlo.", delay=300)
+                send_admin_notification(ADMIN_ID, f"🔔 <b>{alert_type} RICEVUTO!</b>\nPratica: <b>{pratica_code}</b> da @{username}.\n👉 Apri /admin per gestirlo.", delay=3600)
             self.wfile.write(json.dumps({"success": True, "order_id": order_id, "pratica_code": pratica_code}).encode('utf-8'))
 
 def run_health_server():
@@ -481,10 +526,13 @@ def get_media_done_keyboard():
 @bot.message_handler(commands=['start'])
 def send_welcome(message):
     user_id = message.chat.id
-    try: bot.delete_message(user_id, message.message_id)
-    except: pass
+    try:
+        bot.delete_message(user_id, message.message_id)
+    except:
+        pass
     username = message.from_user.username
     threading.Thread(target=db_register_user, args=(user_id, username), daemon=True).start()
+    
     welcome_text = (
         "Benvenuto nello shop ufficiale del Falsario 🤗🎭\n\n"
         "💬 Contatto Telegram Ufficiale: @il_falsario_ufficiale_x2\n"
@@ -495,15 +543,18 @@ def send_welcome(message):
         "👇 Clicca in basso per accedere al caveau."
     )
     markup = types.InlineKeyboardMarkup()
-    if WEB_APP_URL: markup.add(types.InlineKeyboardButton("🏦 Accedi al Caveau 🏦", web_app=types.WebAppInfo(WEB_APP_URL)))
+    if WEB_APP_URL:
+        markup.add(types.InlineKeyboardButton("🏦 Accedi al Caveau 🏦", web_app=types.WebAppInfo(WEB_APP_URL)))
     bot.send_message(user_id, welcome_text, reply_markup=markup, disable_web_page_preview=True)
 
 @bot.message_handler(commands=['admin', 'cancel', 'menu'])
 def admin_panel(message):
     user_id = message.chat.id
     if user_id != ADMIN_ID: return
-    try: bot.delete_message(user_id, message.message_id)
-    except: pass
+    try:
+        bot.delete_message(user_id, message.message_id)
+    except:
+        pass
     
     clear_tracked(user_id)
     state = user_states.setdefault(user_id, {})
@@ -512,16 +563,23 @@ def admin_panel(message):
     try:
         sent = bot.send_message(user_id, "⚙️ <b>PANNELLO GESTIONALE CAVEAU</b> 🎭\n\nScegli la sezione da gestire:", parse_mode="HTML", reply_markup=get_admin_main_keyboard())
         state["panel_id"] = sent.message_id
-    except: pass
+    except:
+        pass
 
 @bot.callback_query_handler(func=lambda call: True)
 def handle_callbacks(call):
     user_id = call.message.chat.id
     if user_id != ADMIN_ID: return
+    
+    try:
+        bot.answer_callback_query(call.id)
+    except:
+        pass
+
     data = call.data
     state = user_states.setdefault(user_id, {})
 
-    if data in ["dash_ord_phys", "dash_ord_serv", "dash_ord_serv_std", "dash_quotes", "m_hist", "hist_shipped", "hist_cancelled", "m_pts", "m_prod", "p_add", "p_list", "m_gw"]:
+    if data in ["dash_ord_phys", "dash_ord_serv", "dash_ord_serv_std", "dash_quotes", "m_hist", "hist_shipped", "hist_cancelled", "m_pts", "m_prod", "p_add", "p_list", "m_gw"] or data.startswith("admin_ban_list"):
         state["panel_id"] = call.message.message_id
         clear_tracked(user_id)
 
@@ -534,12 +592,15 @@ def handle_callbacks(call):
             try:
                 bot.edit_message_text("⚙️ <b>PANNELLO GESTIONALE CAVEAU</b> 🎭\n\nScegli la sezione da gestire:", user_id, panel_id, parse_mode="HTML", reply_markup=get_admin_main_keyboard())
                 success = True
-            except: pass
+            except Exception as e:
+                if "message is not modified" in str(e).lower():
+                    success = True
         if not success:
             try:
                 sent = bot.send_message(user_id, "⚙️ <b>PANNELLO GESTIONALE CAVEAU</b> 🎭\n\nScegli la sezione da gestire:", parse_mode="HTML", reply_markup=get_admin_main_keyboard())
                 state["panel_id"] = sent.message_id
-            except: pass
+            except:
+                pass
 
     elif data == "m_gw":
         gw = get_giveaway()
@@ -574,7 +635,6 @@ def handle_callbacks(call):
         gw = get_giveaway()
         gw["is_active"] = new_st
         save_giveaway(gw)
-        bot.answer_callback_query(call.id, "✅ Stato Giveaway Aggiornato!")
         call.data = "m_gw"
         handle_callbacks(call)
 
@@ -583,47 +643,51 @@ def handle_callbacks(call):
         try:
             sent = bot.send_message(user_id, "🏆 Scrivi il nuovo PREMIO in palio (es. 100€ Bitcoin):", reply_markup=get_cancel_keyboard())
             track_msg(user_id, sent.message_id)
-        except: pass
+        except:
+            pass
+            
     elif data == "gw_desc":
         state["step"] = "WAITING_GW_DESC"
         try:
             sent = bot.send_message(user_id, "📝 Scrivi la nuova DESCRIZIONE dell'evento:", reply_markup=get_cancel_keyboard())
             track_msg(user_id, sent.message_id)
-        except: pass
+        except:
+            pass
+            
     elif data == "gw_date":
         state["step"] = "WAITING_GW_DATE"
         try:
             sent = bot.send_message(user_id, "⏳ Scrivi la SCADENZA (es. 31 Ottobre):", reply_markup=get_cancel_keyboard())
             track_msg(user_id, sent.message_id)
-        except: pass
+        except:
+            pass
 
     elif data == "gw_list":
         gw = get_giveaway()
         parts = gw.get("participants", {})
         if not parts:
-            bot.answer_callback_query(call.id, "⚠️ Nessun iscritto al momento.", show_alert=True)
             return
         msg = "📋 <b>Lista Iscritti Giveaway:</b>\n\n"
-        for uid, uname in parts.items(): msg += f"👤 {uname} (ID: <code>{uid}</code>)\n"
+        for uid, uname in parts.items():
+            msg += f"👤 {uname} (ID: <code>{uid}</code>)\n"
         try:
             sent = bot.send_message(user_id, msg, parse_mode='HTML', reply_markup=get_cancel_keyboard())
             track_msg(user_id, sent.message_id)
-        except: pass
-        bot.answer_callback_query(call.id, "Lista generata!")
+        except:
+            pass
 
     elif data == "gw_draw":
         gw = get_giveaway()
         parts = gw.get("participants", {})
         if not parts:
-            bot.answer_callback_query(call.id, "⚠️ Nessun iscritto per l'estrazione!", show_alert=True)
             return
         winner_id = random.choice(list(parts.keys()))
         winner_name = parts[winner_id]
         try:
             sent = bot.send_message(user_id, f"🎉 <b>ESTRAZIONE COMPLETATA!</b>\n\n👤 <b>Vincitore:</b> {winner_name}\n🆔 <b>ID:</b> <code>{winner_id}</code>\n\nContattalo per consegnare il premio!", parse_mode='HTML', reply_markup=get_cancel_keyboard())
             track_msg(user_id, sent.message_id)
-        except: pass
-        bot.answer_callback_query(call.id, f"🎉 Ha vinto {winner_name}!", show_alert=True)
+        except:
+            pass
 
     elif data == "dash_ord_phys":
         orders = [o for o in db_get_all_orders() if o.get('status') in ['PENDING', 'ACCEPTED'] and o.get('order_type') != 'SERVICE']
@@ -675,6 +739,109 @@ def handle_callbacks(call):
         )
         bot.edit_message_text("🛠 <b>GESTIONE SERVIZI DIGITALI</b>\n\nScegli il reparto operativo:", user_id, call.message.message_id, parse_mode="HTML", reply_markup=markup)
 
+    elif data.startswith("admin_ban_list"):
+        parts = data.split("_")
+        index = int(parts[3]) if len(parts) > 3 else 0
+
+        conn = sqlite3.connect(DB_PATH)
+        conn.row_factory = sqlite3.Row
+        cursor = conn.cursor()
+        cursor.execute("SELECT id, user_id, tipo_servizio, stato FROM ticket_servizi WHERE stato != 'Completato' AND stato != 'Annullato' ORDER BY id ASC")
+        tickets = cursor.fetchall()
+        conn.close()
+
+        if not tickets:
+            markup = types.InlineKeyboardMarkup()
+            markup.add(types.InlineKeyboardButton("⬅️ Torna Indietro", callback_data="m_main"))
+            try: bot.edit_message_text("✅ Non ci sono pratiche di Strike/Ban in coda.", chat_id=user_id, message_id=call.message.message_id, reply_markup=markup)
+            except: pass
+            return
+
+        if index >= len(tickets):
+            index = 0
+
+        ticket_id = tickets[index]['id']
+        user_id_cliente = tickets[index]['user_id']
+        tipo_servizio = tickets[index]['tipo_servizio']
+        stato = tickets[index]['stato']
+        
+        markup = types.InlineKeyboardMarkup(row_width=2)
+        markup.add(
+            types.InlineKeyboardButton("⏱ Dai Tempistica", callback_data=f"ticket_time_{ticket_id}"),
+            types.InlineKeyboardButton("🔄 Cambia Stato", callback_data=f"ticket_status_{ticket_id}")
+        )
+        markup.add(
+            types.InlineKeyboardButton("✅ Esito Positivo", callback_data=f"ticket_ok_{ticket_id}_{user_id_cliente}"),
+            types.InlineKeyboardButton("❌ Esito Negativo", callback_data=f"ticket_ko_{ticket_id}_{user_id_cliente}")
+        )
+        markup.add(types.InlineKeyboardButton("✉️ Invia Messaggio al Cliente", callback_data=f"ticket_msg_{ticket_id}_{user_id_cliente}"))
+        
+        next_idx = index + 1 if index + 1 < len(tickets) else 0
+        markup.add(
+            types.InlineKeyboardButton("⏭ Prossima Pratica", callback_data=f"admin_ban_list_{next_idx}"),
+            types.InlineKeyboardButton("⬅️ Torna Indietro", callback_data="m_main")
+        )
+        
+        testo_plancia = f"⛔️ <b>PRATICA STRIKE #STK-{ticket_id}</b>\n\n<b>Dettagli Operativi:</b>\n{tipo_servizio}\n\n<b>ID Cliente:</b> <code>{user_id_cliente}</code>\n<b>Stato Attuale:</b> {stato}\n\n<i>Pratica {index+1} di {len(tickets)}</i>\n\nScegli un'azione per gestire questa richiesta:"
+        try: bot.edit_message_text(testo_plancia, chat_id=user_id, message_id=call.message.message_id, reply_markup=markup, parse_mode="HTML")
+        except: pass
+
+    elif data.startswith("ticket_ok_"):
+        parts = data.split("_")
+        ticket_id, user_id_cliente = parts[2], parts[3]
+        conn = get_db()
+        conn.execute("UPDATE ticket_servizi SET stato = 'Completato' WHERE id = ?", (ticket_id,))
+        conn.commit()
+        conn.close()
+        try: bot.send_message(user_id_cliente, f"✅ <b>ESITO POSITIVO</b>\nLa pratica Strike <b>STK-{ticket_id}</b> è stata completata con successo. Il bersaglio è stato neutralizzato.", parse_mode="HTML")
+        except: pass
+        call.data = "admin_ban_list_0"
+        handle_callbacks(call)
+
+    elif data.startswith("ticket_ko_"):
+        parts = data.split("_")
+        ticket_id, user_id_cliente = parts[2], parts[3]
+        conn = get_db()
+        conn.execute("UPDATE ticket_servizi SET stato = 'Annullato' WHERE id = ?", (ticket_id,))
+        conn.commit()
+        conn.close()
+        try: bot.send_message(user_id_cliente, f"❌ <b>ESITO NEGATIVO</b>\nLa pratica Strike <b>STK-{ticket_id}</b> è stata annullata. La piattaforma ha respinto la segnalazione o mancano i fondi confermati.", parse_mode="HTML")
+        except: pass
+        call.data = "admin_ban_list_0"
+        handle_callbacks(call)
+
+    elif data.startswith("ticket_time_"):
+        ticket_id = data.split("_")[2]
+        state["step"] = "WAITING_TICKET_TIME"
+        state["ticket_id"] = ticket_id
+        try: bot.delete_message(user_id, call.message.message_id)
+        except: pass
+        markup = types.InlineKeyboardMarkup().add(types.InlineKeyboardButton("Annulla", callback_data="admin_ban_list"))
+        msg_sent = bot.send_message(user_id, f"⏱ Scrivi la tempistica stimata (es. 24/48h) per la pratica STK-{ticket_id}:", reply_markup=markup)
+        track_msg(user_id, msg_sent.message_id)
+
+    elif data.startswith("ticket_status_"):
+        ticket_id = data.split("_")[2]
+        state["step"] = "WAITING_TICKET_STATUS"
+        state["ticket_id"] = ticket_id
+        try: bot.delete_message(user_id, call.message.message_id)
+        except: pass
+        markup = types.InlineKeyboardMarkup().add(types.InlineKeyboardButton("Annulla", callback_data="admin_ban_list"))
+        msg_sent = bot.send_message(user_id, f"🔄 Scrivi il nuovo stato per la pratica STK-{ticket_id}:", reply_markup=markup)
+        track_msg(user_id, msg_sent.message_id)
+
+    elif data.startswith("ticket_msg_"):
+        parts = data.split("_")
+        ticket_id, user_id_cliente = parts[2], parts[3]
+        state["step"] = "SEND_TICKET_MSG"
+        state["target_user"] = user_id_cliente
+        state["ticket_id"] = ticket_id
+        try: bot.delete_message(user_id, call.message.message_id)
+        except: pass
+        markup = types.InlineKeyboardMarkup().add(types.InlineKeyboardButton("Annulla", callback_data="admin_ban_list"))
+        msg_sent = bot.send_message(user_id, f"Scrivi il messaggio da inviare al cliente per la pratica STK-{ticket_id}:", reply_markup=markup)
+        track_msg(user_id, msg_sent.message_id)
+
     elif data == "dash_ord_serv_std":
         orders = [o for o in db_get_all_orders() if o.get('status') in ['PENDING', 'ACCEPTED'] and o.get('order_type') == 'SERVICE']
         bot.edit_message_text("🛠 <b>SERVIZI STANDARD IN LAVORAZIONE</b>", user_id, call.message.message_id, parse_mode="HTML")
@@ -721,7 +888,6 @@ def handle_callbacks(call):
                 track_msg(user_id, sent.message_id)
             except: pass
             return
-        
         for q in quotes:
             msg = f"👨‍💻 <b>TICKET #{q['id']} - SVILUPPO IT</b>\n👤 Da: @{q['username']} (ID: {q['user_id']})\n💰 Budget Indicativo: {q['budget']}\n\n📝 <b>Richiesta:</b>\n{q['description']}"
             markup = types.InlineKeyboardMarkup()
@@ -749,14 +915,12 @@ def handle_callbacks(call):
     elif data.startswith("rej_quote_"):
         q_id = data.split("_")[2]
         db_update_quote(q_id, "REJECTED_BY_ADMIN", 0, "Siamo spiacenti ma il progetto non è attualmente fattibile o non rientra nei nostri standard operativi.")
-        bot.answer_callback_query(call.id, "❌ Preventivo Rifiutato.")
         try: bot.edit_message_reply_markup(user_id, call.message.message_id, reply_markup=None)
         except: pass
 
     elif data.startswith("act_trk_") or data.startswith("act_file_") or data.startswith("act_meet_") or data.startswith("act_upd_"):
         parts = data.split("_")
         action, o_id, u_id, m_id = parts[1], parts[2], parts[3], parts[4]
-        
         conn = get_db()
         row = conn.execute("SELECT pratica_code FROM orders WHERE id = ?", (o_id,)).fetchone()
         conn.close()
@@ -777,7 +941,6 @@ def handle_callbacks(call):
     elif data.startswith("act_acc_") or data.startswith("act_work_") or data.startswith("act_cnc_"):
         parts = data.split("_")
         action, o_id, u_id, m_id = parts[1], parts[2], parts[3], parts[4]
-        
         conn = get_db()
         row = conn.execute("SELECT pratica_code FROM orders WHERE id = ?", (o_id,)).fetchone()
         conn.close()
@@ -798,14 +961,12 @@ def handle_callbacks(call):
                 if m_id and str(m_id) != "0": bot.edit_message_text(chat_id=int(u_id), message_id=int(m_id), text=new_text, parse_mode="HTML")
                 else: bot.send_message(int(u_id), new_text, parse_mode="HTML")
             except: pass
-        bot.answer_callback_query(call.id, "✅ Stato Aggiornato LIVE!")
         try: bot.edit_message_reply_markup(user_id, call.message.message_id, reply_markup=None)
         except: pass
 
     elif data.startswith("act_restore_"):
         parts = data.split("_")
         o_id, u_id, m_id = parts[2], parts[3], parts[4]
-        
         conn = get_db()
         row = conn.execute("SELECT pratica_code FROM orders WHERE id = ?", (o_id,)).fetchone()
         conn.close()
@@ -818,7 +979,6 @@ def handle_callbacks(call):
                 if m_id and str(m_id) != "0": bot.edit_message_text(chat_id=int(u_id), message_id=int(m_id), text=new_text, parse_mode="HTML")
                 else: bot.send_message(int(u_id), new_text, parse_mode="HTML")
             except: pass
-        bot.answer_callback_query(call.id, "✅ Ordine Ripristinato in Dashboard!")
         try: bot.edit_message_reply_markup(user_id, call.message.message_id, reply_markup=None)
         except: pass
 
@@ -890,72 +1050,12 @@ def handle_callbacks(call):
         )
         bot.edit_message_text(msg, user_id, call.message.message_id, parse_mode="HTML", reply_markup=get_cancel_keyboard())
 
-    elif data == "admin_ban_list":
-        # Connessione al DB per cercare pratiche in attesa
-        conn = sqlite3.connect(DB_PATH)
-        cursor = conn.cursor()
-        cursor.execute("SELECT id, user_id, tipo_servizio, stato FROM ticket_servizi WHERE stato != 'Completato'")
-        tickets = cursor.fetchall()
-        conn.close()
-
-        if not tickets:
-            markup = types.InlineKeyboardMarkup()
-            markup.add(types.InlineKeyboardButton("⬅️ Torna Indietro", callback_data="m_main"))
-            bot.edit_message_text("✅ Non ci sono pratiche in coda.", chat_id=call.message.chat.id, message_id=call.message.message_id, reply_markup=markup)
-            return
-
-        # Prende il primo ticket in coda per gestirlo
-        ticket_id, user_id_cliente, tipo_servizio, stato = tickets[0]
-
-        markup = types.InlineKeyboardMarkup(row_width=2)
-        
-        markup.add(
-            types.InlineKeyboardButton("⏱ Dai Tempistica", callback_data=f"ticket_time_{ticket_id}"),
-            types.InlineKeyboardButton("🔄 Cambia Stato", callback_data=f"ticket_status_{ticket_id}")
-        )
-        markup.add(
-            types.InlineKeyboardButton("✅ Esito Positivo", callback_data=f"ticket_ok_{ticket_id}_{user_id_cliente}"),
-            types.InlineKeyboardButton("❌ Esito Negativo", callback_data=f"ticket_ko_{ticket_id}_{user_id_cliente}")
-        )
-        markup.add(
-            types.InlineKeyboardButton("✉️ Invia Messaggio al Cliente", callback_data=f"ticket_msg_{ticket_id}_{user_id_cliente}")
-        )
-        markup.add(
-            types.InlineKeyboardButton("⏭ Prossima Pratica", callback_data="admin_ban_list"),
-            types.InlineKeyboardButton("⬅️ Torna Indietro", callback_data="m_main")
-        )
-        
-        testo_plancia = (
-            f"⛔️ <b>PRATICA #{ticket_id}</b>\n\n"
-            f"<b>Servizio:</b> {tipo_servizio}\n"
-            f"<b>ID Cliente:</b> <code>{user_id_cliente}</code>\n"
-            f"<b>Stato Attuale:</b> {stato}\n\n"
-            "Scegli un'azione per gestire questa richiesta:"
-        )
-        bot.edit_message_text(testo_plancia, chat_id=call.message.chat.id, message_id=call.message.message_id, reply_markup=markup, parse_mode="HTML")
-
-    # Gestione dell'invio messaggio diretto al cliente
-    elif data.startswith("ticket_msg_"):
-        parti = data.split("_")
-        ticket_id = parti[2]
-        user_id_cliente = parti[3]
-        
-        # Mettiamo l'admin nello stato di attesa del messaggio
-        user_states[call.message.chat.id] = {"step": "SEND_TICKET_MSG", "target_user": user_id_cliente, "ticket_id": ticket_id}
-        
-        try: bot.delete_message(call.message.chat.id, call.message.message_id)
-        except: pass
-        
-        markup = types.InlineKeyboardMarkup()
-        markup.add(types.InlineKeyboardButton("Annulla", callback_data="admin_ban_list"))
-        bot.send_message(call.message.chat.id, f"Scrivi qui sotto il messaggio da inviare al cliente per la pratica #{ticket_id}:", reply_markup=markup)
-
     elif data == "m_prod":
         bot.edit_message_text("📦 <b>GESTIONE PRODOTTI & MEDIA</b>\n\nCosa desideri fare?", user_id, call.message.message_id, parse_mode="HTML", reply_markup=get_admin_prod_keyboard())
 
     elif data == "p_add":
         markup = types.InlineKeyboardMarkup(row_width=1)
-        cats = ["Meetup", "Documenti falsi", "Banconote false", "Monete false", "Coca", "Weed", "Hash", "Telefoni Criptati", "Servizi", "Altro"]
+        cats = ["Meet up", "Documenti falsi", "Banconote false", "Monete false", "Coca", "Weed", "Hash", "Telefoni Criptati", "Servizi", "Altro"]
         markup.add(*[types.InlineKeyboardButton(c, callback_data=f"addcat_{c}") for c in cats])
         markup.add(types.InlineKeyboardButton("🔙 Torna al Menu Principale", callback_data="m_main"))
         bot.edit_message_text("Seleziona la categoria del prodotto:", user_id, call.message.message_id, reply_markup=markup)
@@ -967,12 +1067,7 @@ def handle_callbacks(call):
 
     elif data == "p_list":
         prods = db_get_products()
-        if not prods:
-            try:
-                sent = bot.send_message(user_id, "📭 Nessun prodotto.", reply_markup=get_cancel_keyboard())
-                track_msg(user_id, sent.message_id)
-            except: pass
-            return
+        if not prods: return
         try:
             sent_head = bot.send_message(user_id, "📋 <b>LISTA PRODOTTI IN VETRINA</b>:", parse_mode="HTML")
             track_msg(user_id, sent_head.message_id)
@@ -1041,7 +1136,6 @@ def handle_callbacks(call):
         p_id, curr_st = parts[1], parts[2] == 'True'
         new_st = not curr_st
         if db_toggle_product(p_id, curr_st):
-            bot.answer_callback_query(call.id, "✅ Stato aggiornato!")
             msg_text = call.message.text.replace("🟢 In Vetrina", "🔴 Nascosto") if "🟢 In Vetrina" in call.message.text else call.message.text.replace("🔴 Nascosto", "🟢 In Vetrina")
             markup = types.InlineKeyboardMarkup(row_width=2)
             markup.add(types.InlineKeyboardButton("👁️ On/Off", callback_data=f"tog_{p_id}_{new_st}"), types.InlineKeyboardButton("✏️ Modifica", callback_data=f"edit_{p_id}"))
@@ -1051,16 +1145,12 @@ def handle_callbacks(call):
 
     elif data.startswith("del_"):
         if db_delete_product(data.split("_")[1]):
-            bot.answer_callback_query(call.id, "🗑️ Prodotto eliminato!")
             try: bot.delete_message(user_id, call.message.message_id)
             except: pass
 
     elif data == "done_media":
         st = user_states.get(user_id, {})
-        if not st.get("media_list"):
-            bot.answer_callback_query(call.id, "❌ Invia almeno un file multimediale!", show_alert=True)
-            return
-        
+        if not st.get("media_list"): return
         if st.get("step") == "WAITING_MEDIA":
             st["step"] = "WAITING_NAME"
             try:
@@ -1076,19 +1166,17 @@ def handle_callbacks(call):
 def handle_media(message):
     user_id = message.chat.id
     if user_id != ADMIN_ID: return
-    
-    # OPSEC: la foto che carichi si cancella all'istante
     try: bot.delete_message(user_id, message.message_id)
     except: pass
     
     state = user_states.get(user_id, {})
     if state.get("step") not in ["WAITING_MEDIA", "WAITING_MEDIA_EDIT"]: return
-
+    
     try:
         wait_msg = bot.send_message(user_id, "⏳ Salvataggio sul Server Locale in corso...")
         track_msg(user_id, wait_msg.message_id)
     except: wait_msg = None
-
+    
     if message.photo:
         file_id = message.photo[-1].file_id
         media_type, mime, ext = 'image', 'image/jpeg', 'jpg'
@@ -1100,13 +1188,13 @@ def handle_media(message):
             return
         file_id = message.video.file_id
         media_type, mime, ext = 'video', 'video/mp4', 'mp4'
-
+        
     try:
         file_info = bot.get_file(file_id)
         file_url = f"https://api.telegram.org/file/bot{TELEGRAM_TOKEN}/{file_info.file_path}"
         file_bytes = requests.get(file_url).content
-        
         public_url, err = upload_to_local_storage(file_bytes, mime, ext)
+        
         if public_url:
             if "media_list" not in user_states[user_id]: user_states[user_id]["media_list"] = []
             user_states[user_id]["media_list"].append({"url": public_url, "type": media_type})
@@ -1126,8 +1214,6 @@ def handle_media(message):
 @bot.message_handler(func=lambda m: m.chat.id == ADMIN_ID)
 def handle_admin_text(message):
     user_id = message.chat.id
-    
-    # OPSEC: tutto quello che scrivi si cancella all'istante
     try: bot.delete_message(user_id, message.message_id)
     except: pass
     
@@ -1139,13 +1225,9 @@ def handle_admin_text(message):
             raw = message.text.split("-", 1)
             price = float(raw[0].replace('€','').strip())
             msg_reply = raw[1].strip() if len(raw) > 1 else "Preventivo approvato. Attendo tua conferma per iniziare."
-            
             db_update_quote(state["q_id"], "QUOTED", price, msg_reply)
-            
-            # Reset e avviso temporaneo
             reset_panel_and_notify(user_id, f"✅ Offerta di {price}€ inviata al cliente con successo.")
             
-            # Notifica al cliente sul bot
             conn = get_db()
             q = conn.execute("SELECT user_id FROM quotes WHERE id = ?", (state["q_id"],)).fetchone()
             conn.close()
@@ -1160,12 +1242,41 @@ def handle_admin_text(message):
             except: pass
         return
 
+    # === RISPOSTE AL MODULO TAKEDOWN E BAN ===
+    if step == "WAITING_TICKET_TIME":
+        ticket_id = state["ticket_id"]
+        conn = get_db()
+        conn.execute("UPDATE ticket_servizi SET stato = ? WHERE id = ?", (f"In elaborazione (Tempo stimato: {message.text})", ticket_id))
+        conn.commit()
+        conn.close()
+        reset_panel_and_notify(user_id, f"✅ Tempistica registrata per STK-{ticket_id}.")
+        return
+
+    if step == "WAITING_TICKET_STATUS":
+        ticket_id = state["ticket_id"]
+        conn = get_db()
+        conn.execute("UPDATE ticket_servizi SET stato = ? WHERE id = ?", (message.text, ticket_id))
+        conn.commit()
+        conn.close()
+        reset_panel_and_notify(user_id, f"✅ Stato personalizzato applicato a STK-{ticket_id}.")
+        return
+
+    if step == "SEND_TICKET_MSG":
+        target_user = state["target_user"]
+        ticket_id = state["ticket_id"]
+        try:
+            bot.send_message(target_user, f"📩 <b>Aggiornamento Pratica STK-{ticket_id}:</b>\n\n{message.text}", parse_mode="HTML")
+            reset_panel_and_notify(user_id, f"✅ Messaggio recapitato al cliente (ID: {target_user}).")
+        except:
+            reset_panel_and_notify(user_id, "❌ Impossibile contattare il cliente (L'utente potrebbe aver bloccato il bot).")
+        return
+    # ==========================================
+
     if message.text and message.text.startswith("/punti"):
         try:
             parts = message.text.split()
             target_id = None
             qty = 0
-            
             if message.reply_to_message:
                 qty = int(parts[1]) if len(parts) > 1 else 0
                 if message.reply_to_message.forward_from:
@@ -1177,49 +1288,33 @@ def handle_admin_text(message):
             elif len(parts) >= 3:
                 target_str = parts[1]
                 qty = int(parts[2])
-                
                 if target_str.startswith("@"):
                     username = target_str.replace("@", "")
                     conn = get_db()
                     row = conn.execute("SELECT telegram_id FROM users WHERE username = ? COLLATE NOCASE", (username,)).fetchone()
                     conn.close()
-                    if row:
-                        target_id = row['telegram_id']
-                    else:
-                        reset_panel_and_notify(user_id, f"❌ Nessun utente @{username} trovato nel database del bot.")
-                        return
-                elif target_str.upper().startswith("ID_"):
-                    target_id = int(target_str.upper().replace("ID_", ""))
-                else:
-                    target_id = int(target_str)
+                    if row: target_id = row['telegram_id']
+                    else: reset_panel_and_notify(user_id, f"❌ Nessun utente @{username} trovato nel database."); return
+                elif target_str.upper().startswith("ID_"): target_id = int(target_str.upper().replace("ID_", ""))
+                else: target_id = int(target_str)
             
-            if target_id is None:
-                raise ValueError("Nessun target valido")
-
+            if target_id is None: raise ValueError("Nessun target valido")
             conn = get_db()
             row = conn.execute("SELECT points FROM users WHERE telegram_id = ?", (target_id,)).fetchone()
             if not row:
                 conn.execute("INSERT INTO users (telegram_id, username, points) VALUES (?, ?, ?)", (target_id, "Utente_Caveau", 0))
                 conn.commit()
             conn.close()
-
+            
             ok, new_total = db_update_user_points(target_id, qty)
             if ok:
                 receipt = f"✅ <b>RICARICA PUNTI COMPLETATA</b>\n\n🆔 <b>Target ID:</b> <code>{target_id}</code>\n💎 <b>Nuovo Saldo:</b> {new_total} punti"
                 reset_panel_and_notify(user_id, receipt)
                 try: bot.send_message(target_id, f"💎 <b>Aggiornamento Caveau:</b> il tuo saldo è stato ricaricato. Hai ora <b>{new_total} punti</b>.", parse_mode="HTML")
                 except: pass
-            else: 
-                reset_panel_and_notify(user_id, "❌ Errore critico database durante l'aggiornamento.")
+            else: reset_panel_and_notify(user_id, "❌ Errore critico database durante l'aggiornamento.")
         except Exception as e: 
-            err_msg = (
-                "❌ <b>ERRORE DI SINTASSI</b>\n\n"
-                "Usa il Motore Punti con questi formati:\n"
-                "1️⃣ <code>/punti @username 100</code>\n"
-                "2️⃣ <code>/punti 123456789 100</code>\n"
-                "3️⃣ <code>/punti ID_123456789 100</code>\n"
-                "4️⃣ <i>Rispondi a un messaggio/contatto con:</i> <code>/punti 100</code>"
-            )
+            err_msg = ("❌ <b>ERRORE DI SINTASSI</b>\n\nUsa il Motore Punti con questi formati:\n1️⃣ <code>/punti @username 100</code>\n2️⃣ <code>/punti 123456789 100</code>\n3️⃣ <code>/punti ID_123456789 100</code>\n4️⃣ <i>Rispondi a un messaggio/contatto con:</i> <code>/punti 100</code>")
             reset_panel_and_notify(user_id, err_msg)
         return
 
@@ -1278,24 +1373,6 @@ def handle_admin_text(message):
                 
         reset_panel_and_notify(user_id, "✅ Operazione Completata! Archiviato nei Completati.")
         return
-
-    # Se l'utente è un admin che sta scrivendo a un cliente
-    if user_states.get(message.chat.id, {}).get("step") == "SEND_TICKET_MSG":
-        target_user = user_states[message.chat.id]["target_user"]
-        ticket_id = user_states[message.chat.id]["ticket_id"]
-        testo_admin = message.text
-        
-        try:
-            # Invia il messaggio al cliente
-            bot.send_message(target_user, f"📩 <b>Aggiornamento Pratica #{ticket_id}:</b>\n\n{testo_admin}", parse_mode="HTML")
-            bot.send_message(message.chat.id, f"✅ Messaggio inviato al cliente (ID: {target_user}).")
-        except Exception as e:
-            bot.send_message(message.chat.id, "❌ Impossibile inviare il messaggio. Il cliente potrebbe aver bloccato il bot.")
-            
-        # Pulisce lo stato e lo rimanda alla lista
-        user_states[message.chat.id] = {}
-        return
-
 
     elif step == "EDIT_NAME":
         db_update_product(state["target_product"], {"name": message.text})
