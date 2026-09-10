@@ -6,10 +6,16 @@ import uuid
 import sqlite3
 import base64
 import random
-from http.server import HTTPServer, BaseHTTPRequestHandler
+import secrets
+import html
+import logging
 import requests
+from http.server import ThreadingHTTPServer, BaseHTTPRequestHandler
 import telebot
 from telebot import types
+
+# Setup Logging per non perdere gli errori critici
+logging.basicConfig(filename='/root/bot_shop/error.log', level=logging.ERROR, format='%(asctime)s - %(message)s')
 
 TELEGRAM_TOKEN = os.environ.get('TELEGRAM_TOKEN', '').strip()
 WEB_APP_URL = os.environ.get('WEB_APP_URL', '').strip()
@@ -27,11 +33,9 @@ user_states = {}
 # OPSEC: TRACKER SPAZZINO E NOTIFICHE
 # ==========================================
 def track_msg(user_id, msg_id):
-    """Salva l'ID dei messaggi generati nelle liste per poterli cancellare dopo."""
     user_states.setdefault(user_id, {}).setdefault("tracked", []).append(msg_id)
 
 def clear_tracked(user_id):
-    """Incenerisce all'istante tutti i messaggi della lista quando clicchi Torna Indietro."""
     state = user_states.get(user_id, {})
     for m_id in state.get("tracked", []):
         try:
@@ -41,7 +45,6 @@ def clear_tracked(user_id):
     state["tracked"] = []
 
 def send_admin_notification(chat_id, text, delay=3600):
-    """Invia notifiche (Ordini/Ticket) che si vaporizzano dopo 1 ORA (3600 secondi)."""
     try:
         msg = bot.send_message(chat_id, text, parse_mode="HTML")
         def delete_task():
@@ -52,11 +55,10 @@ def send_admin_notification(chat_id, text, delay=3600):
         t = threading.Timer(delay, delete_task)
         t.daemon = True
         t.start()
-    except:
-        pass
+    except Exception as e:
+        logging.error(f"Errore notifica admin: {e}")
 
 def reset_panel_and_notify(user_id, success_text):
-    """Mostra un avviso di successo per 5 secondi e resetta la dashboard in sicurezza."""
     clear_tracked(user_id)
     state = user_states.setdefault(user_id, {})
     state["step"] = None
@@ -81,15 +83,16 @@ def reset_panel_and_notify(user_id, success_text):
         try:
             sent = bot.send_message(user_id, "⚙️ <b>PANNELLO GESTIONALE CAVEAU</b> 🎭\n\nScegli la sezione da gestire:", parse_mode="HTML", reply_markup=get_admin_main_keyboard())
             state["panel_id"] = sent.message_id
-        except:
-            pass
+        except Exception as e:
+            logging.error(f"Errore reset pannello: {e}")
 
 # ==========================================
-# GESTIONE DATABASE E GIVEAWAY
+# GESTIONE DATABASE E GIVEAWAY (WAL MODE)
 # ==========================================
 def get_db():
-    conn = sqlite3.connect(DB_PATH, check_same_thread=False)
+    conn = sqlite3.connect(DB_PATH, check_same_thread=False, timeout=10.0)
     conn.row_factory = sqlite3.Row
+    conn.execute('PRAGMA journal_mode=WAL') # Previene il blocco "Database is locked"
     return conn
 
 def init_db():
@@ -108,7 +111,7 @@ def init_db():
     c.execute('''CREATE TABLE IF NOT EXISTS quotes (id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER, username TEXT, description TEXT, budget TEXT, admin_reply TEXT, price REAL, status TEXT, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)''')
     try:
         c.execute("ALTER TABLE orders ADD COLUMN pratica_code TEXT")
-    except sqlite3.OperationalError:
+    except:
         pass 
     conn.commit()
     conn.close()
@@ -252,10 +255,11 @@ def upload_to_local_storage(file_bytes, mime_type, file_extension):
             f.write(file_bytes)
         return f"{WEB_APP_URL}/media/{filename}", "OK"
     except Exception as e:
+        logging.error(f"Upload error: {e}")
         return None, str(e)
 
 # ==========================================
-# SERVER API REST
+# SERVER API REST (MULTI-THREADED)
 # ==========================================
 class WebhookAPIHandler(BaseHTTPRequestHandler):
     def do_OPTIONS(self):
@@ -330,6 +334,12 @@ class WebhookAPIHandler(BaseHTTPRequestHandler):
             self.end_headers()
             return
             
+        # Sicurezza: Blocca upload superiori a 10MB per evitare colassi della RAM
+        if content_length > 10 * 1024 * 1024:
+            self.send_response(413)
+            self.end_headers()
+            return
+
         post_data = self.rfile.read(content_length).decode('utf-8')
         try:
             data = json.loads(post_data)
@@ -354,6 +364,7 @@ class WebhookAPIHandler(BaseHTTPRequestHandler):
                 public_url = f"{WEB_APP_URL}/media/{filename}"
                 self.wfile.write(json.dumps({"url": public_url}).encode('utf-8'))
             except Exception as e:
+                logging.error(f"Errore upload base64: {e}")
                 self.wfile.write(json.dumps({"error": str(e)}).encode('utf-8'))
             return
             
@@ -365,7 +376,7 @@ class WebhookAPIHandler(BaseHTTPRequestHandler):
 
         elif self.path == '/api/giveaway/join':
             user_id = str(data.get('id', ''))
-            username = data.get('username', 'Anonimo')
+            username = html.escape(data.get('username', 'Anonimo'))
             g = get_giveaway()
             if not g.get("is_active"):
                 self.wfile.write(json.dumps({"success": False, "error": "Evento chiuso al momento."}).encode('utf-8'))
@@ -380,8 +391,8 @@ class WebhookAPIHandler(BaseHTTPRequestHandler):
 
         elif self.path == '/api/strike':
             user_id = data.get("user_id")
-            username = data.get("username", "Anonimo")
-            dettagli = data.get("dettagli", "")
+            username = html.escape(data.get("username", "Anonimo"))
+            dettagli = html.escape(data.get("dettagli", ""))
             
             conn = get_db()
             c = conn.cursor()
@@ -398,9 +409,9 @@ class WebhookAPIHandler(BaseHTTPRequestHandler):
 
         elif self.path == '/api/quotes/new':
             user_id = data.get("user_id")
-            username = data.get("username", "Anonimo")
-            desc = data.get("description", "")
-            budget = data.get("budget", "")
+            username = html.escape(data.get("username", "Anonimo"))
+            desc = html.escape(data.get("description", ""))
+            budget = html.escape(data.get("budget", ""))
             qid = db_save_quote(user_id, username, desc, budget)
             
             if ADMIN_ID and ADMIN_ID != 0:
@@ -435,7 +446,7 @@ class WebhookAPIHandler(BaseHTTPRequestHandler):
                 self.wfile.write(json.dumps({"success": True}).encode('utf-8'))
                 
             elif action == 'ACCEPT':
-                secure_hash = "".join(random.choices("ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789", k=6))
+                secure_hash = "".join(secrets.choice("ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789") for _ in range(6))
                 pratica_code = f"PR-DEV{secure_hash[:4]}"
                 cart = [{"name": "Sviluppo IT su Misura", "qty": 1, "price": q['price'], "category": "Servizi"}]
                 address = f"PROGETTO APPROVATO:\n{q['description']}\n\nAccordo: {q['admin_reply']}\nSaldo concordato in chat."
@@ -450,16 +461,18 @@ class WebhookAPIHandler(BaseHTTPRequestHandler):
             cart = data.get("cart", [])
             total = data.get("total", 0)
             user_id = data.get("user_id")
-            username = data.get("username", "Anonimo")
-            address = data.get("address", "Non specificato")
+            username = html.escape(data.get("username", "Anonimo"))
+            address = html.escape(data.get("address", "Non specificato"))
 
-            secure_hash = "".join(random.choices("ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789", k=6))
+            secure_hash = "".join(secrets.choice("ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789") for _ in range(8))
             pratica_code = f"PR-{secure_hash}"
             is_digital = any(any(keyword in str(item.get("category", "")).lower() or keyword in str(item.get("name", "")).lower() for keyword in ["servizi", "exchange", "buoni amazon", "buoni q8", "amazon", "q8"]) for item in cart)
             order_type = "SERVICE" if is_digital else "PHYSICAL"
 
             order_id = db_save_order(user_id, username, cart, total, address, order_type, pratica_code)
-            items_text = "\n".join([f"• {i['qty']}x {i['name']} - \u20ac{i['price']}" for i in cart])
+            
+            # Escaping anche sugli items del carrello
+            items_text = "\n".join([f"• {html.escape(str(i['qty']))}x {html.escape(str(i['name']))} - \u20ac{i['price']}" for i in cart])
 
             user_msg = f"✅ <b>Richiesta Registrata con Successo!</b>\n\n🏷 <b>Codice Pratica:</b> <code>{pratica_code}</code>\n<i>Usa questo codice nel Tracker del sito per monitorare l'ordine.</i>\n\n📦 <b>Riepilogo:</b>\n{items_text}\n\n📍 <b>Dati Recapito/Info:</b>\n{address}\n\n💰 <b>Totale:</b> \u20ac{total}\n\n⏳ <i>Un operatore sta elaborando la tua richiesta. Riceverai aggiornamenti live qui.</i>"
             
@@ -477,7 +490,7 @@ class WebhookAPIHandler(BaseHTTPRequestHandler):
 
 def run_health_server():
     port = int(os.environ.get("PORT", 8080))
-    server = HTTPServer(('0.0.0.0', port), WebhookAPIHandler)
+    server = ThreadingHTTPServer(('0.0.0.0', port), WebhookAPIHandler)
     server.serve_forever()
 
 def get_admin_main_keyboard():
@@ -530,7 +543,7 @@ def send_welcome(message):
         bot.delete_message(user_id, message.message_id)
     except:
         pass
-    username = message.from_user.username
+    username = html.escape(message.from_user.username or "Anonimo")
     threading.Thread(target=db_register_user, args=(user_id, username), daemon=True).start()
     
     welcome_text = (
@@ -609,9 +622,9 @@ def handle_callbacks(call):
         msg = (
             f"🎁 <b>DASHBOARD GIVEAWAY</b>\n\n"
             f"<b>Stato:</b> {status}\n"
-            f"<b>Premio in Palio:</b> {gw.get('prize', 'N/D')}\n"
-            f"<b>Descrizione:</b> {gw.get('description', 'N/D')}\n"
-            f"<b>Scadenza:</b> {gw.get('end_date', 'N/D')}\n"
+            f"<b>Premio in Palio:</b> {html.escape(str(gw.get('prize', 'N/D')))}\n"
+            f"<b>Descrizione:</b> {html.escape(str(gw.get('description', 'N/D')))}\n"
+            f"<b>Scadenza:</b> {html.escape(str(gw.get('end_date', 'N/D')))}\n"
             f"<b>Iscritti Attuali:</b> {len(gw.get('participants', {}))}"
         )
         markup = types.InlineKeyboardMarkup(row_width=2)
@@ -669,7 +682,7 @@ def handle_callbacks(call):
             return
         msg = "📋 <b>Lista Iscritti Giveaway:</b>\n\n"
         for uid, uname in parts.items():
-            msg += f"👤 {uname} (ID: <code>{uid}</code>)\n"
+            msg += f"👤 {html.escape(str(uname))} (ID: <code>{uid}</code>)\n"
         try:
             sent = bot.send_message(user_id, msg, parse_mode='HTML', reply_markup=get_cancel_keyboard())
             track_msg(user_id, sent.message_id)
@@ -682,7 +695,7 @@ def handle_callbacks(call):
         if not parts:
             return
         winner_id = random.choice(list(parts.keys()))
-        winner_name = parts[winner_id]
+        winner_name = html.escape(str(parts[winner_id]))
         try:
             sent = bot.send_message(user_id, f"🎉 <b>ESTRAZIONE COMPLETATA!</b>\n\n👤 <b>Vincitore:</b> {winner_name}\n🆔 <b>ID:</b> <code>{winner_id}</code>\n\nContattalo per consegnare il premio!", parse_mode='HTML', reply_markup=get_cancel_keyboard())
             track_msg(user_id, sent.message_id)
@@ -700,13 +713,13 @@ def handle_callbacks(call):
             return
         for o in orders:
             items = json.loads(o.get('items', '[]')) if isinstance(o.get('items'), str) else o.get('items', [])
-            items_str = "\n".join([f"  • {i['name']} ({i['qty']}) - \u20ac{i['price']}" for i in items]) if items else "  • Nessun dettaglio"
+            items_str = "\n".join([f"  • {html.escape(str(i['name']))} ({html.escape(str(i['qty']))}) - \u20ac{i['price']}" for i in items]) if items else "  • Nessun dettaglio"
             st_text = "⏳ Da Confermare" if o.get('status') == 'PENDING' else "✅ In Preparazione"
-            address_str = str(o.get('address', 'N/D'))
+            address_str = html.escape(str(o.get('address', 'N/D')))
             is_meetup = "meet" in address_str.lower() or "mano" in address_str.lower()
             pratica_code = o.get('pratica_code') if o.get('pratica_code') else f"PR-LGCY-{o.get('id')}"
             
-            msg = f"🛒 <b>PRATICA {pratica_code}</b> [{st_text}]\n👤 Utente: @{o.get('username')} (ID: {o.get('user_id')})\n📍 Recapito/Metodo: {address_str}\n\n📦 Prodotti:\n{items_str}\n\n💰 Totale: \u20ac{o.get('total_price')}"
+            msg = f"🛒 <b>PRATICA {pratica_code}</b> [{st_text}]\n👤 Utente: @{html.escape(str(o.get('username')))} (ID: {o.get('user_id')})\n📍 Recapito/Metodo: {address_str}\n\n📦 Prodotti:\n{items_str}\n\n💰 Totale: \u20ac{o.get('total_price')}"
             
             m_id = o.get('user_message_id', 0)
             u_id = o.get('user_id', 0)
@@ -743,11 +756,8 @@ def handle_callbacks(call):
         parts = data.split("_")
         index = int(parts[3]) if len(parts) > 3 else 0
 
-        conn = sqlite3.connect(DB_PATH)
-        conn.row_factory = sqlite3.Row
-        cursor = conn.cursor()
-        cursor.execute("SELECT id, user_id, tipo_servizio, stato FROM ticket_servizi WHERE stato != 'Completato' AND stato != 'Annullato' ORDER BY id ASC")
-        tickets = cursor.fetchall()
+        conn = get_db()
+        tickets = conn.execute("SELECT id, user_id, tipo_servizio, stato FROM ticket_servizi WHERE stato != 'Completato' AND stato != 'Annullato' ORDER BY id ASC").fetchall()
         conn.close()
 
         if not tickets:
@@ -762,8 +772,8 @@ def handle_callbacks(call):
 
         ticket_id = tickets[index]['id']
         user_id_cliente = tickets[index]['user_id']
-        tipo_servizio = tickets[index]['tipo_servizio']
-        stato = tickets[index]['stato']
+        tipo_servizio = html.escape(str(tickets[index]['tipo_servizio']))
+        stato = html.escape(str(tickets[index]['stato']))
         
         markup = types.InlineKeyboardMarkup(row_width=2)
         markup.add(
@@ -853,11 +863,11 @@ def handle_callbacks(call):
             return
         for o in orders:
             items = json.loads(o.get('items', '[]')) if isinstance(o.get('items'), str) else o.get('items', [])
-            items_str = "\n".join([f"  • {i['name']} ({i['qty']}) - \u20ac{i['price']}" for i in items]) if items else "  • Nessun dettaglio"
+            items_str = "\n".join([f"  • {html.escape(str(i['name']))} ({html.escape(str(i['qty']))}) - \u20ac{i['price']}" for i in items]) if items else "  • Nessun dettaglio"
             st_text = "⏳ Da Visionare" if o.get('status') == 'PENDING' else "⚙️ In Lavorazione"
             pratica_code = o.get('pratica_code') if o.get('pratica_code') else f"PR-LGCY-{o.get('id')}"
             
-            msg = f"🛠 <b>PRATICA {pratica_code}</b> [{st_text}]\n👤 Utente: @{o.get('username')} (ID: {o.get('user_id')})\n📍 Dati forniti: {o.get('address', 'N/D')}\n\n📦 Richiesto:\n{items_str}\n\n💰 Totale: \u20ac{o.get('total_price')}"
+            msg = f"🛠 <b>PRATICA {pratica_code}</b> [{st_text}]\n👤 Utente: @{html.escape(str(o.get('username')))} (ID: {o.get('user_id')})\n📍 Dati forniti: {html.escape(str(o.get('address', 'N/D')))}\n\n📦 Richiesto:\n{items_str}\n\n💰 Totale: \u20ac{o.get('total_price')}"
             
             m_id = o.get('user_message_id', 0)
             u_id = o.get('user_id', 0)
@@ -889,7 +899,7 @@ def handle_callbacks(call):
             except: pass
             return
         for q in quotes:
-            msg = f"👨‍💻 <b>TICKET #{q['id']} - SVILUPPO IT</b>\n👤 Da: @{q['username']} (ID: {q['user_id']})\n💰 Budget Indicativo: {q['budget']}\n\n📝 <b>Richiesta:</b>\n{q['description']}"
+            msg = f"👨‍💻 <b>TICKET #{q['id']} - SVILUPPO IT</b>\n👤 Da: @{html.escape(str(q['username']))} (ID: {q['user_id']})\n💰 Budget Indicativo: {html.escape(str(q['budget']))}\n\n📝 <b>Richiesta:</b>\n{html.escape(str(q['description']))}"
             markup = types.InlineKeyboardMarkup()
             markup.add(types.InlineKeyboardButton("✍️ Formula Preventivo", callback_data=f"act_quote_{q['id']}"))
             markup.add(types.InlineKeyboardButton("❌ Non Fattibile (Rifiuta)", callback_data=f"rej_quote_{q['id']}"))
@@ -999,11 +1009,11 @@ def handle_callbacks(call):
         except: pass
         for o in orders:
             items = json.loads(o.get('items', '[]')) if isinstance(o.get('items'), str) else o.get('items', [])
-            items_str = "\n".join([f"  • {i['name']} ({i['qty']})" for i in items]) if items else "  • Nessun dettaglio"
+            items_str = "\n".join([f"  • {html.escape(str(i['name']))} ({html.escape(str(i['qty']))})" for i in items]) if items else "  • Nessun dettaglio"
             pratica_code = o.get('pratica_code') if o.get('pratica_code') else f"PR-LGCY-{o.get('id')}"
-            msg = f"✅ PRATICA {pratica_code} [COMPLETATO]\n👤 @{o.get('username')} (ID: {o.get('user_id')})\n📍 {o.get('address', 'N/D')}\n📝 Esito/Note: {o.get('tracking_code', 'N/D')}\n\n📦:\n{items_str}\n────────────────────────"
+            msg = f"✅ PRATICA {pratica_code} [COMPLETATO]\n👤 @{html.escape(str(o.get('username')))} (ID: {o.get('user_id')})\n📍 {html.escape(str(o.get('address', 'N/D')))}\n📝 Esito/Note: {html.escape(str(o.get('tracking_code', 'N/D')))}\n\n📦:\n{items_str}\n────────────────────────"
             try: 
-                sent = bot.send_message(user_id, msg)
+                sent = bot.send_message(user_id, msg, parse_mode="HTML")
                 track_msg(user_id, sent.message_id)
             except: pass
         try:
@@ -1025,13 +1035,13 @@ def handle_callbacks(call):
         except: pass
         for o in orders:
             items = json.loads(o.get('items', '[]')) if isinstance(o.get('items'), str) else o.get('items', [])
-            items_str = "\n".join([f"  • {i['name']} ({i['qty']})" for i in items]) if items else "  • Nessun dettaglio"
+            items_str = "\n".join([f"  • {html.escape(str(i['name']))} ({html.escape(str(i['qty']))})" for i in items]) if items else "  • Nessun dettaglio"
             pratica_code = o.get('pratica_code') if o.get('pratica_code') else f"PR-LGCY-{o.get('id')}"
-            msg = f"❌ PRATICA {pratica_code} [ANNULLATO]\n👤 @{o.get('username')} (ID: {o.get('user_id')})\n📍 {o.get('address', 'N/D')}\n\n📦:\n{items_str}\n────────────────────────"
+            msg = f"❌ PRATICA {pratica_code} [ANNULLATO]\n👤 @{html.escape(str(o.get('username')))} (ID: {o.get('user_id')})\n📍 {html.escape(str(o.get('address', 'N/D')))}\n\n📦:\n{items_str}\n────────────────────────"
             markup = types.InlineKeyboardMarkup()
             markup.add(types.InlineKeyboardButton("🔄 Ripristina Ordine in Dashboard", callback_data=f"act_restore_{o['id']}_{o['user_id']}_{o.get('user_message_id', 0)}"))
             try: 
-                sent = bot.send_message(user_id, msg, reply_markup=markup)
+                sent = bot.send_message(user_id, msg, reply_markup=markup, parse_mode="HTML")
                 track_msg(user_id, sent.message_id)
             except: pass
         try:
@@ -1192,7 +1202,8 @@ def handle_media(message):
     try:
         file_info = bot.get_file(file_id)
         file_url = f"https://api.telegram.org/file/bot{TELEGRAM_TOKEN}/{file_info.file_path}"
-        file_bytes = requests.get(file_url).content
+        # Sicurezza: Aggiunto timeout in fase di get
+        file_bytes = requests.get(file_url, timeout=15).content
         public_url, err = upload_to_local_storage(file_bytes, mime, ext)
         
         if public_url:
@@ -1210,6 +1221,7 @@ def handle_media(message):
         if wait_msg:
             try: bot.edit_message_text(f"❌ Errore scaricamento: {e}", user_id, wait_msg.message_id)
             except: pass
+        logging.error(f"Media handle error: {e}")
 
 @bot.message_handler(func=lambda m: m.chat.id == ADMIN_ID)
 def handle_admin_text(message):
@@ -1246,7 +1258,7 @@ def handle_admin_text(message):
     if step == "WAITING_TICKET_TIME":
         ticket_id = state["ticket_id"]
         conn = get_db()
-        conn.execute("UPDATE ticket_servizi SET stato = ? WHERE id = ?", (f"In elaborazione (Tempo stimato: {message.text})", ticket_id))
+        conn.execute("UPDATE ticket_servizi SET stato = ? WHERE id = ?", (f"In elaborazione (Tempo stimato: {html.escape(message.text)})", ticket_id))
         conn.commit()
         conn.close()
         reset_panel_and_notify(user_id, f"✅ Tempistica registrata per STK-{ticket_id}.")
@@ -1255,7 +1267,7 @@ def handle_admin_text(message):
     if step == "WAITING_TICKET_STATUS":
         ticket_id = state["ticket_id"]
         conn = get_db()
-        conn.execute("UPDATE ticket_servizi SET stato = ? WHERE id = ?", (message.text, ticket_id))
+        conn.execute("UPDATE ticket_servizi SET stato = ? WHERE id = ?", (html.escape(message.text), ticket_id))
         conn.commit()
         conn.close()
         reset_panel_and_notify(user_id, f"✅ Stato personalizzato applicato a STK-{ticket_id}.")
@@ -1265,7 +1277,7 @@ def handle_admin_text(message):
         target_user = state["target_user"]
         ticket_id = state["ticket_id"]
         try:
-            bot.send_message(target_user, f"📩 <b>Aggiornamento Pratica STK-{ticket_id}:</b>\n\n{message.text}", parse_mode="HTML")
+            bot.send_message(target_user, f"📩 <b>Aggiornamento Pratica STK-{ticket_id}:</b>\n\n{html.escape(message.text)}", parse_mode="HTML")
             reset_panel_and_notify(user_id, f"✅ Messaggio recapitato al cliente (ID: {target_user}).")
         except:
             reset_panel_and_notify(user_id, "❌ Impossibile contattare il cliente (L'utente potrebbe aver bloccato il bot).")
@@ -1294,7 +1306,7 @@ def handle_admin_text(message):
                     row = conn.execute("SELECT telegram_id FROM users WHERE username = ? COLLATE NOCASE", (username,)).fetchone()
                     conn.close()
                     if row: target_id = row['telegram_id']
-                    else: reset_panel_and_notify(user_id, f"❌ Nessun utente @{username} trovato nel database."); return
+                    else: reset_panel_and_notify(user_id, f"❌ Nessun utente @{html.escape(username)} trovato nel database."); return
                 elif target_str.upper().startswith("ID_"): target_id = int(target_str.upper().replace("ID_", ""))
                 else: target_id = int(target_str)
             
@@ -1347,9 +1359,9 @@ def handle_admin_text(message):
         pratica_code = row['pratica_code'] if row and row['pratica_code'] else f"PR-LGCY-{o_id}"
         
         if step == "WAITING_UPDATE":
-            db_update_order_status(o_id, "ACCEPTED", f"Aggiornamento: {admin_text}")
+            db_update_order_status(o_id, "ACCEPTED", f"Aggiornamento: {html.escape(admin_text)}")
             title, label = "🔔 <b>AGGIORNAMENTO ORDINE</b>", "Messaggio dallo Staff:"
-            new_text = f"{title}\n<i>Pratica: {pratica_code}</i>\n\n<b>{label}</b>\n<code>{admin_text}</code>\n\n<i>Stiamo lavorando alla tua richiesta...</i>"
+            new_text = f"{title}\n<i>Pratica: {pratica_code}</i>\n\n<b>{label}</b>\n<code>{html.escape(admin_text)}</code>\n\n<i>Stiamo lavorando alla tua richiesta...</i>"
             if u_id and str(u_id) != "0":
                 try:
                     if m_id and str(m_id) != "0": bot.edit_message_text(chat_id=int(u_id), message_id=int(m_id), text=new_text, parse_mode="HTML")
@@ -1358,13 +1370,13 @@ def handle_admin_text(message):
             reset_panel_and_notify(user_id, "✅ Aggiornamento Inviato!")
             return
 
-        db_update_order_status(o_id, "SHIPPED", admin_text)
+        db_update_order_status(o_id, "SHIPPED", html.escape(admin_text))
         
         if step == "WAITING_TRACKING": title, label = "🚚 <b>ORDINE SPEDITO</b>", "Tracking / Istruzioni:"
         elif step == "WAITING_FILE_INFO": title, label = "✅ <b>SERVIZIO COMPLETATO</b>", "Esito / Link al Documento:"
         elif step == "WAITING_MEETUP": title, label = "📍 <b>DETTAGLI MEET UP</b>", "Info e Appuntamento:"
             
-        new_text = f"{title}\n<i>Pratica: {pratica_code}</i>\n\n<b>{label}</b>\n<code>{admin_text}</code>\n\nGrazie per aver scelto Il Falsario 🎭"
+        new_text = f"{title}\n<i>Pratica: {pratica_code}</i>\n\n<b>{label}</b>\n<code>{html.escape(admin_text)}</code>\n\nGrazie per aver scelto Il Falsario 🎭"
         if u_id and str(u_id) != "0":
             try:
                 if m_id and str(m_id) != "0": bot.edit_message_text(chat_id=int(u_id), message_id=int(m_id), text=new_text, parse_mode="HTML")
@@ -1455,4 +1467,5 @@ if __name__ == '__main__':
             time.sleep(2)
             bot.infinity_polling(skip_pending=True, timeout=20, long_polling_timeout=20)
         except Exception as e:
+            logging.error(f"Errore Polling: {e}")
             time.sleep(5)
