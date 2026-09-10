@@ -4265,117 +4265,154 @@
             const container = document.getElementById('products-grid');
             let htmlContent = '';
 
-                         // INIEZIONE CARD SERVIZI (Design Apple-Style con Scorrimento Fantasma)
+                                     // INIEZIONE CARD SERVIZI (Design Apple-Style con Scorrimento Fantasma e Animazioni)
             if (currentCategoryFilter === 'ALL') {
                 htmlContent += `
                 <style>
-                    .ghost-scroll::-webkit-scrollbar { width: 3px; }
-                    .ghost-scroll::-webkit-scrollbar-track { background: transparent; }
-                    .ghost-scroll::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 10px; }
-                </style>
-                <div class="bg-[#121212] border border-gray-800 rounded-[24px] p-4 mb-5 shadow-2xl relative overflow-hidden">
-                    <div class="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-indigo-500 via-emerald-500 to-blue-500"></div>
+                    /* Design Scrollbar Premium & Distanziamento */
+                    .ghost-scroll { padding-right: 8px; margin-right: -4px; }
+                    .ghost-scroll::-webkit-scrollbar { width: 5px; }
+                    .ghost-scroll::-webkit-scrollbar-track { background: transparent; margin: 5px 0; }
+                    .ghost-scroll::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; transition: background 0.3s; }
+                    .ghost-scroll:hover::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.25); }
                     
-                    <div class="flex justify-between items-center mb-4 pl-1 mt-1">
+                    /* Motore Sfumatura Laterale Dinamica */
+                    @keyframes rgbFlow {
+                        0% { background-position: 0% 50%; }
+                        50% { background-position: 100% 50%; }
+                        100% { background-position: 0% 50%; }
+                    }
+                    .dynamic-glow-bar {
+                        background: linear-gradient(180deg, #6366f1, #f97316, #3b82f6, #f43f5e, #10b981, #6366f1);
+                        background-size: 100% 400%;
+                        animation: rgbFlow 8s linear infinite;
+                        box-shadow: 2px 0 15px rgba(255,255,255,0.05);
+                    }
+                </style>
+                
+                <div class="bg-[#121212] border border-gray-800 rounded-[24px] p-4 mb-5 shadow-2xl relative overflow-hidden group transition-all">
+                    <!-- Sfumatura dinamica sinistra -->
+                    <div class="absolute top-0 left-0 w-1.5 h-full dynamic-glow-bar opacity-80 group-hover:opacity-100 transition-opacity duration-500"></div>
+                    
+                    <div class="flex justify-between items-center mb-4 pl-2 mt-1">
                         <h3 class="font-black text-sm text-white uppercase tracking-widest flex items-center">
                             <i data-lucide="zap" class="w-4 h-4 text-amber-500 mr-2"></i> Servizi Rapidi
                         </h3>
-                        <button onclick="filterCategory('Servizi'); scrollToProducts();" class="text-[10px] text-gray-400 hover:text-white font-bold bg-gray-800/50 px-3 py-1.5 rounded-lg transition-all shadow-inner">Vedi Tutti</button>
+                        <button onclick="filterCategory('Servizi'); scrollToProducts();" class="text-[10px] text-gray-400 hover:text-white font-bold bg-[#1a1a1a] px-3 py-1.5 rounded-lg transition-all shadow-inner border border-gray-700/50">Vedi Tutti</button>
                     </div>
                     
-                    <!-- Box Scorrevole: Altezza matematica per ESATTAMENTE 3 bottoni (216px) e barra Ghost -->
-                    <div class="flex flex-col gap-3 overflow-y-auto ghost-scroll snap-y snap-mandatory pr-1.5" style="height: 216px;">
+                    <!-- Box Scorrevole: Altezza adattata per il design morbido -->
+                    <div class="flex flex-col gap-3 overflow-y-auto ghost-scroll snap-y snap-mandatory pl-1" style="height: 236px;">
                         
-                        <button onclick="openExchangeModal()" class="snap-start shrink-0 h-[64px] bg-[#1a1a1a] border border-indigo-500/20 hover:border-indigo-500/50 rounded-[16px] px-4 flex items-center justify-between transition group shadow-sm">
+                        <!-- 1. Exchange -->
+                        <button onclick="openExchangeModal()" class="snap-start shrink-0 h-[66px] bg-[#1a1a1a] border border-indigo-500/20 hover:border-indigo-500/50 rounded-[16px] px-4 flex items-center justify-between transition-all group shadow-sm hover:shadow-[0_0_15px_rgba(99,102,241,0.15)]">
                             <div class="flex items-center space-x-3">
-                                <div class="p-2 bg-indigo-500/10 rounded-lg text-indigo-400"><i data-lucide="refresh-cw" class="w-4 h-4"></i></div>
+                                <div class="p-2.5 bg-indigo-500/10 rounded-xl text-indigo-400"><i data-lucide="refresh-cw" class="w-4 h-4"></i></div>
                                 <div class="text-left"><span class="block text-[13px] font-bold text-gray-200">Exchange (Fee 5%)</span><span class="block text-[9px] text-gray-500 uppercase tracking-wider">Conversione anonima</span></div>
                             </div>
-                            <i data-lucide="chevron-right" class="w-4 h-4 text-gray-600 group-hover:text-indigo-400 transition"></i>
+                            <i data-lucide="chevron-right" class="w-4 h-4 text-gray-600 group-hover:text-indigo-400 transition-colors"></i>
                         </button>
 
-                        <button onclick="openAmazonModal()" class="snap-start shrink-0 h-[64px] bg-[#1a1a1a] border border-orange-500/20 hover:border-orange-500/50 rounded-[16px] px-4 flex items-center justify-between transition group shadow-sm">
+                        <!-- 2. Amazon -->
+                        <button onclick="openAmazonModal()" class="snap-start shrink-0 h-[66px] bg-[#1a1a1a] border border-orange-500/20 hover:border-orange-500/50 rounded-[16px] px-4 flex items-center justify-between transition-all group shadow-sm hover:shadow-[0_0_15px_rgba(249,115,22,0.15)]">
                             <div class="flex items-center space-x-3">
-                                <div class="p-2 bg-orange-500/10 rounded-lg text-orange-500"><i data-lucide="shopping-bag" class="w-4 h-4"></i></div>
+                                <div class="p-2.5 bg-orange-500/10 rounded-xl text-orange-500"><i data-lucide="shopping-bag" class="w-4 h-4"></i></div>
                                 <div class="text-left"><span class="block text-[13px] font-bold text-gray-200">Buoni Amazon (-50%)</span><span class="block text-[9px] text-gray-500 uppercase tracking-wider">Gift Card a metà prezzo</span></div>
                             </div>
-                            <i data-lucide="chevron-right" class="w-4 h-4 text-gray-600 group-hover:text-orange-500 transition"></i>
+                            <i data-lucide="chevron-right" class="w-4 h-4 text-gray-600 group-hover:text-orange-500 transition-colors"></i>
                         </button>
 
-                        <button onclick="openQ8Modal()" class="snap-start shrink-0 h-[64px] bg-[#1a1a1a] border border-blue-500/20 hover:border-blue-500/50 rounded-[16px] px-4 flex items-center justify-between transition group shadow-sm">
+                        <!-- 3. Q8 -->
+                        <button onclick="openQ8Modal()" class="snap-start shrink-0 h-[66px] bg-[#1a1a1a] border border-blue-500/20 hover:border-blue-500/50 rounded-[16px] px-4 flex items-center justify-between transition-all group shadow-sm hover:shadow-[0_0_15px_rgba(59,130,246,0.15)]">
                             <div class="flex items-center space-x-3">
-                                <div class="p-2 bg-blue-500/10 rounded-lg text-blue-400"><i data-lucide="fuel" class="w-4 h-4"></i></div>
+                                <div class="p-2.5 bg-blue-500/10 rounded-xl text-blue-400"><i data-lucide="fuel" class="w-4 h-4"></i></div>
                                 <div class="text-left"><span class="block text-[13px] font-bold text-gray-200">Buoni Benzina Q8 (-50%)</span><span class="block text-[9px] text-gray-500 uppercase tracking-wider">Rifornimento Ticketfuel</span></div>
                             </div>
-                            <i data-lucide="chevron-right" class="w-4 h-4 text-gray-600 group-hover:text-blue-400 transition"></i>
+                            <i data-lucide="chevron-right" class="w-4 h-4 text-gray-600 group-hover:text-blue-400 transition-colors"></i>
                         </button>
 
-                        <button onclick="openCustomServiceModal()" class="snap-start shrink-0 h-[64px] bg-[#1a1a1a] border border-emerald-500/20 hover:border-emerald-500/50 rounded-[16px] px-4 flex items-center justify-between transition group shadow-sm">
+                        <!-- 4. Ban / Takedown (Aggiunto alla coda) -->
+                        <button onclick="openStrikeTerminal()" class="snap-start shrink-0 h-[66px] bg-[#1a1a1a] border border-rose-500/20 hover:border-rose-500/50 rounded-[16px] px-4 flex items-center justify-between transition-all group shadow-sm hover:shadow-[0_0_15px_rgba(244,63,94,0.15)]">
                             <div class="flex items-center space-x-3">
-                                <div class="p-2 bg-emerald-500/10 rounded-lg text-emerald-400"><i data-lucide="terminal-square" class="w-4 h-4"></i></div>
+                                <div class="p-2.5 bg-rose-500/10 rounded-xl text-rose-500"><i data-lucide="crosshair" class="w-4 h-4"></i></div>
+                                <div class="text-left"><span class="block text-[13px] font-bold text-gray-200">Takedown & Ban</span><span class="block text-[9px] text-gray-500 uppercase tracking-wider">Eliminazione Target</span></div>
+                            </div>
+                            <i data-lucide="chevron-right" class="w-4 h-4 text-gray-600 group-hover:text-rose-500 transition-colors"></i>
+                        </button>
+
+                        <!-- 5. Sviluppo su Misura -->
+                        <button onclick="openCustomServiceModal()" class="snap-start shrink-0 h-[66px] bg-[#1a1a1a] border border-emerald-500/20 hover:border-emerald-500/50 rounded-[16px] px-4 flex items-center justify-between transition-all group shadow-sm hover:shadow-[0_0_15px_rgba(16,185,129,0.15)]">
+                            <div class="flex items-center space-x-3">
+                                <div class="p-2.5 bg-emerald-500/10 rounded-xl text-emerald-400"><i data-lucide="terminal-square" class="w-4 h-4"></i></div>
                                 <div class="text-left"><span class="block text-[13px] font-bold text-gray-200">Sviluppo su Misura</span><span class="block text-[9px] text-gray-500 uppercase tracking-wider">Hacking & Automazioni</span></div>
                             </div>
-                            <i data-lucide="chevron-right" class="w-4 h-4 text-gray-600 group-hover:text-emerald-400 transition"></i>
+                            <i data-lucide="chevron-right" class="w-4 h-4 text-gray-600 group-hover:text-emerald-400 transition-colors"></i>
                         </button>
 
                     </div>
                 </div>`;
+                
             } else if (currentCategoryFilter === 'Servizi') {
                 htmlContent += `
-                <div class="bg-gradient-to-br from-indigo-900/40 to-[#121212] border border-indigo-500/50 rounded-2xl overflow-hidden shadow-[0_0_20px_rgba(99,102,241,0.2)] mb-4 transition hover:border-indigo-400">
+                <!-- 1. Exchange -->
+                <div class="bg-gradient-to-br from-indigo-900/30 to-[#121212] border border-indigo-500/40 rounded-2xl overflow-hidden shadow-[0_0_20px_rgba(99,102,241,0.1)] mb-4 transition-all duration-300 hover:border-indigo-400 hover:shadow-[0_0_30px_rgba(99,102,241,0.2)]">
                     <div class="p-5">
                         <div class="flex items-center space-x-3 mb-3">
-                            <div class="p-2 bg-indigo-500/20 rounded-lg text-indigo-400"><i data-lucide="refresh-cw" class="w-6 h-6"></i></div>
-                            <h3 class="font-black text-xl text-white">Exchange Rapido (Fee 5%)</h3>
+                            <div class="p-2.5 bg-indigo-500/10 rounded-xl text-indigo-400 border border-indigo-500/20"><i data-lucide="refresh-cw" class="w-6 h-6"></i></div>
+                            <h3 class="font-black text-xl text-white tracking-wide">Exchange Rapido</h3>
                         </div>
-                        <p class="text-sm text-gray-300 font-light leading-relaxed mb-5">Servizio automatico di conversione fondi (Crypto, PayPal, Bonifico). Pulito, anonimo e istantaneo.</p>
-                        <button onclick="openExchangeModal()" class="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 text-white font-extrabold py-3.5 rounded-xl text-xs uppercase tracking-wider shadow-lg transition">Apri Exchange</button>
+                        <p class="text-[13px] text-gray-400 font-light leading-relaxed mb-5">Servizio automatico di conversione fondi (Crypto, PayPal, Bonifico). Pulito, anonimo e istantaneo. <b class="text-indigo-400">Trattenuta fissa: 5%</b>.</p>
+                        <button onclick="openExchangeModal()" class="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-black py-3.5 rounded-xl text-xs uppercase tracking-widest shadow-lg transition-all">Apri Exchange</button>
                     </div>
                 </div>
 
-                <div class="bg-gradient-to-br from-orange-900/40 to-[#121212] border border-orange-500/50 rounded-2xl overflow-hidden shadow-[0_0_20px_rgba(249,115,22,0.2)] mb-4 transition hover:border-orange-400">
+                <!-- 2. Amazon -->
+                <div class="bg-gradient-to-br from-orange-900/30 to-[#121212] border border-orange-500/40 rounded-2xl overflow-hidden shadow-[0_0_20px_rgba(249,115,22,0.1)] mb-4 transition-all duration-300 hover:border-orange-400 hover:shadow-[0_0_30px_rgba(249,115,22,0.2)]">
                     <div class="p-5">
                         <div class="flex items-center space-x-3 mb-3">
-                            <div class="p-2 bg-orange-500/20 rounded-lg text-orange-500"><i data-lucide="shopping-bag" class="w-6 h-6"></i></div>
-                            <h3 class="font-black text-xl text-white">Buoni Amazon (-50%)</h3>
+                            <div class="p-2.5 bg-orange-500/10 rounded-xl text-orange-500 border border-orange-500/20"><i data-lucide="shopping-bag" class="w-6 h-6"></i></div>
+                            <h3 class="font-black text-xl text-white tracking-wide">Buoni Amazon (-50%)</h3>
                         </div>
-                        <p class="text-sm text-gray-300 font-light leading-relaxed mb-5">Acquista Gift Card Amazon pagandole esattamente la metà del loro valore reale. Evasione rapida in 60 minuti - Provenienza EWHORING.</p>
-                        <button onclick="openAmazonModal()" class="w-full bg-gradient-to-r from-orange-500 to-yellow-500 hover:from-orange-400 text-white font-extrabold py-3.5 rounded-xl text-xs uppercase tracking-wider shadow-lg transition">Acquista Buoni Amazon</button>
+                        <p class="text-[13px] text-gray-400 font-light leading-relaxed mb-5">Acquista Gift Card Amazon pagandole esattamente la metà del loro valore reale. Evasione rapida in 60 minuti - Provenienza EWHORING.</p>
+                        <button onclick="openAmazonModal()" class="w-full bg-gradient-to-r from-orange-500 to-yellow-500 hover:from-orange-400 hover:to-yellow-400 text-black font-black py-3.5 rounded-xl text-xs uppercase tracking-widest shadow-lg transition-all">Acquista Buoni Amazon</button>
                     </div>
                 </div>
 
-                <div class="bg-gradient-to-br from-blue-900/40 to-[#121212] border border-blue-500/50 rounded-2xl overflow-hidden shadow-[0_0_20px_rgba(59,130,246,0.2)] mb-6 transition hover:border-blue-400">
+                <!-- 3. Q8 -->
+                <div class="bg-gradient-to-br from-blue-900/30 to-[#121212] border border-blue-500/40 rounded-2xl overflow-hidden shadow-[0_0_20px_rgba(59,130,246,0.1)] mb-4 transition-all duration-300 hover:border-blue-400 hover:shadow-[0_0_30px_rgba(59,130,246,0.2)]">
                     <div class="p-5">
                         <div class="flex items-center space-x-3 mb-3">
-                            <div class="p-2 bg-blue-500/20 rounded-lg text-blue-500"><i data-lucide="fuel" class="w-6 h-6"></i></div>
-                            <h3 class="font-black text-xl text-white">Buoni Benzina Q8 (-50%)</h3>
+                            <div class="p-2.5 bg-blue-500/10 rounded-xl text-blue-500 border border-blue-500/20"><i data-lucide="fuel" class="w-6 h-6"></i></div>
+                            <h3 class="font-black text-xl text-white tracking-wide">Buoni Benzina Q8 (-50%)</h3>
                         </div>
-                        <p class="text-xs text-gray-300 font-light leading-relaxed mb-5">Rifornisci il tuo veicolo a metà prezzo. Codici Q8 Ticketfuel composti da Qr code più codice alfanumerico. Scadenza annuale - Evasione immediata - Provenienza EWHORING.</p>
-                        <button onclick="openQ8Modal()" class="w-full bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-500 text-white font-extrabold py-3.5 rounded-xl text-xs uppercase tracking-wider shadow-lg transition">Acquista Buoni Q8</button>
+                        <p class="text-[13px] text-gray-400 font-light leading-relaxed mb-5">Rifornisci il tuo veicolo a metà prezzo. Codici Q8 Ticketfuel distribuiti in formato QR code e Alfanumerico. Scadenza annuale.</p>
+                        <button onclick="openQ8Modal()" class="w-full bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-500 hover:to-cyan-400 text-white font-black py-3.5 rounded-xl text-xs uppercase tracking-widest shadow-lg transition-all">Acquista Buoni Q8</button>
                     </div>
                 </div>
-<div style="background-color: #121214; border: 1px solid rgba(255, 51, 102, 0.25); border-radius: 16px; padding: 20px; margin-bottom: 15px; box-shadow: 0 4px 20px rgba(255, 51, 102, 0.05);">
-    <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 12px;">
-        <div style="background: rgba(255, 51, 102, 0.1); color: #ff3366; width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 22px;">🎯</div>
-        <h3 style="color: white; margin: 0; font-size: 18px; font-weight: 700; letter-spacing: -0.3px;">Takedown & Ban</h3>
-    </div>
-    <p style="color: #999; font-size: 14px; line-height: 1.5; margin-bottom: 22px;">
-        Eliminazione mirata di account o gruppi su Instagram, TikTok, WhatsApp, FB e Telegram. Evasione rapida e anonimato garantito.
-    </p>
-    <button onclick="openStrikeTerminal()" style="width: 100%; padding: 16px; border: none; border-radius: 12px; background: linear-gradient(90deg, #ff3366 0%, #cc0033 100%); color: white; font-weight: 800; font-size: 14px; text-transform: uppercase; letter-spacing: 1px; cursor: pointer;">
-        APRI STRIKE TERMINAL
-    </button>
-</div>
 
-                <!-- Nuova Card Gigante: Sviluppo su Misura (IN CODA) -->
-                <div class="bg-gradient-to-br from-emerald-900/40 to-[#121212] border border-emerald-500/50 rounded-2xl overflow-hidden shadow-[0_0_20px_rgba(16,185,129,0.2)] mb-4 transition hover:border-emerald-400">
+                <!-- 4. TAKEDOWN & BAN (Nuovo Design Unificato e Fix Griglia) -->
+                <div class="bg-gradient-to-br from-rose-900/20 to-[#121212] border border-rose-500/40 rounded-2xl overflow-hidden shadow-[0_0_20px_rgba(244,63,94,0.1)] mb-4 transition-all duration-300 hover:border-rose-400 hover:shadow-[0_0_30px_rgba(244,63,94,0.2)]">
                     <div class="p-5">
                         <div class="flex items-center space-x-3 mb-3">
-                            <div class="p-2 bg-emerald-500/20 rounded-lg text-emerald-400"><i data-lucide="terminal-square" class="w-6 h-6"></i></div>
-                            <h3 class="font-black text-xl text-white">Sviluppo su Misura</h3>
+                            <div class="p-2.5 bg-rose-500/10 rounded-xl text-rose-500 border border-rose-500/20"><i data-lucide="crosshair" class="w-6 h-6"></i></div>
+                            <h3 class="font-black text-xl text-white tracking-wide">Takedown & Ban</h3>
                         </div>
-                        <p class="text-sm text-gray-300 font-light leading-relaxed mb-5">Infrastrutture IT personalizzate, Sviluppo Malware/RAT, Scam Pages, Bot Telegram ed Ethical Hacking. Gestione Ticket Criptata per richiedere un preventivo gratuito e valutare la fattibilità col nostro team.</p>
-                        <button onclick="openCustomServiceModal()" class="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-extrabold py-3.5 rounded-xl text-xs uppercase tracking-wider shadow-lg transition">Apri Ticket System</button>
+                        <p class="text-[13px] text-gray-400 font-light leading-relaxed mb-5">Eliminazione mirata di account o gruppi su Instagram, TikTok, WhatsApp, FB, Telegram e Signal. Evasione rapida e anonimato garantito al 100%.</p>
+                        <button onclick="openStrikeTerminal()" class="w-full bg-gradient-to-r from-rose-600 to-red-600 hover:from-rose-500 hover:to-red-500 text-white font-black py-3.5 rounded-xl text-xs uppercase tracking-widest shadow-lg transition-all flex items-center justify-center gap-2">
+                            <i data-lucide="shield-alert" class="w-4 h-4"></i> Avvia Strike Terminal
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 5. SVILUPPO SU MISURA -->
+                <div class="bg-gradient-to-br from-emerald-900/30 to-[#121212] border border-emerald-500/40 rounded-2xl overflow-hidden shadow-[0_0_20px_rgba(16,185,129,0.1)] mb-4 transition-all duration-300 hover:border-emerald-400 hover:shadow-[0_0_30px_rgba(16,185,129,0.2)]">
+                    <div class="p-5">
+                        <div class="flex items-center space-x-3 mb-3">
+                            <div class="p-2.5 bg-emerald-500/10 rounded-xl text-emerald-400 border border-emerald-500/20"><i data-lucide="terminal-square" class="w-6 h-6"></i></div>
+                            <h3 class="font-black text-xl text-white tracking-wide">Sviluppo su Misura</h3>
+                        </div>
+                        <p class="text-[13px] text-gray-400 font-light leading-relaxed mb-5">Infrastrutture IT personalizzate, Sviluppo Malware/RAT, Scam Pages, Bot Telegram ed Ethical Hacking. Avvia il Ticket System per valutare la fattibilità col team.</p>
+                        <button onclick="openCustomServiceModal()" class="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-black py-3.5 rounded-xl text-xs uppercase tracking-widest shadow-lg transition-all">Apri Ticket System</button>
                     </div>
                 </div>`;
             }
@@ -8422,103 +8459,627 @@ async function openTrophiesModal() {
 })();
 </script>
 <style>
-  .strike-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(10, 10, 12, 0.95); backdrop-filter: blur(15px); z-index: 99999; display: none; flex-direction: column; color: white; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; animation: fadeIn 0.3s ease-out; }
-  .strike-header { padding: 20px; border-bottom: 1px solid rgba(255,255,255,0.05); display: flex; justify-content: space-between; align-items: center; }
-  .strike-title { font-size: 20px; font-weight: 700; letter-spacing: -0.5px; }
-  .strike-title span { color: #ff3366; }
-  .close-strike { background: rgba(255,255,255,0.1); border: none; color: white; width: 32px; height: 32px; border-radius: 50%; font-weight: bold; cursor: pointer; }
-  .hud-stats { display: flex; justify-content: space-around; padding: 15px; background: linear-gradient(180deg, rgba(20,20,25,1) 0%, rgba(10,10,12,1) 100%); border-bottom: 1px solid rgba(255,255,255,0.05); }
-  .stat-box { text-align: center; }
-  .stat-value { font-family: 'Courier New', monospace; font-size: 18px; font-weight: bold; color: #00ffcc; }
-  .stat-label { font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: #888; }
-  .strike-body { padding: 20px; overflow-y: auto; flex: 1; }
-  .platform-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
-  .platform-card { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); border-radius: 16px; padding: 20px 10px; text-align: center; cursor: pointer; transition: all 0.2s; }
-  .platform-card:hover { transform: translateY(-2px); background: rgba(255,255,255,0.08); }
-  .platform-icon { font-size: 28px; margin-bottom: 10px; }
-  .platform-name { font-size: 14px; font-weight: 600; }
-  .plat-ig:hover, .plat-ig:active { border-color: #E1306C; box-shadow: 0 0 15px rgba(225, 48, 108, 0.2); }
-  .plat-tk:hover, .plat-tk:active { border-color: #00f2fe; box-shadow: 0 0 15px rgba(0, 242, 254, 0.2); }
-  .plat-wa:hover, .plat-wa:active { border-color: #25D366; box-shadow: 0 0 15px rgba(37, 211, 102, 0.2); }
-  .plat-tg:hover, .plat-tg:active { border-color: #0088cc; box-shadow: 0 0 15px rgba(0, 136, 204, 0.2); }
-  .plat-fb:hover, .plat-fb:active { border-color: #1877F2; box-shadow: 0 0 15px rgba(24, 119, 242, 0.2); }
-  .target-menu { display: none; animation: slideUp 0.3s ease-out; }
-  .target-btn { width: 100%; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); padding: 16px; border-radius: 12px; margin-bottom: 10px; color: white; font-size: 15px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
-  .target-price { font-family: 'Courier New', monospace; font-weight: bold; color: #ff3366; }
-  .launch-btn { width: 100%; background: linear-gradient(90deg, #ff3366 0%, #ff0044 100%); color: white; border: none; padding: 18px; border-radius: 14px; font-size: 16px; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; margin-top: 20px; display: none; box-shadow: 0 4px 20px rgba(255, 51, 102, 0.4); }
-  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-  @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+  /* ========================================================== */
+  /* STRIKE TERMINAL - ARCHITETTURA APPLE-TIER HIGHEST QUALITY  */
+  /* ========================================================== */
+  .strike-overlay { position: fixed; inset: 0; background: rgba(5, 5, 7, 0.98); backdrop-filter: blur(30px); z-index: 99999; display: none; flex-direction: column; color: #fff; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; animation: fadeInTerminal 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
+  
+  .strike-header { padding: 20px 24px; border-bottom: 1px solid rgba(255,51,102,0.15); display: flex; justify-content: space-between; align-items: center; background: linear-gradient(180deg, rgba(15,10,12,1) 0%, rgba(5,5,7,0) 100%); }
+  .strike-title { font-size: 20px; font-weight: 900; letter-spacing: -0.5px; display: flex; align-items: center; gap: 10px; text-transform: uppercase; }
+  .strike-title .glitch-text { color: #ff3366; text-shadow: 0 0 12px rgba(255,51,102,0.4); }
+  .strike-title .shield { color: #00ffcc; font-size: 22px; filter: drop-shadow(0 0 8px rgba(0,255,204,0.4)); }
+  
+  .monitor-btn-top { background: rgba(0, 255, 204, 0.08); border: 1px solid rgba(0, 255, 204, 0.3); color: #00ffcc; padding: 8px 14px; border-radius: 10px; font-size: 10px; font-weight: 800; letter-spacing: 1.5px; text-transform: uppercase; cursor: pointer; transition: all 0.2s ease; margin-left: auto; margin-right: 12px; }
+  .monitor-btn-top:active { transform: scale(0.95); background: rgba(0, 255, 204, 0.2); }
+
+  .close-strike { background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); color: #aaa; width: 36px; height: 36px; border-radius: 50%; font-weight: bold; cursor: pointer; transition: 0.2s; display: flex; align-items: center; justify-content: center; font-size: 16px; }
+  .close-strike:active { transform: scale(0.9); background: rgba(255,51,102,0.2); color: #ff3366; border-color: #ff3366; }
+  
+  /* HUD Stats */
+  .hud-stats { display: flex; justify-content: space-between; padding: 18px 24px; border-bottom: 1px solid rgba(255,255,255,0.03); background: rgba(0,0,0,0.3); }
+  .stat-box { display: flex; flex-direction: column; align-items: flex-start; }
+  .stat-value { font-family: 'SF Mono', 'Courier New', monospace; font-size: 18px; font-weight: 800; color: #fff; letter-spacing: -0.5px; }
+  .stat-label { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; color: #666; margin-top: 2px; }
+  
+  /* Sniffer Feed */
+  .live-monitor-container { margin: 16px 20px; padding: 14px 16px; background: #0a0a0c; border: 1px solid rgba(0, 255, 204, 0.2); border-radius: 14px; display: flex; flex-direction: column; gap: 6px; position: relative; overflow: hidden; }
+  .live-monitor-container::before { content: ''; position: absolute; top: 0; left: 0; width: 2px; height: 100%; background: #00ffcc; box-shadow: 0 0 10px #00ffcc; }
+  .feed-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px dashed rgba(255,255,255,0.08); padding-bottom: 6px; }
+  .feed-title { font-size: 9px; color: #00ffcc; font-weight: 800; letter-spacing: 1.5px; text-transform: uppercase; display: flex; align-items: center; gap: 6px; }
+  .pulsing-dot { width: 6px; height: 6px; background-color: #ff3366; border-radius: 50%; box-shadow: 0 0 8px #ff3366; animation: pulseRed 1s infinite; }
+  .live-feed-text { font-family: 'SF Mono', monospace; font-size: 11px; color: #888; min-height: 22px; display: flex; align-items: center; }
+  .feed-line { width: 100%; display: flex; justify-content: space-between; animation: fadeInFeed 0.3s ease-out; }
+  
+  .strike-body { padding: 0 20px 20px 20px; overflow-y: auto; flex: 1; }
+  
+  /* Grid Vettori */
+  .platform-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-top: 12px; }
+  .platform-card { background: #0d0d12; border: 1px solid rgba(255,255,255,0.06); border-radius: 16px; padding: 20px 10px; text-align: center; cursor: pointer; transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1); position: relative; }
+  .platform-card:active { transform: scale(0.96); }
+  .platform-icon { font-size: 32px; margin-bottom: 10px; filter: drop-shadow(0 4px 10px rgba(0,0,0,0.5)); }
+  .platform-name { font-size: 13px; font-weight: 700; color: #e5e5e7; }
+  
+  .plat-ig.active-glow { border-color: #E1306C; box-shadow: 0 0 20px rgba(225, 48, 108, 0.25); background: rgba(225, 48, 108, 0.06); }
+  .plat-tk.active-glow { border-color: #00f2fe; box-shadow: 0 0 20px rgba(0, 242, 254, 0.25); background: rgba(0, 242, 254, 0.06); }
+  .plat-wa.active-glow { border-color: #25D366; box-shadow: 0 0 20px rgba(37, 211, 102, 0.25); background: rgba(37, 211, 102, 0.06); }
+  .plat-tg.active-glow { border-color: #0088cc; box-shadow: 0 0 20px rgba(0, 136, 204, 0.25); background: rgba(0, 136, 204, 0.06); }
+  .plat-fb.active-glow { border-color: #1877F2; box-shadow: 0 0 20px rgba(24, 119, 242, 0.25); background: rgba(24, 119, 242, 0.06); }
+  .plat-sg.active-glow { border-color: #3A76F0; box-shadow: 0 0 20px rgba(58, 118, 240, 0.25); background: rgba(58, 118, 240, 0.06); }
+
+  /* Target Menu */
+  .target-menu { display: none; animation: slideUpFade 0.35s cubic-bezier(0.16, 1, 0.3, 1); }
+  .target-btn { width: 100%; background: #0d0d12; border: 1px solid rgba(255,255,255,0.06); padding: 18px; border-radius: 14px; margin-bottom: 10px; color: #ccc; font-size: 14px; font-weight: 600; display: flex; justify-content: space-between; align-items: center; cursor: pointer; transition: 0.2s; }
+  .target-btn:active { transform: scale(0.98); }
+  .target-price { font-family: 'SF Mono', monospace; font-weight: 800; color: #ff3366; font-size: 14px; background: rgba(255,51,102,0.1); padding: 4px 10px; border-radius: 6px; }
+  
+  .launch-btn { width: 100%; background: linear-gradient(135deg, #ff0044 0%, #990022 100%); color: white; border: 1px solid #ff3366; padding: 20px; border-radius: 16px; font-size: 15px; font-weight: 900; text-transform: uppercase; letter-spacing: 2px; display: none; box-shadow: 0 10px 30px rgba(255, 0, 68, 0.4); cursor: pointer; transition: 0.3s; margin-top: 20px; }
+  .launch-btn:active { transform: translateY(2px); }
+
+  .crypto-label { font-size: 10px; font-weight: 800; color: #888; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 6px; display: block; }
+  
+  @keyframes fadeInTerminal { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes slideUpFade { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+  @keyframes pulseRed { 0% { box-shadow: 0 0 0 0 rgba(255, 51, 102, 0.6); } 70% { box-shadow: 0 0 0 8px rgba(255, 51, 102, 0); } 100% { box-shadow: 0 0 0 0 rgba(255, 51, 102, 0); } }
+  @keyframes fadeInFeed { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
 </style>
 
+<!-- MAIN STRIKE TERMINAL UI -->
 <div id="strike-terminal" class="strike-overlay">
   <div class="strike-header">
-    <div class="strike-title">STRIKE <span>TERMINAL</span></div>
+    <div class="strike-title"><span class="shield">🛡️</span> <span class="glitch-text">STRIKE</span> TERMINAL</div>
+    <button class="monitor-btn-top" onclick="openStrikeTrackerModal()">Tracker</button>
     <button class="close-strike" onclick="closeStrikeTerminal()">✕</button>
   </div>
+  
   <div class="hud-stats">
-    <div class="stat-box"><div class="stat-value">2,841</div><div class="stat-label">Nodi Attivi</div></div>
-    <div class="stat-box"><div class="stat-value">18ms</div><div class="stat-label">Latenza API</div></div>
-    <div class="stat-box"><div class="stat-value" style="color:#ff3366">ONLINE</div><div class="stat-label">Stato Rete</div></div>
+    <div class="stat-box">
+      <div class="stat-label">Bans (24H)</div>
+      <div class="stat-value" id="hud-bans">12,458</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-label">Nodi Rete</div>
+      <div class="stat-value" id="hud-nodes">142</div>
+    </div>
+    <div class="stat-box" style="align-items: flex-end;">
+      <div class="stat-label">Latenza API</div>
+      <div class="stat-value" id="hud-latency" style="color: #00ffcc;">24ms</div>
+    </div>
   </div>
+
+  <div class="live-monitor-container">
+    <div class="feed-header">
+      <div class="feed-title"><div class="pulsing-dot"></div> SNIFFER NETWORK FEED</div>
+      <span style="font-family: 'SF Mono', monospace; font-size: 9px; color: #444;">SECURE_TUNNEL</span>
+    </div>
+    <div class="live-feed-text" id="live-feed-content">
+       <span style="color: #555;">Inizializzazione flussi crittografici...</span>
+    </div>
+  </div>
+
   <div class="strike-body">
+    <!-- STEP 1: PIATTAFORME -->
     <div id="strike-step-1">
-      <h3 style="margin-bottom: 20px; font-size: 15px; color: #aaa;">SELEZIONA VETTORE DI ATTACCO:</h3>
+      <h3 style="margin: 15px 0 12px 0; font-size: 10px; font-weight: 800; color: #777; text-transform: uppercase; letter-spacing: 1.5px;">
+        SELEZIONE VETTORE DI ATTACCO
+      </h3>
       <div class="platform-grid">
-        <div class="platform-card plat-ig" onclick="selectPlatform('Instagram', '#E1306C')"><div class="platform-icon">📸</div><div class="platform-name">Instagram</div></div>
-        <div class="platform-card plat-tk" onclick="selectPlatform('TikTok', '#00f2fe')"><div class="platform-icon">🎵</div><div class="platform-name">TikTok</div></div>
-        <div class="platform-card plat-wa" onclick="selectPlatform('WhatsApp', '#25D366')"><div class="platform-icon">💬</div><div class="platform-name">WhatsApp</div></div>
-        <div class="platform-card plat-tg" onclick="selectPlatform('Telegram', '#0088cc')"><div class="platform-icon">✈️</div><div class="platform-name">Telegram</div></div>
-        <div class="platform-card plat-fb" onclick="selectPlatform('Facebook', '#1877F2')"><div class="platform-icon">👥</div><div class="platform-name">Facebook</div></div>
+        <div id="plat-ig" class="platform-card" onclick="selectPlatform('Instagram', '#E1306C', '📸', 'plat-ig')"><div class="platform-icon">📸</div><div class="platform-name">Instagram</div></div>
+        <div id="plat-tk" class="platform-card" onclick="selectPlatform('TikTok', '#00f2fe', '🎵', 'plat-tk')"><div class="platform-icon">🎵</div><div class="platform-name">TikTok</div></div>
+        <div id="plat-wa" class="platform-card" onclick="selectPlatform('WhatsApp', '#25D366', '💬', 'plat-wa')"><div class="platform-icon">💬</div><div class="platform-name">WhatsApp</div></div>
+        <div id="plat-tg" class="platform-card" onclick="selectPlatform('Telegram', '#0088cc', '✈️', 'plat-tg')"><div class="platform-icon">✈️</div><div class="platform-name">Telegram</div></div>
+        <div id="plat-fb" class="platform-card" onclick="selectPlatform('Facebook', '#1877F2', '👥', 'plat-fb')"><div class="platform-icon">👥</div><div class="platform-name">Facebook</div></div>
+        <div id="plat-sg" class="platform-card" onclick="selectPlatform('Signal', '#3A76F0', '🛡️', 'plat-sg')"><div class="platform-icon">🛡️</div><div class="platform-name">Signal</div></div>
       </div>
     </div>
+
+    <!-- STEP 2: TARGET E PREZZI -->
     <div id="strike-step-2" class="target-menu">
-      <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 20px;">
-        <button onclick="backToStep1()" style="background: none; border: none; color: #888; font-size: 20px;">←</button>
-        <h3 id="selected-plat-title" style="font-size: 18px; margin: 0;">Piattaforma</h3>
+      <div style="display: flex; align-items: center; gap: 14px; margin: 15px 0 20px 0; padding-bottom: 12px; border-bottom: 1px solid rgba(255,255,255,0.05);">
+        <button onclick="backToStrikeStep1()" style="background: #111; border: 1px solid #333; color: white; width: 36px; height: 36px; border-radius: 10px; font-weight: bold; cursor: pointer;">←</button>
+        <div>
+            <div style="font-size: 9px; color: #777; font-weight: 800; text-transform: uppercase; letter-spacing: 1.5px;">Vettore Attivo</div>
+            <h3 id="selected-plat-title" style="font-size: 18px; font-weight: 900; margin: 0;">Piattaforma</h3>
+        </div>
       </div>
-      <h4 style="margin-bottom: 15px; font-size: 14px; color: #aaa;">Seleziona Tipologia Target:</h4>
+      
+      <h4 style="margin: 0 0 12px 0; font-size: 10px; font-weight: 800; color: #777; text-transform: uppercase; letter-spacing: 1.5px;">
+        CLASSIFICAZIONE OBIETTIVO
+      </h4>
       <div id="targets-container"></div>
-      <button id="launch-btn" class="launch-btn" onclick="initiateAttack()">Conferma e Avvia (0€)</button>
+      
+      <button id="launch-btn" class="launch-btn" onclick="initiateCheckoutSequence()">AVVIA ATTACCO</button>
     </div>
   </div>
 </div>
 
+<!-- ========================================================== -->
+<!-- MODALE CHECKOUT STRIKE (Nascosto di Default)               -->
+<!-- ========================================================== -->
+<div id="strike-checkout-modal" class="fixed inset-0 bg-black/95 z-[250] flex items-center justify-center p-4 hidden backdrop-blur-2xl transition-all opacity-0">
+    <div id="strike-checkout-content" class="bg-[#050507] border border-[#ff3366]/40 rounded-[20px] w-full max-w-md shadow-[0_0_60px_rgba(255,51,102,0.2)] overflow-hidden transform scale-95 transition-all duration-400 flex flex-col max-h-[90vh] relative">
+        
+        <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[#ff0044] to-[#ff9900]"></div>
+        
+        <div class="p-5 border-b border-[#222] bg-[#0a0a0c] flex justify-between items-center shrink-0">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 bg-gradient-to-br from-[#ff3366]/20 to-transparent border border-[#ff3366]/40 rounded-xl flex items-center justify-center shadow-[0_0_15px_rgba(255,51,102,0.3)]">
+                    <i data-lucide="crosshair" class="w-5 h-5 text-[#ff3366]"></i>
+                </div>
+                <div>
+                    <h2 class="text-lg font-black text-white tracking-tight">Setup Payload</h2>
+                    <p id="strike-order-summary" class="text-[10px] text-[#ff3366] font-bold uppercase tracking-widest mt-0.5">Target...</p>
+                </div>
+            </div>
+            <button onclick="closeStrikeCheckoutModal()" class="w-7 h-7 flex items-center justify-center bg-[#111] hover:bg-[#222] rounded-full text-gray-400 hover:text-white transition-colors border border-[#333]">✕</button>
+        </div>
+
+        <div class="overflow-y-auto p-5 space-y-4 hide-scrollbar flex-1">
+            <div>
+                <label id="dynamic-link-label" class="crypto-label">Identificativo Target <span class="text-[#ff3366]">*</span></label>
+                <input type="text" id="strike-target-link" class="w-full bg-[#0a0a0c] border border-[#333] rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-[#ff3366] transition shadow-inner font-mono placeholder-gray-600">
+                <p id="dynamic-link-hint" class="text-[10px] text-gray-500 mt-1.5 font-medium">Inserisci i dati esatti per agganciare il bersaglio.</p>
+            </div>
+
+            <div>
+                <label class="crypto-label">Note Operative <span class="text-gray-600 normal-case ml-1">(Facoltativo)</span></label>
+                <textarea id="strike-target-notes" rows="2" placeholder="Dettagli utili per l'operatore..." class="w-full bg-[#0a0a0c] border border-[#333] rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none focus:border-[#ff3366] transition shadow-inner resize-none"></textarea>
+            </div>
+
+            <div class="border-t border-[#222]"></div>
+
+            <div>
+                <label class="crypto-label">Allocazione Fondi <span class="text-[#ff3366]">*</span></label>
+                <select id="strike-payment-method" onchange="updateStrikePaymentDetails()" class="w-full bg-[#0a0a0c] border border-[#333] rounded-xl px-4 py-3 text-xs text-white focus:outline-none focus:border-[#ff3366] appearance-none transition shadow-inner font-bold">
+                    <option value="" disabled selected>-- Seleziona Metodo --</option>
+                    <option value="Crypto BTC">Bitcoin (BTC)</option>
+                    <option value="Crypto LTC">Litecoin (LTC)</option>
+                    <option value="Crypto ETH">Ethereum (ETH)</option>
+                    <option value="Crypto USDT">Tether (USDT TRC20)</option>
+                    <option value="PayPal">PayPal</option>
+                    <option value="Bonifico">Bonifico Bancario Istantaneo</option>
+                </select>
+            </div>
+
+            <div id="strike-payment-details-box" class="hidden bg-[#0d0d12] border border-[#ff3366]/30 p-3.5 rounded-xl shadow-inner transition">
+                <p class="text-[9px] text-gray-400 uppercase tracking-widest mb-1.5 font-bold">Indirizzo / Coordinate Secure:</p>
+                <div id="strike-our-wallet" class="text-[12px] font-mono text-[#ff3366] break-all select-all font-bold bg-black p-2.5 rounded-lg border border-[#222]"></div>
+            </div>
+
+            <div>
+                <label class="crypto-label">Screenshot Transazione <span class="text-[#ff3366]">*</span></label>
+                <div class="relative group">
+                    <input type="file" id="strike-receipt-file" accept="image/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" onchange="updateFileName('strike-receipt-file', 'strike-receipt-name', 'rose')">
+                    <div class="bg-[#0a0a0c] border border-dashed border-[#444] group-hover:border-[#ff3366] rounded-xl p-4 flex flex-col items-center justify-center text-center transition">
+                        <i data-lucide="upload-cloud" class="w-5 h-5 text-gray-500 group-hover:text-[#ff3366] mb-1.5 transition-colors"></i>
+                        <span id="strike-receipt-name" class="text-[10px] text-gray-300 font-bold uppercase tracking-wider">Carica Prova di Pagamento</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-rose-900/10 border border-rose-500/20 p-3.5 rounded-xl flex items-start gap-3 transition cursor-pointer" onclick="document.getElementById('strike-confirmed-cb').click()">
+                <div class="pt-0.5">
+                    <input type="checkbox" id="strike-confirmed-cb" class="w-4 h-4 accent-[#ff3366] cursor-pointer rounded" onclick="event.stopPropagation()">
+                </div>
+                <label class="text-[11px] text-rose-100/80 leading-relaxed cursor-pointer pointer-events-none">
+                    <strong class="block text-[#ff3366] mb-0.5 uppercase tracking-widest text-[9px]">Autorizzazione Esecutiva</strong>
+                    Confermo l'avvenuto invio dei fondi a sistema.
+                </label>
+            </div>
+        </div>
+
+        <div class="p-5 bg-[#0a0a0c] border-t border-[#222] shrink-0">
+            <button onclick="submitStrikeOrderToBot()" class="w-full bg-[#ff3366] hover:bg-[#e60039] text-white font-black py-3.5 rounded-xl text-xs uppercase shadow-[0_0_20px_rgba(255,51,102,0.4)] tracking-[1.5px] transition-all flex items-center justify-center gap-2">
+                <i data-lucide="zap" class="w-4 h-4"></i> Trasmetti al Database
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- ========================================================== -->
+<!-- MONITOR SATELLITARE (Tracker Ban dedicato)                 -->
+<!-- ========================================================== -->
+<div id="strike-tracker-modal" class="fixed inset-0 bg-black/98 z-[300] hidden flex-col items-center justify-center p-4 backdrop-blur-3xl transition-all opacity-0">
+    <div class="bg-[#050505] border border-[#00ffcc]/30 rounded-2xl w-full max-w-md shadow-[0_0_50px_rgba(0,255,204,0.15)] overflow-hidden transform scale-95 transition-all duration-300" id="strike-tracker-content">
+        
+        <div class="p-4 border-b border-[#00ffcc]/20 flex justify-between items-center bg-[#0a1510]">
+            <div class="text-[#00ffcc] font-black text-[11px] tracking-[2px] flex items-center gap-2.5">
+                <div class="w-2 h-2 bg-[#00ffcc] rounded-full animate-pulse shadow-[0_0_8px_#00ffcc]"></div> 
+                SATELLITE MONITOR // SYS_TRACK
+            </div>
+            <button onclick="closeStrikeTrackerModal()" class="text-gray-500 hover:text-[#00ffcc] text-lg font-bold">✕</button>
+        </div>
+        
+        <div class="p-5 space-y-4">
+            <div>
+                <label class="text-[10px] text-[#00ffcc] uppercase tracking-widest block mb-2 font-bold">Inserisci ID Pratica (Es: STK-1)</label>
+                <div class="flex gap-2.5">
+                    <input type="text" id="strike-track-input" placeholder="STK-..." class="w-full bg-[#030303] border border-[#00ffcc]/30 text-[#00ffcc] px-4 py-3 rounded-xl outline-none focus:border-[#00ffcc] shadow-[0_0_10px_rgba(0,255,204,0.1)_inset] uppercase tracking-widest text-xs font-bold font-mono placeholder-[#00ffcc]/30">
+                    <button onclick="fetchStrikeStatusAPI()" class="bg-[#00ffcc]/10 border border-[#00ffcc] text-[#00ffcc] px-5 rounded-xl font-black hover:bg-[#00ffcc]/20 transition-all uppercase tracking-wider text-xs shadow-[0_0_10px_rgba(0,255,204,0.1)]">Scan</button>
+                </div>
+            </div>
+            
+            <div class="relative">
+                <div id="strike-track-console" class="bg-[#030303] border border-[#222] p-4 h-52 rounded-xl overflow-y-auto text-[11px] text-[#00ffcc] leading-relaxed shadow-inner font-mono whitespace-pre-wrap">
+> PRONTO PER LA SCANSIONE SATELLITARE...
+> INSERISCI L'ID PRATICA RICEVUTO AL CHECKOUT.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script>
-  const servicesData = {
-    'Instagram': [{ name: 'Profilo Personale', price: 50 }, { name: 'Account Business', price: 80 }, { name: 'Singolo Post/Reel', price: 30 }],
-    'TikTok': [{ name: 'Profilo Utente', price: 45 }, { name: 'Video Specifico', price: 25 }, { name: 'Live Stream', price: 70 }],
-    'WhatsApp': [{ name: 'Numero di Telefono', price: 60 }, { name: 'Gruppo (Ban Admin)', price: 90 }],
-    'Telegram': [{ name: 'Canale Pubblico', price: 100 }, { name: 'Gruppo Privato', price: 85 }, { name: 'Profilo Utente', price: 40 }],
-    'Facebook': [{ name: 'Profilo Privato', price: 45 }, { name: 'Pagina Aziendale', price: 110 }, { name: 'Gruppo', price: 80 }]
+  // ==========================================================
+  // CORE LOGIC STRIKE TERMINAL (V3.0 DEFINITIVE)
+  // ==========================================================
+  
+  const strikeServicesDB = {
+    'Instagram': [{ name: 'Profilo Personale', price: 100 }, { name: 'Account Business', price: 130 }, { name: 'Singolo Post/Reel', price: 80 }],
+    'TikTok': [{ name: 'Profilo Utente', price: 95 }, { name: 'Video Specifico', price: 75 }, { name: 'Live Stream', price: 120 }],
+    'WhatsApp': [{ name: 'Numero di Telefono', price: 110 }, { name: 'Gruppo (Ban Admin)', price: 140 }],
+    'Telegram': [{ name: 'Canale Pubblico', price: 150 }, { name: 'Gruppo Privato', price: 135 }, { name: 'Profilo Utente', price: 90 }],
+    'Facebook': [{ name: 'Profilo Privato', price: 95 }, { name: 'Pagina Aziendale', price: 160 }, { name: 'Gruppo', price: 130 }],
+    'Signal': [{ name: 'Numero di Telefono', price: 115 }, { name: 'Canale/Gruppo', price: 145 }]
   };
-  let currentPlatform = '', currentTarget = '', currentPrice = 0;
-  function openStrikeTerminal() { document.getElementById('strike-terminal').style.display = 'flex'; }
-  function closeStrikeTerminal() { document.getElementById('strike-terminal').style.display = 'none'; backToStep1(); }
-  function backToStep1() { document.getElementById('strike-step-2').style.display = 'none'; document.getElementById('strike-step-1').style.display = 'block'; }
-  function selectPlatform(platform, color) {
-    currentPlatform = platform; document.getElementById('strike-step-1').style.display = 'none'; document.getElementById('strike-step-2').style.display = 'block';
-    const title = document.getElementById('selected-plat-title'); title.innerText = platform + " Takedown"; title.style.color = color;
-    const container = document.getElementById('targets-container'); container.innerHTML = '';
-    document.getElementById('launch-btn').style.display = 'none'; currentTarget = '';
-    servicesData[platform].forEach(target => {
-      const btn = document.createElement('button'); btn.className = 'target-btn';
-      btn.innerHTML = `<span>${target.name}</span> <span class="target-price">€${target.price}</span>`;
-      btn.onclick = () => {
-        document.querySelectorAll('.target-btn').forEach(b => { b.style.borderColor = 'rgba(255,255,255,0.1)'; b.style.background = 'rgba(255,255,255,0.05)'; });
-        btn.style.borderColor = '#ff3366'; btn.style.background = 'rgba(255, 51, 102, 0.1)';
-        currentTarget = target.name; currentPrice = target.price;
-        const launchBtn = document.getElementById('launch-btn'); launchBtn.style.display = 'block'; launchBtn.innerText = `AVVIA ATTACCO (€${currentPrice})`;
-      };
-      container.appendChild(btn);
-    });
+
+  let stkPlatform = '', stkTarget = '', stkPrice = 0, stkIcon = '';
+  let stkHud = { bans: 12458, nodes: 142, latency: 24 };
+
+  // HUD Realistico
+  setInterval(() => {
+      stkHud.latency = Math.floor(Math.random() * (40 - 18 + 1)) + 18;
+      const latEl = document.getElementById('hud-latency');
+      if(latEl) { latEl.innerText = stkHud.latency + 'ms'; latEl.style.color = stkHud.latency > 32 ? '#f59e0b' : '#00ffcc'; }
+      if (Math.random() > 0.7) {
+          stkHud.nodes += (Math.random() > 0.5 ? 1 : -1);
+          const nodEl = document.getElementById('hud-nodes');
+          if(nodEl) nodEl.innerText = stkHud.nodes;
+      }
+  }, 1000);
+
+  setInterval(() => {
+      stkHud.bans += 1;
+      const banEl = document.getElementById('hud-bans');
+      if(banEl) banEl.innerText = stkHud.bans.toLocaleString();
+  }, 35000);
+
+  // Sniffer Feed Dinamico
+  const feedPlats = ['TikTok', 'Instagram', 'Telegram', 'WhatsApp', 'Facebook', 'Signal'];
+  const feedActions = ['BANNED', 'SUSPENDED', 'NEUTRALIZED', 'WIPED'];
+  let feedLines = [];
+
+  function generateIP() { return `${Math.floor(Math.random()*200)+20}.${Math.floor(Math.random()*255)}.${Math.floor(Math.random()*255)}.${Math.floor(Math.random()*255)}`; }
+  
+  function pushToFeed() {
+      const p = feedPlats[Math.floor(Math.random() * feedPlats.length)];
+      const a = feedActions[Math.floor(Math.random() * feedActions.length)];
+      const ip = generateIP();
+      const time = Math.floor(Math.random() * 30) + 1;
+      const hash = Math.random().toString(36).substring(2, 9).toUpperCase();
+      
+      const lineHTML = `<div class="feed-line"><span style="color:#5c6cfa">[${p}]</span> <span style="color:#fff">Target: ${hash}</span> <span style="color:#444">| IP:${ip}</span> <span style="color:#ff3366; font-weight:bold;">${a} (${time}m)</span></div>`;
+      
+      feedLines.unshift(lineHTML);
+      if(feedLines.length > 3) feedLines.pop();
+      
+      const feedObj = document.getElementById('live-feed-content');
+      if(feedObj) feedObj.innerHTML = feedLines.join('');
   }
-  function initiateAttack() {
-    const message = `⚡ Richiesta Takedown:\n📱 Piattaforma: ${currentPlatform}\n🎯 Target: ${currentTarget}\n💶 Prezzo: €${currentPrice}`;
-    window.location.href = "https://t.me/il_falsario_ufficiale?text=" + encodeURIComponent(message);
+  setTimeout(pushToFeed, 500);
+  setInterval(pushToFeed, 4000);
+
+  // Navigazione Modale Terminale
+  window.openStrikeTerminal = function() { 
+      const t = document.getElementById('strike-terminal');
+      if(t) { t.style.display = 'flex'; }
+      if(window.lucide) lucide.createIcons();
+  };
+  
+  window.closeStrikeTerminal = function() { 
+      const t = document.getElementById('strike-terminal');
+      if(t) { t.style.display = 'none'; }
+      backToStrikeStep1(); 
+  };
+  
+  function backToStrikeStep1() { 
+      const s1 = document.getElementById('strike-step-1');
+      const s2 = document.getElementById('strike-step-2');
+      if(s1) s1.style.display = 'block'; 
+      if(s2) s2.style.display = 'none'; 
+  }
+
+  window.selectPlatform = function(platform, color, icon, cardId) {
+    stkPlatform = platform; stkIcon = icon;
+    
+    document.querySelectorAll('.platform-card').forEach(c => c.classList.remove('active-glow'));
+    const targetCard = document.getElementById(cardId);
+    if(targetCard) targetCard.classList.add('active-glow');
+    
+    setTimeout(() => {
+        const s1 = document.getElementById('strike-step-1');
+        const s2 = document.getElementById('strike-step-2');
+        if(s1) s1.style.display = 'none'; 
+        if(s2) s2.style.display = 'block';
+        
+        const title = document.getElementById('selected-plat-title'); 
+        if(title) { title.innerHTML = `${icon} ${platform}`; title.style.color = color; }
+        
+        const container = document.getElementById('targets-container'); 
+        if(container) container.innerHTML = '';
+        const launchBtn = document.getElementById('launch-btn');
+        if(launchBtn) { launchBtn.style.display = 'none'; launchBtn.disabled = false; }
+        stkTarget = '';
+
+        strikeServicesDB[platform].forEach(target => {
+          const btn = document.createElement('button'); btn.className = 'target-btn';
+          btn.innerHTML = `<span>${target.name}</span> <span class="target-price">€${target.price}</span>`;
+          btn.onclick = () => {
+            document.querySelectorAll('.target-btn').forEach(b => { b.style.borderColor = 'rgba(255,255,255,0.06)'; b.style.background = '#0d0d12'; b.style.color = '#ccc'; });
+            btn.style.borderColor = color; btn.style.background = `rgba(${hexToRgb(color)}, 0.12)`; btn.style.color = '#fff';
+            stkTarget = target.name; stkPrice = target.price;
+            
+            configureDynamicInput(platform, stkTarget);
+
+            if(launchBtn) {
+                launchBtn.style.display = 'block'; 
+                launchBtn.innerHTML = `AVVIA SEQUENZA (€${stkPrice})`;
+            }
+          };
+          container.appendChild(btn);
+        });
+    }, 120);
+  }
+
+  function configureDynamicInput(plat, tgt) {
+      const label = document.getElementById('dynamic-link-label');
+      const input = document.getElementById('strike-target-link');
+      const hint = document.getElementById('dynamic-link-hint');
+      if(input) input.value = ''; 
+      
+      if (['Instagram', 'TikTok', 'Facebook'].includes(plat)) {
+          if (tgt.includes('Post') || tgt.includes('Video') || tgt.includes('Reel')) {
+              if(label) label.innerHTML = `URL del Contenuto <span class="text-[#ff3366]">*</span>`;
+              if(input) input.placeholder = `Es: https://${plat.toLowerCase()}.com/p/xyz...`;
+              if(hint) hint.innerText = `Link diretto al post o video da rimuovere.`;
+          } else {
+              if(label) label.innerHTML = `Username / Link Profilo <span class="text-[#ff3366]">*</span>`;
+              if(input) input.placeholder = `Es: @username o link profilo`;
+              if(hint) hint.innerText = `Inserisci lo username esatto del bersaglio.`;
+          }
+      } else if (plat === 'Telegram') {
+          if (tgt.includes('Gruppo') || tgt.includes('Canale')) {
+              if(label) label.innerHTML = `Link o ID Pubblico <span class="text-[#ff3366]">*</span>`;
+              if(input) input.placeholder = `Es: https://t.me/nomecanale`;
+              if(hint) hint.innerText = `Link d'invito o URL pubblico del canale/gruppo.`;
+          } else {
+              if(label) label.innerHTML = `Username Utente <span class="text-[#ff3366]">*</span>`;
+              if(input) input.placeholder = `Es: @username`;
+              hint.innerText = `Username Telegram dell'account da colpire.`;
+          }
+      } else if (plat === 'WhatsApp' || plat === 'Signal') {
+          if (tgt.includes('Gruppo')) {
+              if(label) label.innerHTML = `Link d'Invito Gruppo <span class="text-[#ff3366]">*</span>`;
+              if(input) input.placeholder = `Es: https://chat.whatsapp.com/...`;
+              hint.innerText = `Link d'invito valido al gruppo target.`;
+          } else {
+              if(label) label.innerHTML = `Numero di Telefono <span class="text-[#ff3366]">*</span>`;
+              if(input) input.placeholder = `Es: +39 333 1234567`;
+              hint.innerText = `Includi sempre il prefisso internazionale (es: +39).`;
+          }
+      }
+  }
+
+  function hexToRgb(hex) {
+    const r = parseInt(hex.slice(1, 3), 16), g = parseInt(hex.slice(3, 5), 16), b = parseInt(hex.slice(5, 7), 16);
+    return `${r}, ${g}, ${b}`;
+  }
+
+  window.initiateCheckoutSequence = function() {
+    const btn = document.getElementById('launch-btn');
+    if(btn) { btn.disabled = true; btn.innerHTML = 'ALLOCAZIONE SERVER...'; }
+    
+    setTimeout(() => { if(btn) btn.innerHTML = 'GENERAZIONE INVOICE...'; }, 600);
+    
+    setTimeout(() => {
+        if(btn) { btn.innerHTML = `AVVIA SEQUENZA (€${stkPrice})`; btn.disabled = false; }
+        
+        const term = document.getElementById('strike-terminal');
+        if(term) term.style.display = 'none';
+        
+        const modal = document.getElementById('strike-checkout-modal');
+        if(modal) {
+            modal.classList.remove('hidden'); modal.classList.add('flex');
+            setTimeout(() => { 
+                modal.classList.remove('opacity-0'); 
+                const content = document.getElementById('strike-checkout-content');
+                if(content) content.classList.remove('scale-95'); 
+            }, 10);
+        }
+        
+        const summary = document.getElementById('strike-order-summary');
+        if(summary) summary.innerText = `BERSAGLIO: ${stkPlatform} - ${stkTarget} (€${stkPrice})`;
+        
+        if(window.lucide) lucide.createIcons();
+    }, 1400);
+  }
+
+  window.closeStrikeCheckoutModal = function() {
+      const modal = document.getElementById('strike-checkout-modal');
+      if(modal) {
+          modal.classList.add('opacity-0'); 
+          const content = document.getElementById('strike-checkout-content');
+          if(content) content.classList.add('scale-95');
+          setTimeout(() => { 
+              modal.classList.add('hidden'); modal.classList.remove('flex'); 
+              const term = document.getElementById('strike-terminal');
+              if(term) term.style.display = 'flex'; 
+          }, 300);
+      }
+  }
+
+  window.updateStrikePaymentDetails = function() {
+      const method = document.getElementById('strike-payment-method').value;
+      const box = document.getElementById('strike-payment-details-box');
+      const txt = document.getElementById('strike-our-wallet');
+      if (method && box && txt) { 
+          txt.innerHTML = typeof getWalletDetailsHTML === 'function' ? getWalletDetailsHTML(method) : "Contatta il bot per le coordinate"; 
+          box.classList.remove('hidden'); 
+      } else if(box) { 
+          box.classList.add('hidden'); 
+      }
+  }
+
+  window.submitStrikeOrderToBot = async function() {
+      const linkInput = document.getElementById('strike-target-link')?.value.trim() || "";
+      const notesInput = document.getElementById('strike-target-notes')?.value.trim() || "";
+      const paymentMethod = document.getElementById('strike-payment-method')?.value || "";
+      const isConfirmed = document.getElementById('strike-confirmed-cb')?.checked || false;
+      const receiptFile = document.getElementById('strike-receipt-file')?.files[0];
+
+      if (!linkInput) { alert("⚠️ ERRORE: Inserisci l'Identificativo del Target."); return; }
+      if (!paymentMethod) { alert("⚠️ ERRORE: Seleziona il metodo di allocazione fondi."); return; }
+      if (!isConfirmed) { alert("⛔ ERRORE: Conferma l'Autorizzazione Esecutiva."); return; }
+
+      if (typeof window.showLoading === 'function') window.showLoading();
+
+      let receiptUrl = "NESSUNO SCREEN ALLEGATO.";
+      if (receiptFile && typeof window.uploadFileToSupabase === 'function') {
+          const uploaded = await window.uploadFileToSupabase(receiptFile);
+          if(uploaded) receiptUrl = uploaded;
+      }
+
+      const ticketDetails = `
+📱 VETTORE: ${stkPlatform}
+🎯 TARGET: ${stkTarget}
+🔗 IDENTIFICATIVO: ${linkInput}
+📝 NOTE: ${notesInput || 'N/D'}
+
+💰 PAGAMENTO: ${paymentMethod} (€${stkPrice})
+📄 RICEVUTA:
+${receiptUrl}
+      `.trim();
+
+      const userId = sessionStorage.getItem('falsario_active_session') || localStorage.getItem('falsario_device_base_id') || "0";
+      let uname = "Anonimo";
+      try { if(window.Telegram?.WebApp?.initDataUnsafe?.user) uname = window.Telegram.WebApp.initDataUnsafe.user.username || "ID_" + userId; } catch(e){}
+
+      try {
+          const res = await fetch('/api/strike', { 
+              method: 'POST', 
+              headers: {'Content-Type': 'application/json'}, 
+              body: JSON.stringify({ user_id: userId, username: uname, dettagli: ticketDetails }) 
+          });
+          const ans = await res.json();
+          if(typeof window.hideLoading === 'function') window.hideLoading();
+          
+          if(ans.success) {
+              const modal = document.getElementById('strike-checkout-modal');
+              if(modal) { modal.classList.add('hidden'); modal.classList.remove('flex'); }
+              
+              openStrikeTrackerModal(ans.ticket_id);
+          } else {
+              alert("❌ Errore del server Caveau.");
+          }
+      } catch(e) {
+          if(typeof window.hideLoading === 'function') window.hideLoading();
+          alert("❌ Errore di connessione API.");
+      }
+  }
+
+  window.openStrikeTrackerModal = function(prefillCode = '') {
+      const term = document.getElementById('strike-terminal');
+      if(term) term.style.display = 'none';
+      
+      const modal = document.getElementById('strike-tracker-modal');
+      if(modal) {
+          modal.classList.remove('hidden'); modal.classList.add('flex');
+          setTimeout(() => { 
+              modal.classList.remove('opacity-0'); 
+              const content = document.getElementById('strike-tracker-content');
+              if(content) content.classList.remove('scale-95'); 
+          }, 10);
+      }
+      
+      const input = document.getElementById('strike-track-input');
+      const consoleLog = document.getElementById('strike-track-console');
+      if(input) input.value = prefillCode;
+      
+      if(prefillCode && consoleLog) {
+          consoleLog.innerHTML = `> RICEZIONE PRATICA: <span style="color:#fff">${prefillCode}</span>\n> INTERROGAZIONE SATELLITE IN CORSO...`;
+          setTimeout(fetchStrikeStatusAPI, 1000);
+      } else if(consoleLog) {
+          consoleLog.innerHTML = `> PRONTO PER LA SCANSIONE SATELLITARE...\n> INSERISCI L'ID PRATICA RICEVUTO AL CHECKOUT.`;
+      }
+  }
+
+  window.closeStrikeTrackerModal = function() {
+      const modal = document.getElementById('strike-tracker-modal');
+      if(modal) {
+          modal.classList.add('opacity-0'); 
+          const content = document.getElementById('strike-tracker-content');
+          if(content) content.classList.add('scale-95');
+          setTimeout(() => { 
+              modal.classList.add('hidden'); modal.classList.remove('flex'); 
+              const term = document.getElementById('strike-terminal');
+              if(term) term.style.display = 'flex'; 
+          }, 300);
+      }
+  }
+
+  window.fetchStrikeStatusAPI = async function() {
+      const codeInput = document.getElementById('strike-track-input');
+      const consoleLog = document.getElementById('strike-track-console');
+      if(!codeInput || !consoleLog) return;
+
+      const code = codeInput.value.trim().toUpperCase();
+      if(!code) { consoleLog.innerHTML += `\n<span style="color:#ff3366">> ERRORE: NESSUN ID INSERITO.</span>`; return; }
+      
+      consoleLog.innerHTML = `> PING SATELLITE UPLINK...\n> CERCO PRATICA: <span style="color:#fff">${code}</span>\n<span class="animate-pulse">...</span>`;
+      
+      try {
+          const res = await fetch(`/api/strike_track/${encodeURIComponent(code)}`);
+          const data = await res.json();
+          
+          setTimeout(() => {
+              if(data.error || !data.id) {
+                  consoleLog.innerHTML = `> RISPOSTA API: 404 NOT FOUND\n> <span style="color:#ff3366">PRATICA ${code} INESISTENTE O NON REGISTRATA.</span>`;
+              } else {
+                  let pFound = "Sconosciuta", tFound = "Sconosciuto", linkFound = "N/D";
+                  const lines = data.dettagli.split('\n');
+                  lines.forEach(l => {
+                      if(l.includes('VETTORE:')) pFound = l.replace('VETTORE:', '').trim();
+                      if(l.includes('TARGET:')) tFound = l.replace('TARGET:', '').trim();
+                      if(l.includes('IDENTIFICATIVO:')) linkFound = l.replace('IDENTIFICATIVO:', '').trim();
+                  });
+
+                  let statusColor = '#f59e0b';
+                  let statoUpper = data.stato.toUpperCase();
+                  if(statoUpper.includes('COMPLETATO') || statoUpper.includes('BAN') || statoUpper.includes('SUCCESSO')) statusColor = '#00ffcc';
+                  if(statoUpper.includes('ANNULLAT') || statoUpper.includes('RIFIUTAT')) statusColor = '#ff3366';
+
+                  consoleLog.innerHTML = `
+> MATCH DATABASE: <span style="color:#fff">SUCCESS</span>
+> ====================================
+> ID: <span style="color:#fff">${data.id}</span>
+> BERSAGLIO: ${pFound} -> ${tFound}
+> TARGET LINK: ${linkFound}
+> ====================================
+> STATUS: <span style="color:${statusColor}; font-weight:bold;">[ ${statoUpper} ]</span>
+> 
+> OPERAZIONE ACQUISITA DAL SISTEMA OPERATIVO.`;
+              }
+              consoleLog.scrollTop = consoleLog.scrollHeight;
+          }, 700);
+      } catch(e) {
+          consoleLog.innerHTML = `\n> <span style="color:#ff3366">ERRORE CRITICO DI RETE.</span>`;
+      }
   }
 </script>
+<script src="/social/social_feed_widget.js"></script>
 </body>
 </html>
+
 
 
 
